@@ -52,7 +52,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
             <div className="flex flex-col space-y-1">
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <Calendar className="h-3.5 w-3.5" />
-                <span>Issued: {formatDate(violation.dateIssued)}</span>
+                <span>Investigation Date: {formatDate(violation.dateIssued)}</span>
               </div>
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <Hash className="h-3.5 w-3.5" />

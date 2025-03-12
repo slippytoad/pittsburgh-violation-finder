@@ -22,6 +22,7 @@ interface WPRDCViolation {
   violation_id: string;
   owner_name: string;
   inspection_date: string;
+  investigation_date: string;
   parcel_id: string;
   inspection_result: string;
   agency_name: string;
@@ -87,12 +88,16 @@ export const searchViolationsByAddress = async (address: string): Promise<Violat
     
     // Map the API response to our ViolationType and filter for 2025 violations only
     return data.result.records
-      .filter(record => isFrom2025(record.violation_date || record.inspection_date))
+      .filter(record => {
+        // Use investigation_date as priority, then fall back to others
+        const dateToCheck = record.investigation_date || record.violation_date || record.inspection_date;
+        return isFrom2025(dateToCheck);
+      })
       .map(record => ({
         id: record.violation_id || record.casefile_number || String(record._id),
         address: record.address || '',
         violationType: record.violation_code_section || 'Unknown',
-        dateIssued: record.violation_date || record.inspection_date || '',
+        dateIssued: record.investigation_date || record.violation_date || record.inspection_date || '',
         status: mapViolationStatus(record.status),
         description: record.violation_description || '',
         fineAmount: null, // API doesn't provide fine amounts
