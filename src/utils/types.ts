@@ -3,20 +3,36 @@
  * Shared type definitions
  */
 
-export interface ViolationType {
+// Status types
+export type ViolationStatus = 'Open' | 'Closed' | 'In Progress';
+
+// Investigation types
+export interface InvestigationDetails {
+  outcome?: string;
+  findings?: string;
+}
+
+// Base violation types
+export interface ViolationBase {
   id: string;
   address: string;
   violationType: string;
   dateIssued: string;
-  status: 'Open' | 'Closed' | 'In Progress';
+  status: ViolationStatus;
   description: string;
+  propertyOwner: string;
+}
+
+// Payment information
+export interface PaymentDetails {
   fineAmount: number | null;
   dueDate: string | null;
-  propertyOwner: string;
+}
+
+// Complete violation type with all properties
+export interface ViolationType extends ViolationBase, PaymentDetails, InvestigationDetails {
   relatedViolationsCount?: number | null;
   relatedViolations?: ViolationType[];
-  investigationOutcome?: string;
-  investigationFindings?: string;
 }
 
 export interface Address {

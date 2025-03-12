@@ -1,10 +1,9 @@
 
 import React from 'react';
 import { CheckCircle, FileText } from 'lucide-react';
+import { InvestigationDetails } from '@/utils/types';
 
-interface InvestigationInfoProps {
-  outcome?: string;
-  findings?: string;
+interface InvestigationInfoProps extends InvestigationDetails {
   size?: 'sm' | 'default';
 }
 

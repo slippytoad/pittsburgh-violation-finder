@@ -3,9 +3,10 @@ import React from 'react';
 import { AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { ViolationStatus } from '@/utils/types';
 
 interface StatusBadgeProps {
-  status: string;
+  status: ViolationStatus | string;
   size?: 'sm' | 'default';
 }
 
