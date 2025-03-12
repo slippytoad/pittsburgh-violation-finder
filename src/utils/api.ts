@@ -39,30 +39,14 @@ interface WPRDCViolation {
 }
 
 /**
- * Search for violations by address
- * @param address The address to search for
+ * Search for violations by parcel ID
+ * @param parcelId The parcel ID to search for
  * @returns A promise that resolves to an array of violations
  */
-export const searchViolationsByAddress = async (address: string): Promise<ViolationType[]> => {
+export const searchViolationsByParcelId = async (parcelId: string): Promise<ViolationType[]> => {
   try {
-    // Parse address to get street number and name for better search results
-    const addressParts = address.split(' ');
-    let streetNumber = '';
-    let streetName = '';
-    
-    if (addressParts.length > 0 && !isNaN(Number(addressParts[0]))) {
-      streetNumber = addressParts[0];
-      streetName = addressParts.slice(1).join(' ').replace(',', '');
-    }
-    
-    // Build the query
-    let query = '';
-    if (streetNumber && streetName) {
-      query = `inspection_street_number:${streetNumber} AND inspection_street_name:${streetName.split(',')[0]}`;
-    } else {
-      // Fall back to a simpler query if we can't parse the address properly
-      query = address.replace(/,/g, '');
-    }
+    // Build the query for parcel ID search
+    const query = `parcel_id:${parcelId}`;
     
     // Build the URL with the query
     const url = new URL(WPRDC_API_BASE_URL);
@@ -82,6 +66,8 @@ export const searchViolationsByAddress = async (address: string): Promise<Violat
     if (!data.success) {
       throw new Error('API request was not successful');
     }
+    
+    console.log('API Response:', data); // Log the API response for debugging
     
     // Map the API response to our ViolationType
     return data.result.records.map(record => ({

@@ -8,45 +8,45 @@ import ResultsList from '@/components/ResultsList';
 import AddressList from '@/components/AddressList';
 import { ViolationType } from '@/utils/mockData';
 import AnimatedContainer from '@/components/AnimatedContainer';
-import { searchViolationsByAddress } from '@/utils/api';
+import { searchViolationsByParcelId } from '@/utils/api';
 
 const Index = () => {
   const [violations, setViolations] = useState<ViolationType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [addresses, setAddresses] = useState<string[]>([]);
-  const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
+  const [parcelIds, setParcelIds] = useState<string[]>([]);
+  const [selectedParcelId, setSelectedParcelId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Load saved addresses from localStorage on mount
+  // Load saved parcel IDs from localStorage on mount
   useEffect(() => {
-    const savedAddresses = localStorage.getItem('savedAddresses');
-    if (savedAddresses) {
+    const savedParcelIds = localStorage.getItem('savedParcelIds');
+    if (savedParcelIds) {
       try {
-        setAddresses(JSON.parse(savedAddresses));
+        setParcelIds(JSON.parse(savedParcelIds));
       } catch (error) {
-        console.error('Failed to parse saved addresses', error);
+        console.error('Failed to parse saved parcel IDs', error);
       }
     }
   }, []);
 
-  // Save addresses to localStorage when updated
+  // Save parcel IDs to localStorage when updated
   useEffect(() => {
-    localStorage.setItem('savedAddresses', JSON.stringify(addresses));
-  }, [addresses]);
+    localStorage.setItem('savedParcelIds', JSON.stringify(parcelIds));
+  }, [parcelIds]);
 
-  const handleSearch = async (address: string) => {
+  const handleSearch = async (parcelId: string) => {
     setIsLoading(true);
-    setSelectedAddress(address);
+    setSelectedParcelId(parcelId);
     
     try {
-      // Use the real API service instead of mock data
-      const results = await searchViolationsByAddress(address);
+      // Use the updated API service to search by parcel ID
+      const results = await searchViolationsByParcelId(parcelId);
       setViolations(results);
       
       if (results.length === 0) {
         toast({
           title: "No violations found",
-          description: `No property violations found for this address`,
+          description: `No property violations found for this parcel ID`,
         });
       }
     } catch (error) {
@@ -62,19 +62,19 @@ const Index = () => {
     }
   };
 
-  const handleAddAddress = (address: string) => {
-    if (!addresses.includes(address)) {
-      setAddresses(prev => [...prev, address]);
+  const handleAddParcelId = (parcelId: string) => {
+    if (!parcelIds.includes(parcelId)) {
+      setParcelIds(prev => [...prev, parcelId]);
     } else {
       toast({
-        title: "Address exists",
-        description: "This address is already in your saved list",
+        title: "Parcel ID exists",
+        description: "This parcel ID is already in your saved list",
       });
     }
   };
 
-  const handleRemoveAddress = (index: number) => {
-    setAddresses(prev => prev.filter((_, i) => i !== index));
+  const handleRemoveParcelId = (index: number) => {
+    setParcelIds(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -86,22 +86,22 @@ const Index = () => {
           <AnimatedContainer className="mb-8 text-center">
             <h1 className="text-3xl font-semibold mb-2">Pittsburgh Property Violation Finder</h1>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Search for property violation notices in Pittsburgh, PA using the official WPRDC data. Add multiple addresses to your list for easy reference.
+              Search for property violation notices in Pittsburgh, PA using parcel IDs with the official WPRDC data.
             </p>
           </AnimatedContainer>
           
           <div className="grid grid-cols-1 gap-8">
             <SearchForm 
               onSearch={handleSearch} 
-              onAddAddress={handleAddAddress}
+              onAddParcelId={handleAddParcelId}
               isLoading={isLoading}
             />
             
             <AddressList 
-              addresses={addresses} 
-              onRemove={handleRemoveAddress}
+              parcelIds={parcelIds} 
+              onRemove={handleRemoveParcelId}
               onSearch={handleSearch}
-              selectedAddress={selectedAddress}
+              selectedParcelId={selectedParcelId}
             />
             
             <ResultsList 

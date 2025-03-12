@@ -6,37 +6,37 @@ import { X, Search } from 'lucide-react';
 import AnimatedContainer from './AnimatedContainer';
 
 interface AddressListProps {
-  addresses: string[];
+  parcelIds: string[];
   onRemove: (index: number) => void;
-  onSearch: (address: string) => void;
-  selectedAddress: string | null;
+  onSearch: (parcelId: string) => void;
+  selectedParcelId: string | null;
 }
 
-const AddressList = ({ addresses, onRemove, onSearch, selectedAddress }: AddressListProps) => {
-  if (addresses.length === 0) {
+const AddressList = ({ parcelIds, onRemove, onSearch, selectedParcelId }: AddressListProps) => {
+  if (parcelIds.length === 0) {
     return null;
   }
 
   return (
     <AnimatedContainer className="w-full mt-6">
-      <h2 className="text-lg font-medium mb-3">Saved Addresses</h2>
+      <h2 className="text-lg font-medium mb-3">Saved Parcel IDs</h2>
       <Card>
         <CardContent className="p-3">
           <ul className="divide-y">
-            {addresses.map((address, index) => (
+            {parcelIds.map((parcelId, index) => (
               <li 
                 key={index} 
                 className={`py-3 px-2 flex justify-between items-center rounded-md ${
-                  selectedAddress === address ? 'bg-accent' : ''
+                  selectedParcelId === parcelId ? 'bg-accent' : ''
                 } hover:bg-accent/50 transition-colors`}
               >
-                <span className="text-sm truncate mr-2">{address}</span>
+                <span className="text-sm truncate mr-2">{parcelId}</span>
                 <div className="flex items-center space-x-2">
                   <Button 
                     size="icon" 
                     variant="ghost" 
                     className="h-8 w-8"
-                    onClick={() => onSearch(address)}
+                    onClick={() => onSearch(parcelId)}
                   >
                     <Search className="h-4 w-4" />
                     <span className="sr-only">Search</span>

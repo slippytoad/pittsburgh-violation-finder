@@ -7,44 +7,44 @@ import { useToast } from '@/components/ui/use-toast';
 import AnimatedContainer from './AnimatedContainer';
 
 interface SearchFormProps {
-  onSearch: (address: string) => void;
-  onAddAddress: (address: string) => void;
+  onSearch: (parcelId: string) => void;
+  onAddParcelId: (parcelId: string) => void;
   isLoading: boolean;
 }
 
-const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
-  const [address, setAddress] = useState('');
+const SearchForm = ({ onSearch, onAddParcelId, isLoading }: SearchFormProps) => {
+  const [parcelId, setParcelId] = useState('');
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!address.trim()) {
+    if (!parcelId.trim()) {
       toast({
-        title: "Address required",
-        description: "Please enter an address to search",
+        title: "Parcel ID required",
+        description: "Please enter a parcel ID to search",
         variant: "destructive",
       });
       return;
     }
     
-    onSearch(address);
+    onSearch(parcelId);
   };
 
-  const handleAddAddress = () => {
-    if (!address.trim()) {
+  const handleAddParcelId = () => {
+    if (!parcelId.trim()) {
       toast({
-        title: "Address required",
-        description: "Please enter an address to add",
+        title: "Parcel ID required",
+        description: "Please enter a parcel ID to add",
         variant: "destructive",
       });
       return;
     }
     
-    onAddAddress(address);
+    onAddParcelId(parcelId);
     toast({
-      title: "Address added",
-      description: "Address has been saved to your list",
+      title: "Parcel ID added",
+      description: "Parcel ID has been saved to your list",
     });
   };
 
@@ -56,9 +56,9 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-grow">
               <Input
-                placeholder="Enter Pittsburgh address (e.g. 123 Main St)..."
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Enter Pittsburgh parcel ID (e.g. 0028F00195000000)..."
+                value={parcelId}
+                onChange={(e) => setParcelId(e.target.value)}
                 className="w-full bg-background/70"
                 disabled={isLoading}
               />
@@ -75,7 +75,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={handleAddAddress}
+                onClick={handleAddParcelId}
                 disabled={isLoading}
               >
                 <Plus className="h-4 w-4" />
@@ -84,7 +84,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            Enter a Pittsburgh address to search for property violations (e.g. 123 Forbes Ave)
+            Enter a Pittsburgh parcel ID to search for property violations (e.g. 0028F00195000000)
           </p>
         </form>
       </div>
