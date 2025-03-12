@@ -119,9 +119,10 @@ export function useViolations() {
       
       // Deduplicate violations
       const uniqueViolations: ViolationType[] = [];
-      const seenIds = new Set();
+      const seenIds = new Set<string>();
       
-      allViolations.forEach(violation => {
+      // Fix the type issue by explicitly typing allViolations as ViolationType[]
+      (allViolations as ViolationType[]).forEach(violation => {
         if (!seenIds.has(violation.id)) {
           seenIds.add(violation.id);
           uniqueViolations.push(violation);
