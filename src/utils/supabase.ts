@@ -1,5 +1,6 @@
 
 import { createClient } from '@supabase/supabase-js';
+import type { AppSettings, Address } from './types';
 
 // Use environment variables from Vite
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://qdjfzjqhnhrlkpqdtssp.supabase.co';
@@ -7,17 +8,6 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1N
 
 // Create a Supabase client
 export const supabase = createClient(supabaseUrl, supabaseKey);
-
-// Export the AppSettings type
-export interface AppSettings {
-  id?: number;
-  violationChecksEnabled: boolean;
-  emailReportsEnabled: boolean;
-  emailReportAddress: string;
-  nextViolationCheckTime?: string;
-  created_at?: string;
-  updated_at?: string;
-}
 
 // Function to create necessary tables if they don't exist
 export const initSupabaseTables = async () => {
@@ -62,9 +52,6 @@ export const initSupabaseTables = async () => {
     console.error('Error initializing Supabase tables:', error);
   }
 };
-
-// Export the Address type from the types file
-export type { Address } from './types';
 
 // Log to confirm client creation
 console.log('Supabase client initialized');
