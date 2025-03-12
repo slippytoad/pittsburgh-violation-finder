@@ -2,17 +2,13 @@ import React, { useState, useEffect } from 'react';
 import SearchForm from '@/components/SearchForm';
 import ResultsList from '@/components/ResultsList';
 import AddressList from '@/components/AddressList';
-import AnimatedContainer from '@/components/AnimatedContainer';
+import ViolationFinderHeader from '@/components/ViolationFinderHeader';
+import BulkImportForm from '@/components/BulkImportForm';
+import EmailSettingsDialog from '@/components/EmailSettingsDialog';
 import { useViolations } from '@/hooks/useViolations';
 import { useAddresses } from '@/hooks/useAddresses';
 import { useScheduledViolationCheck } from '@/hooks/useScheduledViolationCheck';
-import { Button } from '@/components/ui/button';
-import { Import, Bell, BellOff, Mail, MailX } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { initSupabaseTables } from '@/utils/supabase';
 
 const ViolationFinder = () => {
@@ -111,15 +107,6 @@ const ViolationFinder = () => {
   };
 
   const processBulkImport = () => {
-    if (!bulkImportText.trim()) {
-      toast({
-        title: "No addresses provided",
-        description: "Please enter at least one address to import.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     const addressList = bulkImportText
       .split('\n')
       .map(address => address.trim())
@@ -140,83 +127,21 @@ const ViolationFinder = () => {
   };
 
   const saveEmailSettings = () => {
-    if (tempEmailEnabled && !validateEmail(tempEmailAddress)) {
-      toast({
-        title: "Invalid Email",
-        description: "Please enter a valid email address.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     updateEmailSettings(tempEmailEnabled, tempEmailAddress);
     setShowEmailSettings(false);
   };
 
-  const validateEmail = (email: string): boolean => {
-    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return re.test(email);
-  };
-
   return (
     <div className="max-w-screen-xl mx-auto">
-      <AnimatedContainer className="mb-8 text-center">
-        <h1 className="text-3xl font-semibold mb-2">Pittsburgh Property Violation Finder</h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          Search for property violation notices in Pittsburgh, PA using addresses with the official WPRDC data.
-          {searchCount > 0 && <span className="block mt-1 text-sm">Completed {searchCount} searches so far</span>}
-        </p>
-        
-        <div className="mt-4 flex items-center justify-center gap-4">
-          <Button
-            variant={isScheduled ? "default" : "outline"}
-            onClick={() => toggleScheduledChecks(!isScheduled)}
-            className="flex items-center gap-2 text-sm"
-          >
-            {isScheduled ? (
-              <>
-                <BellOff className="h-4 w-4" />
-                Disable Daily Checks
-              </>
-            ) : (
-              <>
-                <Bell className="h-4 w-4" />
-                Enable Daily Checks at 6 AM PST
-              </>
-            )}
-          </Button>
-          
-          <Button
-            variant={emailEnabled ? "default" : "outline"}
-            onClick={() => setShowEmailSettings(true)}
-            className="flex items-center gap-2 text-sm"
-          >
-            {emailEnabled ? (
-              <>
-                <Mail className="h-4 w-4" />
-                Email Reports: On
-              </>
-            ) : (
-              <>
-                <MailX className="h-4 w-4" />
-                Email Reports: Off
-              </>
-            )}
-          </Button>
-        </div>
-        
-        {isScheduled && nextCheckTime && (
-          <div className="mt-2 text-xs text-muted-foreground">
-            Next check scheduled for: {nextCheckTime.toLocaleString()}
-          </div>
-        )}
-        
-        {emailEnabled && (
-          <div className="mt-1 text-xs text-muted-foreground">
-            Email reports will be sent to: {emailAddress}
-          </div>
-        )}
-      </AnimatedContainer>
+      <ViolationFinderHeader
+        searchCount={searchCount}
+        isScheduled={isScheduled}
+        emailEnabled={emailEnabled}
+        nextCheckTime={nextCheckTime}
+        emailAddress={emailAddress}
+        onToggleSchedule={toggleScheduledChecks}
+        onOpenEmailSettings={() => setShowEmailSettings(true)}
+      />
       
       <div id="violations-data" style={{ display: 'none' }}>
         {JSON.stringify(violations)}
@@ -240,33 +165,12 @@ const ViolationFinder = () => {
         />
         
         {showBulkImport && (
-          <AnimatedContainer>
-            <div className="glass rounded-xl p-6 subtle-shadow">
-              <h2 className="text-lg font-medium mb-4">Bulk Import Addresses</h2>
-              <div className="space-y-4">
-                <textarea 
-                  className="w-full h-40 p-3 border rounded-md bg-background/70"
-                  placeholder="Enter one address per line..."
-                  value={bulkImportText}
-                  onChange={(e) => setBulkImportText(e.target.value)}
-                />
-                <div className="flex justify-end gap-2">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setShowBulkImport(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    onClick={processBulkImport}
-                  >
-                    <Import className="mr-2 h-4 w-4" />
-                    Import Addresses
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </AnimatedContainer>
+          <BulkImportForm
+            bulkImportText={bulkImportText}
+            onBulkImportTextChange={setBulkImportText}
+            onCancel={() => setShowBulkImport(false)}
+            onImport={processBulkImport}
+          />
         )}
         
         <ResultsList 
@@ -275,44 +179,15 @@ const ViolationFinder = () => {
         />
       </div>
       
-      <Dialog open={showEmailSettings} onOpenChange={setShowEmailSettings}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Email Report Settings</DialogTitle>
-            <DialogDescription>
-              Configure daily email reports for property violations.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="email-toggle">Enable Email Reports</Label>
-              <Switch 
-                id="email-toggle" 
-                checked={tempEmailEnabled}
-                onCheckedChange={setTempEmailEnabled}
-              />
-            </div>
-            
-            {tempEmailEnabled && (
-              <div className="grid grid-cols-1 gap-2">
-                <Label htmlFor="email-address">Email Address</Label>
-                <Input 
-                  id="email-address" 
-                  placeholder="your@email.com" 
-                  value={tempEmailAddress}
-                  onChange={(e) => setTempEmailAddress(e.target.value)}
-                />
-              </div>
-            )}
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEmailSettings(false)}>Cancel</Button>
-            <Button onClick={saveEmailSettings}>Save Settings</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <EmailSettingsDialog
+        open={showEmailSettings}
+        onOpenChange={setShowEmailSettings}
+        emailEnabled={tempEmailEnabled}
+        emailAddress={tempEmailAddress}
+        onEmailEnabledChange={setTempEmailEnabled}
+        onEmailAddressChange={setTempEmailAddress}
+        onSave={saveEmailSettings}
+      />
     </div>
   );
 };
