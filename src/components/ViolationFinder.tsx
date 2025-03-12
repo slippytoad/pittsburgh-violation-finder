@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import SearchForm from '@/components/SearchForm';
 import ResultsList from '@/components/ResultsList';
@@ -14,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { initSupabaseTables } from '@/utils/supabase';
 
 const ViolationFinder = () => {
   const { violations, isLoading, selectedAddress, handleSearch, handleSearchAll, searchCount } = useViolations();
@@ -34,7 +34,6 @@ const ViolationFinder = () => {
   const [tempEmailAddress, setTempEmailAddress] = useState<string>(emailAddress);
   const { toast } = useToast();
 
-  // Update temp email state when the real state changes
   useEffect(() => {
     setTempEmailEnabled(emailEnabled);
     setTempEmailAddress(emailAddress);
@@ -87,6 +86,18 @@ const ViolationFinder = () => {
     };
     
     addProvidedAddresses();
+  }, []);
+
+  useEffect(() => {
+    const initTables = async () => {
+      try {
+        await initSupabaseTables();
+      } catch (error) {
+        console.error('Failed to initialize Supabase tables:', error);
+      }
+    };
+    
+    initTables();
   }, []);
 
   const onSearchAll = () => {

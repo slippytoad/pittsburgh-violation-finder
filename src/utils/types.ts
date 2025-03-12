@@ -23,6 +23,16 @@ export interface Address {
   created_at: string;
 }
 
+export interface AppSettings {
+  id?: number;
+  violationChecksEnabled: boolean;
+  emailReportsEnabled: boolean;
+  emailReportAddress: string;
+  nextViolationCheckTime?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface WPRDCResponse {
   success: boolean;
   result: {
