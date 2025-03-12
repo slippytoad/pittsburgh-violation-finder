@@ -12,6 +12,15 @@ import {
   sendViolationEmailReport 
 } from '@/utils/violationTracking';
 import { initEmailService } from '@/utils/emailService';
+import { supabase } from '@/utils/supabase';
+
+// Define app settings type
+type AppSettings = {
+  violationChecksEnabled: boolean;
+  emailReportsEnabled: boolean;
+  emailReportAddress: string;
+  nextViolationCheckTime?: string;
+};
 
 export function useScheduledViolationCheck() {
   // Load initial states from localStorage with fallbacks
@@ -24,9 +33,52 @@ export function useScheduledViolationCheck() {
   const [nextCheckTime, setNextCheckTime] = useState<Date | null>(null);
   const [emailEnabled, setEmailEnabled] = useState<boolean>(initialEmailEnabled);
   const [emailAddress, setEmailAddress] = useState<string>(initialEmailAddress);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const { handleSearchAll } = useViolations();
   const { addresses } = useAddresses();
   const { toast } = useToast();
+  
+  // Fetch settings from Supabase
+  const fetchSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('app_settings')
+        .select('*')
+        .limit(1)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching settings:', error);
+        return null;
+      }
+      
+      return data as AppSettings;
+    } catch (error) {
+      console.error('Failed to fetch settings:', error);
+      return null;
+    }
+  };
+  
+  // Save settings to Supabase
+  const saveSettings = async (settings: AppSettings) => {
+    try {
+      const { data, error } = await supabase
+        .from('app_settings')
+        .upsert(settings, { onConflict: 'id' })
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error saving settings:', error);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Failed to save settings:', error);
+      return false;
+    }
+  };
   
   // Perform the violation check
   const checkForViolations = async () => {
@@ -122,13 +174,24 @@ export function useScheduledViolationCheck() {
     
     // Save the timeout ID to localStorage so it can be recovered on page reload
     localStorage.setItem('violationCheckTimeoutId', String(timeoutId));
+    
+    // Save the next check time to both localStorage and Supabase
     localStorage.setItem('nextViolationCheckTime', nextCheck.toISOString());
+    
+    // Update Supabase with the next check time
+    const settings: AppSettings = {
+      violationChecksEnabled: isScheduled,
+      emailReportsEnabled: emailEnabled,
+      emailReportAddress: emailAddress,
+      nextViolationCheckTime: nextCheck.toISOString()
+    };
+    saveSettings(settings);
     
     return () => clearTimeout(timeoutId);
   };
   
   // Enable or disable scheduled checks
-  const toggleScheduledChecks = (enable: boolean) => {
+  const toggleScheduledChecks = async (enable: boolean) => {
     if (enable) {
       // Start scheduled checks
       setIsScheduled(true);
@@ -158,16 +221,34 @@ export function useScheduledViolationCheck() {
         description: "Scheduled violation checks have been turned off.",
       });
     }
+    
+    // Save to Supabase
+    const settings: AppSettings = {
+      violationChecksEnabled: enable,
+      emailReportsEnabled: emailEnabled,
+      emailReportAddress: emailAddress
+    };
+    
+    await saveSettings(settings);
   };
   
   // Update email settings
-  const updateEmailSettings = (enabled: boolean, email: string = '') => {
+  const updateEmailSettings = async (enabled: boolean, email: string = '') => {
     setEmailEnabled(enabled);
     if (email) setEmailAddress(email);
     
     // Save settings to localStorage
     localStorage.setItem('emailReportsEnabled', String(enabled));
     if (email) localStorage.setItem('emailReportAddress', email);
+    
+    // Save settings to Supabase
+    const settings: AppSettings = {
+      violationChecksEnabled: isScheduled,
+      emailReportsEnabled: enabled,
+      emailReportAddress: email || emailAddress
+    };
+    
+    await saveSettings(settings);
     
     toast({
       title: enabled ? "Email Reports Enabled" : "Email Reports Disabled",
@@ -177,34 +258,69 @@ export function useScheduledViolationCheck() {
   
   // Initialize on mount
   useEffect(() => {
-    // Initialize the email service
-    initEmailService();
+    if (isInitialized) return;
     
-    // If checks are enabled, schedule the next check
-    if (isScheduled) {
-      // Try to recover the next check time from localStorage
-      const savedNextCheckTime = localStorage.getItem('nextViolationCheckTime');
+    const initialize = async () => {
+      // Initialize the email service
+      initEmailService();
       
-      if (savedNextCheckTime) {
-        const nextCheck = new Date(savedNextCheckTime);
-        setNextCheckTime(nextCheck);
+      // Try to fetch settings from Supabase
+      const settings = await fetchSettings();
+      
+      if (settings) {
+        // Use settings from Supabase
+        setIsScheduled(settings.violationChecksEnabled);
+        setEmailEnabled(settings.emailReportsEnabled);
+        if (settings.emailReportAddress) setEmailAddress(settings.emailReportAddress);
         
-        // If the saved next check time is in the past, run a check now
-        if (nextCheck < new Date()) {
-          checkForViolations();
-        } else {
-          // Otherwise, schedule for the saved time
-          const msUntilNextCheck = nextCheck.getTime() - new Date().getTime();
-          const timeoutId = setTimeout(checkForViolations, msUntilNextCheck);
-          localStorage.setItem('violationCheckTimeoutId', String(timeoutId));
-          
-          return () => clearTimeout(timeoutId);
+        // Save to localStorage for better performance on future loads
+        localStorage.setItem('violationChecksEnabled', String(settings.violationChecksEnabled));
+        localStorage.setItem('emailReportsEnabled', String(settings.emailReportsEnabled));
+        if (settings.emailReportAddress) localStorage.setItem('emailReportAddress', settings.emailReportAddress);
+        
+        // If there's a saved next check time
+        if (settings.nextViolationCheckTime) {
+          try {
+            const nextCheck = new Date(settings.nextViolationCheckTime);
+            setNextCheckTime(nextCheck);
+            localStorage.setItem('nextViolationCheckTime', settings.nextViolationCheckTime);
+          } catch (e) {
+            console.error('Invalid next check time format', e);
+          }
         }
-      } else {
-        // No saved next check time, schedule a new one
-        return scheduleNextCheck();
       }
-    }
+      
+      setIsInitialized(true);
+      
+      // If checks are enabled (either from Supabase or localStorage fallback)
+      if (settings?.violationChecksEnabled || initialIsScheduled) {
+        // Try to recover the next check time from localStorage or Supabase
+        const savedNextCheckTime = settings?.nextViolationCheckTime || 
+                                  localStorage.getItem('nextViolationCheckTime');
+        
+        if (savedNextCheckTime) {
+          const nextCheck = new Date(savedNextCheckTime);
+          setNextCheckTime(nextCheck);
+          
+          // If the saved next check time is in the past, run a check now
+          if (nextCheck < new Date()) {
+            checkForViolations();
+          } else {
+            // Otherwise, schedule for the saved time
+            const msUntilNextCheck = nextCheck.getTime() - new Date().getTime();
+            const timeoutId = setTimeout(checkForViolations, msUntilNextCheck);
+            localStorage.setItem('violationCheckTimeoutId', String(timeoutId));
+            
+            return () => clearTimeout(timeoutId);
+          }
+        } else {
+          // No saved next check time, schedule a new one
+          return scheduleNextCheck();
+        }
+      }
+    };
+    
+    initialize();
     
     // Cleanup function
     return () => {
@@ -213,7 +329,7 @@ export function useScheduledViolationCheck() {
         clearTimeout(parseInt(timeoutId));
       }
     };
-  }, []);
+  }, [isInitialized, initialIsScheduled]);
   
   return {
     isScheduled,
