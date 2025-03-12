@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ViolationType } from '@/utils/mockData';
+import { ViolationType } from '@/utils/types';
 import ViolationCard from './ViolationCard';
 import AnimatedContainer from './AnimatedContainer';
 import { Button } from './ui/button';
