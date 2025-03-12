@@ -95,19 +95,30 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
           </CardHeader>
           <CardContent className="p-4 pt-2">
             <p className="text-sm mb-3 whitespace-pre-line">{violation.description}</p>
-            <div className="text-xs text-muted-foreground space-y-1">
+            
+            {/* Investigation Info - Made more prominent */}
+            <div className="space-y-2 mb-3">
               {violation.investigationOutcome && (
-                <div className="flex items-start gap-1">
-                  <CheckCircle className="h-3.5 w-3.5 mt-0.5 text-green-500" />
-                  <span><span className="font-medium">Outcome:</span> {violation.investigationOutcome}</span>
+                <div className="flex items-start gap-1 p-2 bg-green-50 dark:bg-green-900/10 rounded-md">
+                  <CheckCircle className="h-4 w-4 mt-0.5 text-green-500" />
+                  <div>
+                    <span className="font-medium text-sm">Investigation Outcome:</span> 
+                    <p className="text-sm">{violation.investigationOutcome}</p>
+                  </div>
                 </div>
               )}
               {violation.investigationFindings && (
-                <div className="flex items-start gap-1">
-                  <FileText className="h-3.5 w-3.5 mt-0.5 text-blue-500" />
-                  <span><span className="font-medium">Findings:</span> {violation.investigationFindings}</span>
+                <div className="flex items-start gap-1 p-2 bg-blue-50 dark:bg-blue-900/10 rounded-md">
+                  <FileText className="h-4 w-4 mt-0.5 text-blue-500" />
+                  <div>
+                    <span className="font-medium text-sm">Investigation Findings:</span> 
+                    <p className="text-sm whitespace-pre-line">{violation.investigationFindings}</p>
+                  </div>
                 </div>
               )}
+            </div>
+            
+            <div className="text-xs text-muted-foreground space-y-1">
               {violation.fineAmount && (
                 <p><span className="font-medium">Fine Amount:</span> ${violation.fineAmount.toFixed(2)}</p>
               )}
@@ -175,18 +186,26 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                 </CardHeader>
                 <CardContent className="p-3 pt-1">
                   <p className="text-xs mb-2 whitespace-pre-line">{relatedViolation.description}</p>
-                  {relatedViolation.investigationOutcome && (
-                    <div className="flex items-start gap-1 text-xs text-muted-foreground">
-                      <CheckCircle className="h-3 w-3 mt-0.5 text-green-500" />
-                      <span><span className="font-medium">Outcome:</span> {relatedViolation.investigationOutcome}</span>
-                    </div>
-                  )}
-                  {relatedViolation.investigationFindings && (
-                    <div className="flex items-start gap-1 text-xs text-muted-foreground">
-                      <FileText className="h-3 w-3 mt-0.5 text-blue-500" />
-                      <span><span className="font-medium">Findings:</span> {relatedViolation.investigationFindings}</span>
-                    </div>
-                  )}
+                  
+                  {/* Related Violation Investigation Info */}
+                  <div className="space-y-1.5 mb-2">
+                    {relatedViolation.investigationOutcome && (
+                      <div className="flex items-start gap-1 p-1.5 bg-green-50 dark:bg-green-900/10 rounded text-xs">
+                        <CheckCircle className="h-3 w-3 mt-0.5 text-green-500" />
+                        <div>
+                          <span className="font-medium">Outcome:</span> {relatedViolation.investigationOutcome}
+                        </div>
+                      </div>
+                    )}
+                    {relatedViolation.investigationFindings && (
+                      <div className="flex items-start gap-1 p-1.5 bg-blue-50 dark:bg-blue-900/10 rounded text-xs">
+                        <FileText className="h-3 w-3 mt-0.5 text-blue-500" />
+                        <div>
+                          <span className="font-medium">Findings:</span> <span className="whitespace-pre-line">{relatedViolation.investigationFindings}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -231,21 +250,6 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                       <Info className="h-4 w-4 text-muted-foreground" />
                       <span><strong>Property Owner:</strong> {violation.propertyOwner}</span>
                     </div>
-                    {violation.investigationOutcome && (
-                      <div className="flex items-center gap-1">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span><strong>Investigation Outcome:</strong> {violation.investigationOutcome}</span>
-                      </div>
-                    )}
-                    {violation.investigationFindings && (
-                      <div className="flex items-start gap-1">
-                        <FileText className="h-4 w-4 text-blue-500 mt-0.5" />
-                        <div>
-                          <strong>Investigation Findings:</strong> 
-                          <p className="whitespace-pre-line">{violation.investigationFindings}</p>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
                 
@@ -258,6 +262,33 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                       )}
                       {violation.dueDate && (
                         <div><strong>Due Date:</strong> {formatDate(violation.dueDate)}</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Investigation Information Section in Dialog */}
+                {(violation.investigationOutcome || violation.investigationFindings) && (
+                  <div className="border p-3 rounded-lg bg-gray-50 dark:bg-gray-900/30">
+                    <h3 className="text-sm font-medium mb-2">Investigation Results</h3>
+                    <div className="space-y-3 text-sm">
+                      {violation.investigationOutcome && (
+                        <div className="flex items-start gap-2 p-2 bg-green-50 dark:bg-green-900/10 rounded">
+                          <CheckCircle className="h-4 w-4 mt-0.5 text-green-500" />
+                          <div>
+                            <strong>Investigation Outcome:</strong> 
+                            <p>{violation.investigationOutcome}</p>
+                          </div>
+                        </div>
+                      )}
+                      {violation.investigationFindings && (
+                        <div className="flex items-start gap-2 p-2 bg-blue-50 dark:bg-blue-900/10 rounded">
+                          <FileText className="h-4 w-4 mt-0.5 text-blue-500" />
+                          <div>
+                            <strong>Investigation Findings:</strong> 
+                            <p className="whitespace-pre-line">{violation.investigationFindings}</p>
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -300,25 +331,32 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                             <Info className="h-3 w-3" />
                             <span>Property Owner: {relatedViolation.propertyOwner}</span>
                           </div>
-                          {relatedViolation.investigationOutcome && (
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <CheckCircle className="h-3 w-3 text-green-500" />
-                              <span>Outcome: {relatedViolation.investigationOutcome}</span>
-                            </div>
-                          )}
-                          {relatedViolation.investigationFindings && (
-                            <div className="flex items-start gap-1 text-xs text-muted-foreground">
-                              <FileText className="h-3 w-3 mt-0.5 text-blue-500" />
-                              <div>
-                                <span>Findings: </span>
-                                <p className="whitespace-pre-line">{relatedViolation.investigationFindings}</p>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       </CardHeader>
                       <CardContent className="p-3 pt-1">
                         <p className="text-xs mb-2 whitespace-pre-line">{relatedViolation.description}</p>
+                        
+                        {/* Related Violation Investigation Detail */}
+                        <div className="space-y-2 mb-2">
+                          {relatedViolation.investigationOutcome && (
+                            <div className="flex items-start gap-1 p-1.5 bg-green-50 dark:bg-green-900/10 rounded text-xs">
+                              <CheckCircle className="h-3 w-3 mt-0.5 text-green-500" />
+                              <div>
+                                <span className="font-medium">Investigation Outcome:</span> {relatedViolation.investigationOutcome}
+                              </div>
+                            </div>
+                          )}
+                          {relatedViolation.investigationFindings && (
+                            <div className="flex items-start gap-1 p-1.5 bg-blue-50 dark:bg-blue-900/10 rounded text-xs">
+                              <FileText className="h-3 w-3 mt-0.5 text-blue-500" />
+                              <div>
+                                <span className="font-medium">Investigation Findings:</span>
+                                <p className="whitespace-pre-line">{relatedViolation.investigationFindings}</p> 
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        
                         {relatedViolation.fineAmount && (
                           <div className="text-xs"><strong>Fine Amount:</strong> ${relatedViolation.fineAmount.toFixed(2)}</div>
                         )}

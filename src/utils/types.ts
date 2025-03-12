@@ -1,3 +1,4 @@
+
 /**
  * Shared type definitions
  */
@@ -58,5 +59,7 @@ export interface WPRDCViolation {
   violation_date: string;
   violation_code: string;
   violation_code_section: string;
+  investigation_outcome?: string;
+  investigation_findings?: string;
   [key: string]: any; // For any additional fields in the API response
 }
