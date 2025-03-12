@@ -14,3 +14,6 @@ export interface Address {
   address: string;
   created_at: string;
 }
+
+// Log to confirm client creation
+console.log('Supabase client initialized');
