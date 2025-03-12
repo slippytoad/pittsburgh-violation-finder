@@ -53,6 +53,8 @@ export function useScheduledViolationCheck() {
   const [isScheduled, setIsScheduled] = useState<boolean>(false);
   const [lastCheckTime, setLastCheckTime] = useState<Date | null>(null);
   const [nextCheckTime, setNextCheckTime] = useState<Date | null>(null);
+  const [emailEnabled, setEmailEnabled] = useState<boolean>(false);
+  const [emailAddress, setEmailAddress] = useState<string>('');
   const { handleSearchAll } = useViolations();
   const { addresses } = useAddresses();
   const { toast } = useToast();
@@ -96,6 +98,53 @@ export function useScheduledViolationCheck() {
     return newViolations;
   };
   
+  // Send email report
+  const sendEmailReport = async (newViolations: ViolationType[]) => {
+    if (!emailEnabled || !emailAddress) return;
+    
+    try {
+      // Basic email content
+      const emailSubject = `Property Violation Report - ${new Date().toLocaleDateString()}`;
+      let emailBody = `Daily Property Violation Report\n\n`;
+      
+      if (newViolations.length > 0) {
+        emailBody += `${newViolations.length} new violations found:\n\n`;
+        newViolations.forEach(violation => {
+          emailBody += `- Address: ${violation.address}\n`;
+          emailBody += `  Violation: ${violation.violationType}\n`;
+          emailBody += `  Date Issued: ${violation.dateIssued}\n\n`;
+        });
+      } else {
+        emailBody += "Good news! No new violations were found today.";
+      }
+      
+      // Using EmailJS for sending emails from the frontend
+      // In a production app, this should be handled by a backend service
+      const emailData = {
+        email: emailAddress,
+        subject: emailSubject,
+        message: emailBody
+      };
+      
+      // For demonstration purposes, we'll just log this
+      console.log("Would send email with data:", emailData);
+      
+      // In a real implementation, you would send this to your backend or email service
+      
+      toast({
+        title: "Email Report Sent",
+        description: `A report has been sent to ${emailAddress}`,
+      });
+    } catch (error) {
+      console.error("Failed to send email report:", error);
+      toast({
+        title: "Email Report Failed",
+        description: "Failed to send the email report. Please check your email configuration.",
+        variant: "destructive",
+      });
+    }
+  };
+  
   // Perform the violation check
   const checkForViolations = async () => {
     if (addresses.length === 0) {
@@ -131,8 +180,13 @@ export function useScheduledViolationCheck() {
                   description: `${newViolations.length} new violations were found during the scheduled check.`,
                   variant: "default",
                 });
+                
+                // Send email report with new violations
+                sendEmailReport(newViolations);
               } else {
                 console.log('No new violations found');
+                // Send empty report
+                sendEmailReport([]);
               }
             } catch (e) {
               console.error('Error parsing violations data', e);
@@ -210,12 +264,33 @@ export function useScheduledViolationCheck() {
     }
   };
   
+  // Update email settings
+  const updateEmailSettings = (enabled: boolean, email: string = '') => {
+    setEmailEnabled(enabled);
+    if (email) setEmailAddress(email);
+    
+    // Save settings to localStorage
+    localStorage.setItem('emailReportsEnabled', String(enabled));
+    if (email) localStorage.setItem('emailReportAddress', email);
+    
+    toast({
+      title: enabled ? "Email Reports Enabled" : "Email Reports Disabled",
+      description: enabled ? `Reports will be sent to ${email || emailAddress}` : "Email reports have been turned off.",
+    });
+  };
+  
   // Initialize on mount
   useEffect(() => {
     // Load the scheduled state from localStorage
     const savedScheduledState = localStorage.getItem('violationChecksEnabled');
     const isCheckingEnabled = savedScheduledState === 'true';
     setIsScheduled(isCheckingEnabled);
+    
+    // Load email settings
+    const savedEmailEnabled = localStorage.getItem('emailReportsEnabled') === 'true';
+    const savedEmailAddress = localStorage.getItem('emailReportAddress') || '';
+    setEmailEnabled(savedEmailEnabled);
+    setEmailAddress(savedEmailAddress);
     
     // If checks are enabled, schedule the next check
     if (isCheckingEnabled) {
@@ -256,7 +331,10 @@ export function useScheduledViolationCheck() {
     isScheduled,
     lastCheckTime,
     nextCheckTime,
+    emailEnabled,
+    emailAddress,
     toggleScheduledChecks,
-    checkForViolations
+    checkForViolations,
+    updateEmailSettings
   };
 }

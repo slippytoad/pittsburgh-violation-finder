@@ -7,16 +7,36 @@ import { useViolations } from '@/hooks/useViolations';
 import { useAddresses } from '@/hooks/useAddresses';
 import { useScheduledViolationCheck } from '@/hooks/useScheduledViolationCheck';
 import { Button } from '@/components/ui/button';
-import { Import, Bell, BellOff } from 'lucide-react';
+import { Import, Bell, BellOff, Mail, MailX } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 
 const ViolationFinder = () => {
   const { violations, isLoading, selectedAddress, handleSearch, handleSearchAll, searchCount } = useViolations();
   const { addresses, handleAddAddress, handleRemoveAddress, handleBulkImport } = useAddresses();
-  const { isScheduled, nextCheckTime, toggleScheduledChecks } = useScheduledViolationCheck();
+  const { 
+    isScheduled,
+    nextCheckTime, 
+    toggleScheduledChecks,
+    emailEnabled,
+    emailAddress,
+    updateEmailSettings
+  } = useScheduledViolationCheck();
+  
   const [bulkImportText, setBulkImportText] = useState<string>('');
   const [showBulkImport, setShowBulkImport] = useState<boolean>(false);
+  const [showEmailSettings, setShowEmailSettings] = useState<boolean>(false);
+  const [tempEmailEnabled, setTempEmailEnabled] = useState<boolean>(emailEnabled);
+  const [tempEmailAddress, setTempEmailAddress] = useState<string>(emailAddress);
   const { toast } = useToast();
+
+  useEffect(() => {
+    setTempEmailEnabled(emailEnabled);
+    setTempEmailAddress(emailAddress);
+  }, [emailEnabled, emailAddress]);
 
   useEffect(() => {
     const addProvidedAddresses = async () => {
@@ -106,6 +126,25 @@ const ViolationFinder = () => {
     setShowBulkImport(false);
   };
 
+  const saveEmailSettings = () => {
+    if (tempEmailEnabled && !validateEmail(tempEmailAddress)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    updateEmailSettings(tempEmailEnabled, tempEmailAddress);
+    setShowEmailSettings(false);
+  };
+
+  const validateEmail = (email: string): boolean => {
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return re.test(email);
+  };
+
   return (
     <div className="max-w-screen-xl mx-auto">
       <AnimatedContainer className="mb-8 text-center">
@@ -115,7 +154,7 @@ const ViolationFinder = () => {
           {searchCount > 0 && <span className="block mt-1 text-sm">Completed {searchCount} searches so far</span>}
         </p>
         
-        <div className="mt-4 flex items-center justify-center">
+        <div className="mt-4 flex items-center justify-center gap-4">
           <Button
             variant={isScheduled ? "default" : "outline"}
             onClick={() => toggleScheduledChecks(!isScheduled)}
@@ -133,11 +172,35 @@ const ViolationFinder = () => {
               </>
             )}
           </Button>
+          
+          <Button
+            variant={emailEnabled ? "default" : "outline"}
+            onClick={() => setShowEmailSettings(true)}
+            className="flex items-center gap-2 text-sm"
+          >
+            {emailEnabled ? (
+              <>
+                <Mail className="h-4 w-4" />
+                Email Reports: On
+              </>
+            ) : (
+              <>
+                <MailX className="h-4 w-4" />
+                Email Reports: Off
+              </>
+            )}
+          </Button>
         </div>
         
         {isScheduled && nextCheckTime && (
           <div className="mt-2 text-xs text-muted-foreground">
             Next check scheduled for: {nextCheckTime.toLocaleString()}
+          </div>
+        )}
+        
+        {emailEnabled && (
+          <div className="mt-1 text-xs text-muted-foreground">
+            Email reports will be sent to: {emailAddress}
           </div>
         )}
       </AnimatedContainer>
@@ -198,6 +261,45 @@ const ViolationFinder = () => {
           isLoading={isLoading}
         />
       </div>
+      
+      <Dialog open={showEmailSettings} onOpenChange={setShowEmailSettings}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Email Report Settings</DialogTitle>
+            <DialogDescription>
+              Configure daily email reports for property violations.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="email-toggle">Enable Email Reports</Label>
+              <Switch 
+                id="email-toggle" 
+                checked={tempEmailEnabled}
+                onCheckedChange={setTempEmailEnabled}
+              />
+            </div>
+            
+            {tempEmailEnabled && (
+              <div className="grid grid-cols-1 gap-2">
+                <Label htmlFor="email-address">Email Address</Label>
+                <Input 
+                  id="email-address" 
+                  placeholder="your@email.com" 
+                  value={tempEmailAddress}
+                  onChange={(e) => setTempEmailAddress(e.target.value)}
+                />
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEmailSettings(false)}>Cancel</Button>
+            <Button onClick={saveEmailSettings}>Save Settings</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
