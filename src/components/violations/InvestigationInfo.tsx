@@ -1,40 +1,45 @@
 
 import React from 'react';
-import { CheckCircle, FileText } from 'lucide-react';
-import { InvestigationDetails } from '@/utils/types';
+import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
-interface InvestigationInfoProps extends InvestigationDetails {
-  size?: 'sm' | 'default';
+export interface InvestigationInfoProps {
+  investigationOutcome?: string;
+  investigationFindings?: string;
+  size?: 'sm' | 'md';
 }
 
-const InvestigationInfo = ({ investigationOutcome, investigationFindings, size = 'default' }: InvestigationInfoProps) => {
-  const iconSize = size === 'sm' ? "h-3 w-3 mt-0.5" : "h-4 w-4 mt-0.5";
-  const textSize = size === 'sm' ? "text-xs" : "text-sm";
-  const paddingSize = size === 'sm' ? "p-1.5" : "p-2";
-
+const InvestigationInfo: React.FC<InvestigationInfoProps> = ({
+  investigationOutcome,
+  investigationFindings,
+  size = 'md'
+}) => {
   if (!investigationOutcome && !investigationFindings) return null;
 
+  const textSize = size === 'sm' ? 'text-xs' : 'text-sm';
+  const padding = size === 'sm' ? 'p-2' : 'p-4';
+
   return (
-    <div className="space-y-2 mb-2">
-      {investigationOutcome && (
-        <div className={`flex items-start gap-1 ${paddingSize} bg-green-50 dark:bg-green-900/10 rounded-md`}>
-          <CheckCircle className={`${iconSize} text-green-500`} />
+    <Card className="mt-2">
+      <CardContent className={`${padding} space-y-2`}>
+        <h4 className="font-semibold">Investigation Details</h4>
+        <Separator className="my-1" />
+        
+        {investigationOutcome && (
           <div>
-            <span className={`font-medium ${textSize}`}>{size === 'sm' ? "Outcome:" : "Investigation Outcome:"}</span> 
-            <p className={textSize}>{investigationOutcome}</p>
+            <span className={`font-medium ${textSize}`}>Outcome: </span>
+            <span className={`${textSize} text-yellow-500`}>{investigationOutcome}</span>
           </div>
-        </div>
-      )}
-      {investigationFindings && (
-        <div className={`flex items-start gap-1 ${paddingSize} bg-blue-50 dark:bg-blue-900/10 rounded-md`}>
-          <FileText className={`${iconSize} text-blue-500`} />
+        )}
+        
+        {investigationFindings && (
           <div>
-            <span className={`font-medium ${textSize}`}>{size === 'sm' ? "Findings:" : "Investigation Findings:"}</span> 
-            <p className={`${textSize} whitespace-pre-line`}>{investigationFindings}</p>
+            <span className={`font-medium ${textSize}`}>Findings: </span>
+            <span className={`${textSize}`}>{investigationFindings}</span>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
