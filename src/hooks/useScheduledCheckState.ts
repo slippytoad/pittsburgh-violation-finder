@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import { useState, useEffect } from 'react';
 import { loadSettingsFromLocalStorage } from '@/services/settingsService';
 import { initializeEmailService } from '@/services/violationCheckService';
 import { useSettingsInitialization } from '@/hooks/useSettingsInitialization';
