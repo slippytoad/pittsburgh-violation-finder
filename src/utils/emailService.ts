@@ -15,10 +15,12 @@ export const initEmailService = () => {
   }
 };
 
+// Interface for email parameters with index signature to satisfy Record<string, unknown>
 interface EmailParams {
   to_email: string;
   subject: string;
   message: string;
+  [key: string]: unknown; // Add index signature to make compatible with Record<string, unknown>
 }
 
 /**
