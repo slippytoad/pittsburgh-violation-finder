@@ -1,4 +1,3 @@
-
 import { supabase } from '@/utils/supabase';
 import type { AppSettings } from '@/utils/types';
 
@@ -33,17 +32,57 @@ export const fetchSettings = async (): Promise<AppSettings | null> => {
  */
 export const saveSettings = async (settings: Partial<AppSettings>): Promise<boolean> => {
   try {
-    // Always use id=1 for the single settings record
-    const { error } = await supabase
+    // Convert camelCase to snake_case and format the data
+    const formattedSettings = {
+      violation_checks_enabled: settings.violationChecksEnabled,
+      email_reports_enabled: settings.emailReportsEnabled,
+      email_report_address: settings.emailReportAddress,
+      next_violation_check_time: settings.nextViolationCheckTime,
+      updated_at: new Date().toISOString()
+    };
+
+    // Remove any undefined values
+    Object.keys(formattedSettings).forEach(key => {
+      if (formattedSettings[key] === undefined) {
+        delete formattedSettings[key];
+      }
+    });
+
+    // First check if the record exists
+    const { data: existingData, error: checkError } = await supabase
       .from('app_settings')
-      .update({
-        ...settings,
-        updated_at: new Date().toISOString()
-      })
+      .select('id')
+      .eq('id', 1)
+      .single();
+
+    if (checkError) {
+      console.error('Error checking settings record:', checkError);
+      // If the record doesn't exist, try to create it
+      if (checkError.code === 'PGRST116') {
+        const { error: insertError } = await supabase
+          .from('app_settings')
+          .insert({
+            id: 1,
+            ...formattedSettings
+          });
+
+        if (insertError) {
+          console.error('Error creating settings record:', insertError);
+          return false;
+        }
+        return true;
+      }
+      return false;
+    }
+
+    // Record exists, update it
+    const { error: updateError } = await supabase
+      .from('app_settings')
+      .update(formattedSettings)
       .eq('id', 1);
     
-    if (error) {
-      console.error('Error saving settings:', error);
+    if (updateError) {
+      console.error('Error saving settings:', updateError);
       return false;
     }
     

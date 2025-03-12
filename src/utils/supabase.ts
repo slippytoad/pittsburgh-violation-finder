@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import type { AppSettings, Address } from './types';
 
@@ -14,92 +13,71 @@ export const initSupabaseTables = async () => {
   try {
     console.log('Starting Supabase tables initialization...');
     
-    // Use RPC to create the table directly with SQL
-    // This is more reliable than checking if the table exists first
-    const { error } = await supabase.rpc('create_app_settings_table');
-    
-    if (error) {
-      console.log('Error with RPC call, falling back to SQL script execution');
-      
-      // Try to query the table to see if it exists
-      const { error: queryError } = await supabase
-        .from('app_settings')
-        .select('*')
-        .limit(1);
-        
-      if (queryError && queryError.code === '42P01') {
-        // Table doesn't exist, try to create it using direct SQL
-        console.log('Table does not exist. Attempting to create manually.');
-        
-        // Log SQL that would need to be run manually
-        console.warn('Please run the following SQL in your Supabase SQL Editor to create the required table:');
-        console.warn(`
-CREATE TABLE IF NOT EXISTS app_settings (
-  id INTEGER PRIMARY KEY CHECK (id = 1),
-  violation_checks_enabled BOOLEAN DEFAULT false,
-  email_reports_enabled BOOLEAN DEFAULT false,
-  email_report_address TEXT DEFAULT '',
-  next_violation_check_time TIMESTAMP WITH TIME ZONE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Add default settings record if it doesn't exist
-INSERT INTO app_settings (
-  id,
-  violation_checks_enabled, 
-  email_reports_enabled, 
-  email_report_address
-)
-VALUES (
-  1, false, false, ''
-)
-ON CONFLICT (id) DO NOTHING;
-        `);
-        
-        // Try to create through direct table operations as a last resort
-        console.log('Attempting to create through direct operations...');
-        await createTableWithDirectOperations();
-      } else if (queryError) {
-        console.error('Error querying app_settings table:', queryError);
-      } else {
-        console.log('app_settings table exists, but RPC call failed. Table may already be set up.');
-      }
-    } else {
-      console.log('app_settings table created successfully via RPC');
-    }
-    
-    // Verify the table exists and has data
-    const { data, error: verifyError } = await supabase
+    // First try to query the table to see if it exists
+    const { error: queryError } = await supabase
       .from('app_settings')
       .select('*')
       .limit(1);
       
-    if (verifyError) {
-      console.error('Table verification failed:', verifyError);
-    } else {
-      console.log('Table verification successful. Data:', data);
-      if (!data || data.length === 0) {
-        console.log('No data in app_settings table. Adding default record...');
-        const { error: insertError } = await supabase
+    if (queryError && queryError.code === '42P01') {
+      // Table doesn't exist, create it
+      const { error: createError } = await supabase.rpc('create_app_settings_table');
+      
+      if (createError) {
+        console.error('Failed to create table via RPC:', createError);
+        // Try direct SQL as fallback (this requires appropriate permissions)
+        const { error: sqlError } = await supabase
           .from('app_settings')
           .insert({
             id: 1,
             violation_checks_enabled: false,
             email_reports_enabled: false,
             email_report_address: '',
-            next_violation_check_time: null
+            next_violation_check_time: null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           });
           
-        if (insertError) {
-          console.error('Error inserting default record:', insertError);
-        } else {
-          console.log('Default record added successfully');
+        if (sqlError) {
+          console.error('Failed to create table via direct insert:', sqlError);
+          return false;
         }
       }
     }
+    
+    // Verify the table exists and has the default record
+    const { data, error: verifyError } = await supabase
+      .from('app_settings')
+      .select('*')
+      .eq('id', 1)
+      .single();
+      
+    if (verifyError) {
+      console.error('Table verification failed:', verifyError);
+      // Try to create the default record
+      const { error: insertError } = await supabase
+        .from('app_settings')
+        .insert({
+          id: 1,
+          violation_checks_enabled: false,
+          email_reports_enabled: false,
+          email_report_address: '',
+          next_violation_check_time: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+        
+      if (insertError) {
+        console.error('Failed to create default record:', insertError);
+        return false;
+      }
+    }
+    
+    console.log('Database initialization complete');
+    return true;
   } catch (error) {
     console.error('Error initializing Supabase tables:', error);
+    return false;
   }
 };
 
