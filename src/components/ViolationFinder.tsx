@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SearchForm from '@/components/SearchForm';
 import ResultsList from '@/components/ResultsList';
 import AddressList from '@/components/AddressList';
@@ -8,12 +8,67 @@ import { useViolations } from '@/hooks/useViolations';
 import { useAddresses } from '@/hooks/useAddresses';
 import { Button } from '@/components/ui/button';
 import { Import } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 const ViolationFinder = () => {
   const { violations, isLoading, selectedAddress, handleSearch, handleSearchAll } = useViolations();
   const { addresses, handleAddAddress, handleRemoveAddress, handleBulkImport } = useAddresses();
   const [bulkImportText, setBulkImportText] = useState<string>('');
   const [showBulkImport, setShowBulkImport] = useState<boolean>(false);
+  const { toast } = useToast();
+
+  // Add the provided addresses on component mount
+  useEffect(() => {
+    const addProvidedAddresses = async () => {
+      const addressesToAdd = [
+        "10 Edith Place",
+        "12 Edith Place",
+        "3210 Dawson St",
+        "3220 Dawson St",
+        "3227 Dawson St Units 1&2",
+        "3228 Dawson St",
+        "3230 Dawson St",
+        "3232 Dawson St",
+        "109 Oakland Ct",
+        "25 Edith Pl",
+        "3206 Dawson St Units 1-3",
+        "3208 Dawson St Units 1&2",
+        "3431 Parkview Ave",
+        "3433 Parkview Ave Units 1&2",
+        "5419 Potter St",
+        "19 Edith Pl",
+        "20 Edith Pl",
+        "3341 Parkview Ave",
+        "3343 Parkview Ave",
+        "3707 Orpwood St",
+        "3709 Orpwood St",
+        "3711 Orpwood St Units 1&2",
+        "3817 Bates St"
+      ];
+      
+      // Only add addresses if there are addresses to add
+      if (addressesToAdd.length > 0) {
+        try {
+          await handleBulkImport(addressesToAdd);
+          toast({
+            title: "Addresses added",
+            description: `Successfully added the provided addresses to your saved list.`,
+          });
+        } catch (error) {
+          console.error("Failed to add addresses:", error);
+          toast({
+            title: "Error",
+            description: "Failed to add the addresses to your saved list.",
+            variant: "destructive"
+          });
+        }
+      }
+    };
+    
+    addProvidedAddresses();
+    // This effect should only run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onSearchAll = () => {
     handleSearchAll(addresses);
