@@ -90,7 +90,6 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
         <CardContent className="p-4 pt-2">
           <p className="text-sm mb-3 whitespace-pre-line">{violation.description}</p>
           <div className="text-xs text-muted-foreground space-y-1">
-            <p><span className="font-medium">Property Owner:</span> {violation.propertyOwner}</p>
             {violation.fineAmount && (
               <p><span className="font-medium">Fine Amount:</span> ${violation.fineAmount.toFixed(2)}</p>
             )}
@@ -152,9 +151,6 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
               </CardHeader>
               <CardContent className="p-3 pt-1">
                 <p className="text-xs mb-2 whitespace-pre-line">{relatedViolation.description}</p>
-                <div className="text-xs text-muted-foreground">
-                  <p><span className="font-medium">Property Owner:</span> {relatedViolation.propertyOwner}</p>
-                </div>
               </CardContent>
             </Card>
           ))}
