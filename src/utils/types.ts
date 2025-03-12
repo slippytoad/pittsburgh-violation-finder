@@ -8,8 +8,8 @@ export type ViolationStatus = 'Open' | 'Closed' | 'In Progress';
 
 // Investigation types
 export interface InvestigationDetails {
-  outcome?: string;
-  findings?: string;
+  investigationOutcome?: string;
+  investigationFindings?: string;
 }
 
 // Base violation types
