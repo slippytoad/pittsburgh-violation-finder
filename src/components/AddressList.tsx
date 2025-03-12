@@ -24,7 +24,7 @@ const AddressList = ({
   onToggleBulkImport,
   showBulkImport
 }: AddressListProps) => {
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
 
   if (addresses.length === 0) {
     return null;
