@@ -14,52 +14,39 @@ export const initSupabaseTables = async () => {
   try {
     console.log('Starting Supabase tables initialization...');
     
-    // Check if app_settings table exists
-    const { error: tableCheckError } = await supabase
-      .from('app_settings')
-      .select('id')
-      .limit(1);
+    // Use RPC to create the table directly with SQL
+    // This is more reliable than checking if the table exists first
+    const { error } = await supabase.rpc('create_app_settings_table');
     
-    if (tableCheckError && tableCheckError.code === 'PGRST116') {
-      console.log('The app_settings table does not exist. Creating it...');
+    if (error) {
+      console.log('Error with RPC call, falling back to SQL script execution');
       
-      // Create the app_settings table using SQL (via the SQL editor in the Supabase dashboard)
-      // This requires you to manually run this SQL in your Supabase SQL editor once:
-      /*
-      CREATE TABLE IF NOT EXISTS app_settings (
-        id SERIAL PRIMARY KEY,
-        violation_checks_enabled BOOLEAN DEFAULT false,
-        email_reports_enabled BOOLEAN DEFAULT false,
-        email_report_address TEXT DEFAULT '',
-        next_violation_check_time TIMESTAMP WITH TIME ZONE,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-      );
-      
-      -- Add default settings record if none exists
-      INSERT INTO app_settings (
-        violation_checks_enabled, 
-        email_reports_enabled, 
-        email_report_address
-      )
-      SELECT false, false, ''
-      WHERE NOT EXISTS (SELECT 1 FROM app_settings LIMIT 1);
-      */
-      
-      // Since we can't run SQL directly, let's try to create through insertion
-      const { error: insertError } = await supabase
-        .from('app_settings')
-        .insert({
-          violation_checks_enabled: false,
-          email_reports_enabled: false,
-          email_report_address: '',
-          next_violation_check_time: null
-        });
+      // Create the table using raw SQL
+      const { error: sqlError } = await supabase.from('_sql').select('*').execute(`
+        CREATE TABLE IF NOT EXISTS app_settings (
+          id SERIAL PRIMARY KEY,
+          violation_checks_enabled BOOLEAN DEFAULT false,
+          email_reports_enabled BOOLEAN DEFAULT false,
+          email_report_address TEXT DEFAULT '',
+          next_violation_check_time TIMESTAMP WITH TIME ZONE,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
         
-      if (insertError) {
-        console.error('Failed to initialize app_settings table:', insertError);
+        -- Add default settings record if none exists
+        INSERT INTO app_settings (
+          violation_checks_enabled, 
+          email_reports_enabled, 
+          email_report_address
+        )
+        SELECT false, false, ''
+        WHERE NOT EXISTS (SELECT 1 FROM app_settings LIMIT 1);
+      `);
+      
+      if (sqlError) {
+        console.error('Error executing SQL:', sqlError);
         
-        // Show instructions to the user
+        // Show SQL to run manually
         console.warn('Please run the following SQL in your Supabase SQL Editor to create the required table:');
         console.warn(`
 CREATE TABLE IF NOT EXISTS app_settings (
@@ -81,14 +68,72 @@ INSERT INTO app_settings (
 SELECT false, false, ''
 WHERE NOT EXISTS (SELECT 1 FROM app_settings LIMIT 1);
         `);
+        
+        // Try to create through direct table operations as a last resort
+        console.log('Attempting to create through direct operations...');
+        await createTableWithDirectOperations();
       } else {
-        console.log('app_settings table initialized successfully');
+        console.log('app_settings table created successfully via SQL script');
       }
     } else {
-      console.log('app_settings table already exists');
+      console.log('app_settings table created successfully via RPC');
+    }
+    
+    // Verify the table exists and has data
+    const { data, error: verifyError } = await supabase
+      .from('app_settings')
+      .select('*')
+      .limit(1);
+      
+    if (verifyError) {
+      console.error('Table verification failed:', verifyError);
+    } else {
+      console.log('Table verification successful. Data:', data);
+      if (!data || data.length === 0) {
+        console.log('No data in app_settings table. Adding default record...');
+        const { error: insertError } = await supabase
+          .from('app_settings')
+          .insert({
+            violation_checks_enabled: false,
+            email_reports_enabled: false,
+            email_report_address: '',
+            next_violation_check_time: null
+          });
+          
+        if (insertError) {
+          console.error('Error inserting default record:', insertError);
+        } else {
+          console.log('Default record added successfully');
+        }
+      }
     }
   } catch (error) {
     console.error('Error initializing Supabase tables:', error);
+  }
+};
+
+// Helper function to create table with direct operations
+const createTableWithDirectOperations = async () => {
+  try {
+    // Try to insert a record, which will fail if the table doesn't exist
+    const { error: insertError } = await supabase
+      .from('app_settings')
+      .insert({
+        violation_checks_enabled: false,
+        email_reports_enabled: false,
+        email_report_address: '',
+        next_violation_check_time: null
+      });
+      
+    if (insertError && insertError.code === '42P01') {
+      console.error('Table does not exist and cannot be created through direct operations');
+    } else if (insertError) {
+      console.error('Error inserting into app_settings:', insertError);
+    } else {
+      console.log('app_settings record inserted successfully');
+    }
+  } catch (error) {
+    console.error('Error in createTableWithDirectOperations:', error);
   }
 };
 
@@ -97,11 +142,6 @@ export const runTableInitialization = () => {
   console.log('Manually running table initialization...');
   return initSupabaseTables();
 };
-
-// Initialize tables when this file is imported
-initSupabaseTables()
-  .then(() => console.log('Database tables initialization complete'))
-  .catch(err => console.error('Failed to initialize database tables:', err));
 
 // Add a simple function to reset the database to initial state
 export const resetDatabase = async () => {
@@ -146,6 +186,11 @@ export const resetDatabase = async () => {
     return false;
   }
 };
+
+// Initialize tables when this file is imported
+initSupabaseTables()
+  .then(() => console.log('Database tables initialization complete'))
+  .catch(err => console.error('Failed to initialize database tables:', err));
 
 // Log to confirm client creation
 console.log('Supabase client initialized');
