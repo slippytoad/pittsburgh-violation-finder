@@ -1,5 +1,5 @@
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface AnimatedContainerProps {
@@ -15,15 +15,32 @@ const AnimatedContainer = ({
   delay = 0,
   animation = 'fade-in'
 }: AnimatedContainerProps) => {
+  const [isVisible, setIsVisible] = useState(false);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, delay);
+    
+    return () => clearTimeout(timer);
+  }, [delay]);
+  
+  const animationClasses = {
+    'fade-in': 'fadeIn',
+    'slide-up': 'fadeIn',
+    'slide-down': 'fadeIn'
+  };
+  
   return (
     <div
       className={cn(
-        `animate-${animation}`,
+        animationClasses[animation],
         className
       )}
       style={{ 
         animationDelay: `${delay}ms`,
-        opacity: 0,
+        opacity: isVisible ? 1 : 0,
+        transition: 'opacity 0.5s ease-in-out',
         animationFillMode: 'forwards'
       }}
     >
