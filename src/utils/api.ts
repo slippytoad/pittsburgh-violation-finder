@@ -26,27 +26,27 @@ interface WPRDCViolation {
   inspection_result: string;
   agency_name: string;
   violation_description: string;
-  inspection_street_number: string;
-  inspection_street_name: string;
-  inspection_street_suffix: string;
-  inspection_city: string;
-  inspection_state: string;
-  inspection_zip: string;
-  violation_status: string;
+  casefile_number: string;
+  address: string;
+  status: string;
   violation_date: string;
   violation_code: string;
+  violation_code_section: string;
   [key: string]: any; // For any additional fields in the API response
 }
 
 /**
- * Search for violations by parcel ID
- * @param parcelId The parcel ID to search for
+ * Search for violations by address
+ * @param address The address to search for
  * @returns A promise that resolves to an array of violations
  */
-export const searchViolationsByParcelId = async (parcelId: string): Promise<ViolationType[]> => {
+export const searchViolationsByAddress = async (address: string): Promise<ViolationType[]> => {
   try {
-    // Build the query for parcel ID search
-    const query = `parcel_id:${parcelId}`;
+    // Clean up and prepare the address for search
+    const cleanAddress = address.trim();
+    
+    // Build the query for address search - this does a simple text search on the address field
+    const query = `address:${cleanAddress}*`;
     
     // Build the URL with the query
     const url = new URL(WPRDC_API_BASE_URL);
@@ -71,11 +71,11 @@ export const searchViolationsByParcelId = async (parcelId: string): Promise<Viol
     
     // Map the API response to our ViolationType
     return data.result.records.map(record => ({
-      id: record.violation_id || String(record._id),
-      address: `${record.inspection_street_number} ${record.inspection_street_name} ${record.inspection_street_suffix || ''}, ${record.inspection_city}, ${record.inspection_state} ${record.inspection_zip}`.trim(),
-      violationType: record.violation_code || 'Unknown',
+      id: record.violation_id || record.casefile_number || String(record._id),
+      address: record.address || '',
+      violationType: record.violation_code_section || 'Unknown',
       dateIssued: record.violation_date || record.inspection_date || '',
-      status: mapViolationStatus(record.violation_status),
+      status: mapViolationStatus(record.status),
       description: record.violation_description || '',
       fineAmount: null, // API doesn't provide fine amounts
       dueDate: null, // API doesn't provide due dates
