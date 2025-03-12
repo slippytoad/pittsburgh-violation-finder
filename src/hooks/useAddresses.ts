@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { fetchSavedAddresses, saveAddress, removeAddress } from '@/utils/api';
+import { fetchSavedAddresses, saveAddress, removeAddress } from '@/utils/addressService';
 
 export function useAddresses() {
   const [addresses, setAddresses] = useState<string[]>([]);

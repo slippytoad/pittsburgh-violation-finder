@@ -1,8 +1,8 @@
 
 import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { ViolationType } from '@/utils/mockData';
-import { searchViolationsByAddress } from '@/utils/api';
+import { ViolationType } from '@/utils/types';
+import { searchViolationsByAddress } from '@/utils/violationsService';
 
 export function useViolations() {
   const [violations, setViolations] = useState<ViolationType[]>([]);

@@ -11,5 +11,5 @@ export { fetchSavedAddresses, saveAddress, removeAddress } from './addressServic
 export { searchViolationsByAddress } from './violationsService';
 
 // Export mock data and types
-export { ViolationType } from './types';
+export type { ViolationType } from './types';
 export { mockViolations, getViolationsByAddress } from './mockData';
