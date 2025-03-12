@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { 
   fetchSettings, 
   saveSettingsToLocalStorage,
+  saveSettings,
 } from '@/services/settingsService';
 import { scheduleNextCheck } from '@/services/violationCheckService';
 import type { AppSettings } from '@/utils/types';
@@ -27,12 +28,55 @@ export const useSettingsInitialization = (
   Dispatch<SetStateAction<string>>,
   Dispatch<SetStateAction<Date | null>>
 ] => {
-  const [isScheduled, setIsScheduled] = useState<boolean>(!!initialSettings.violationChecksEnabled);
-  const [emailEnabled, setEmailEnabled] = useState<boolean>(!!initialSettings.emailReportsEnabled);
-  const [emailAddress, setEmailAddress] = useState<string>(initialSettings.emailReportAddress || '');
+  // Start with empty/false values and update after fetching from database
+  const [isScheduled, setIsScheduled] = useState<boolean>(false);
+  const [emailEnabled, setEmailEnabled] = useState<boolean>(false);
+  const [emailAddress, setEmailAddress] = useState<string>('');
   const [nextCheckTime, setNextCheckTime] = useState<Date | null>(null);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const { toast } = useToast();
+
+  // Function to update all settings at once
+  const updateAllSettings = async (settings: Partial<AppSettings>) => {
+    const {
+      violationChecksEnabled,
+      emailReportsEnabled,
+      emailReportAddress,
+      nextViolationCheckTime
+    } = settings;
+
+    // Update state
+    setIsScheduled(!!violationChecksEnabled);
+    setEmailEnabled(!!emailReportsEnabled);
+    if (emailReportAddress) setEmailAddress(emailReportAddress);
+    
+    // Update next check time if provided
+    if (nextViolationCheckTime) {
+      try {
+        const nextCheck = new Date(nextViolationCheckTime);
+        setNextCheckTime(nextCheck);
+      } catch (e) {
+        console.error('Invalid next check time format:', e);
+      }
+    }
+
+    // Save to localStorage
+    saveSettingsToLocalStorage({
+      violationChecksEnabled,
+      emailReportsEnabled,
+      emailReportAddress,
+      nextViolationCheckTime
+    });
+
+    // If checks are enabled, set up the schedule
+    if (violationChecksEnabled) {
+      return scheduleNextCheck({
+        violationChecksEnabled: true,
+        emailReportsEnabled: !!emailReportsEnabled,
+        emailReportAddress: emailReportAddress || ''
+      }, checkForViolations);
+    }
+  };
 
   useEffect(() => {
     if (isInitialized) return;
@@ -43,81 +87,51 @@ export const useSettingsInitialization = (
         const settings = await fetchSettings();
         
         if (settings) {
-          // Use settings from Supabase
-          setIsScheduled(settings.violationChecksEnabled);
-          setEmailEnabled(settings.emailReportsEnabled);
-          if (settings.emailReportAddress) setEmailAddress(settings.emailReportAddress);
+          console.log('Loaded settings from database:', settings);
           
-          // Save to localStorage for better performance on future loads
-          saveSettingsToLocalStorage({
+          // Update all settings from database
+          const cleanup = await updateAllSettings({
             violationChecksEnabled: settings.violationChecksEnabled,
             emailReportsEnabled: settings.emailReportsEnabled,
             emailReportAddress: settings.emailReportAddress,
             nextViolationCheckTime: settings.nextViolationCheckTime
           });
-          
-          // If there's a saved next check time
-          if (settings.nextViolationCheckTime) {
-            try {
-              const nextCheck = new Date(settings.nextViolationCheckTime);
-              setNextCheckTime(nextCheck);
-            } catch (e) {
-              console.error('Invalid next check time format', e);
-            }
-          }
+
+          // Ensure database and localStorage are in sync
+          await saveSettings({
+            violationChecksEnabled: settings.violationChecksEnabled,
+            emailReportsEnabled: settings.emailReportsEnabled,
+            emailReportAddress: settings.emailReportAddress,
+            nextViolationCheckTime: settings.nextViolationCheckTime
+          });
+
+          return cleanup;
         } else {
-          // If no settings found in Supabase, use localStorage values
-          setIsScheduled(!!initialSettings.violationChecksEnabled);
-          setEmailEnabled(!!initialSettings.emailReportsEnabled);
-          setEmailAddress(initialSettings.emailReportAddress || '');
+          console.log('No database settings found, using localStorage:', initialSettings);
           
-          if (initialSettings.nextViolationCheckTime) {
-            try {
-              const nextCheck = new Date(initialSettings.nextViolationCheckTime);
-              setNextCheckTime(nextCheck);
-            } catch (e) {
-              console.error('Invalid next check time format from localStorage', e);
-            }
-          }
+          // Update all settings from localStorage
+          const cleanup = await updateAllSettings({
+            violationChecksEnabled: initialSettings.violationChecksEnabled,
+            emailReportsEnabled: initialSettings.emailReportsEnabled,
+            emailReportAddress: initialSettings.emailReportAddress,
+            nextViolationCheckTime: initialSettings.nextViolationCheckTime
+          });
           
           toast({
             title: "Using Local Settings",
             description: "Could not fetch settings from database, using locally stored settings.",
             variant: "default",
           });
-        }
-        
-        setIsInitialized(true);
-        
-        // If checks are enabled (either from Supabase or localStorage fallback)
-        if (settings?.violationChecksEnabled || initialSettings.violationChecksEnabled) {
-          // Try to recover the next check time from localStorage or Supabase
-          const savedNextCheckTime = settings?.nextViolationCheckTime || 
-                                   initialSettings.nextViolationCheckTime;
-          
-          if (savedNextCheckTime) {
-            const nextCheck = new Date(savedNextCheckTime);
-            setNextCheckTime(nextCheck);
-            
-            // If the saved next check time is in the past, run a check now
-            if (nextCheck < new Date()) {
-              return checkForViolations();
-            } else {
-              // Otherwise, schedule for the saved time
-              const msUntilNextCheck = nextCheck.getTime() - new Date().getTime();
-              const timeoutId = setTimeout(checkForViolations, msUntilNextCheck);
-              localStorage.setItem('violationCheckTimeoutId', String(timeoutId));
-              
-              return () => clearTimeout(timeoutId);
-            }
-          } else {
-            // No saved next check time, schedule a new one
-            return scheduleNextCheck({
-              violationChecksEnabled: true,
-              emailReportsEnabled: emailEnabled,
-              emailReportAddress: emailAddress
-            }, checkForViolations);
-          }
+
+          // Try to save localStorage values to database
+          await saveSettings({
+            violationChecksEnabled: initialSettings.violationChecksEnabled,
+            emailReportsEnabled: initialSettings.emailReportsEnabled,
+            emailReportAddress: initialSettings.emailReportAddress,
+            nextViolationCheckTime: initialSettings.nextViolationCheckTime
+          });
+
+          return cleanup;
         }
       } catch (error) {
         console.error('Error initializing settings:', error);
@@ -126,7 +140,8 @@ export const useSettingsInitialization = (
           description: "Failed to initialize settings. Some features may not work correctly.",
           variant: "destructive",
         });
-        setIsInitialized(true); // Set to true to prevent infinite retries
+      } finally {
+        setIsInitialized(true);
       }
     };
     
@@ -139,7 +154,7 @@ export const useSettingsInitialization = (
         clearTimeout(parseInt(timeoutId));
       }
     };
-  }, [isInitialized, initialSettings, checkForViolations, emailAddress, emailEnabled, toast]);
+  }, [isInitialized, initialSettings, checkForViolations, toast]);
 
   return [
     { 
