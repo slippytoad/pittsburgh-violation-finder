@@ -1,3 +1,4 @@
+import type { Dispatch, SetStateAction } from 'react';
 import { useState, useEffect } from 'react';
 import { 
   fetchSettings, 
@@ -17,7 +18,14 @@ export interface InitializedSettings {
 export const useSettingsInitialization = (
   initialSettings: Partial<AppSettings>,
   checkForViolations: () => Promise<(() => void) | undefined>
-): [InitializedSettings, React.Dispatch<React.SetStateAction<boolean>>] => {
+): [
+  InitializedSettings,
+  Dispatch<SetStateAction<boolean>>,
+  Dispatch<SetStateAction<boolean>>,
+  Dispatch<SetStateAction<boolean>>,
+  Dispatch<SetStateAction<string>>,
+  Dispatch<SetStateAction<Date | null>>
+] => {
   const [isScheduled, setIsScheduled] = useState<boolean>(!!initialSettings.violationChecksEnabled);
   const [emailEnabled, setEmailEnabled] = useState<boolean>(!!initialSettings.emailReportsEnabled);
   const [emailAddress, setEmailAddress] = useState<string>(initialSettings.emailReportAddress || '');
@@ -109,6 +117,10 @@ export const useSettingsInitialization = (
       nextCheckTime, 
       isInitialized 
     },
-    setIsInitialized
+    setIsInitialized,
+    setIsScheduled,
+    setEmailEnabled,
+    setEmailAddress,
+    setNextCheckTime
   ];
 };

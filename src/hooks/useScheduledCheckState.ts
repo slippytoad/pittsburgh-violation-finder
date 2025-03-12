@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { loadSettingsFromLocalStorage } from '@/services/settingsService';
 import { initializeEmailService } from '@/services/violationCheckService';
@@ -26,7 +25,12 @@ export const useScheduledCheckState = () => {
       emailAddress, 
       nextCheckTime, 
       isInitialized 
-    }
+    },
+    setIsInitialized,
+    setIsScheduled,
+    setEmailEnabled,
+    setEmailAddress,
+    setNextCheckTime
   ] = useSettingsInitialization(initialSettings, () => checkForViolations());
   
   const [lastCheckTime, setLastCheckTime] = useState<Date | null>(null);
@@ -57,13 +61,13 @@ export const useScheduledCheckState = () => {
     updateEmailSettings 
   } = useScheduledControls(
     isScheduled,
-    useState(isScheduled)[1],
+    setIsScheduled,
     emailEnabled,
-    useState(emailEnabled)[1],
+    setEmailEnabled,
     emailAddress,
-    useState(emailAddress)[1],
+    setEmailAddress,
     nextCheckTime,
-    useState(nextCheckTime)[1],
+    setNextCheckTime,
     checkForViolations
   );
 
