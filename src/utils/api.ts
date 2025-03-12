@@ -1,32 +1,91 @@
-
 /**
  * API service for the WPRDC Pittsburgh PLI Violations data
  * API Reference: https://data.wprdc.org/dataset/pittsburgh-pli-violations-report/resource/70c06278-92c5-4040-ab28-17671866f81c
  */
 
 import { ViolationType } from './mockData';
+import { supabase, Address } from './supabase';
 
 const WPRDC_API_BASE_URL = 'https://data.wprdc.org/api/3/action/datastore_search';
 const RESOURCE_ID = '70c06278-92c5-4040-ab28-17671866f81c';
 
-// Mock database for addresses
-let savedAddresses: string[] = [];
-
-// Mock API functions for address management
+// Database functions for address management
 export const fetchSavedAddresses = async (): Promise<string[]> => {
-  return savedAddresses;
+  try {
+    const { data, error } = await supabase
+      .from('addresses')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching addresses:', error);
+      throw error;
+    }
+
+    // Convert the Address objects to strings
+    return (data as Address[]).map(item => item.address);
+  } catch (error) {
+    console.error('Failed to fetch addresses:', error);
+    // Fall back to an empty array if there's an error
+    return [];
+  }
 };
 
 export const saveAddress = async (address: string): Promise<string[]> => {
-  if (!savedAddresses.includes(address)) {
-    savedAddresses = [...savedAddresses, address];
+  try {
+    // Check if the address already exists to avoid duplicates
+    const { data: existingAddresses } = await supabase
+      .from('addresses')
+      .select('*')
+      .eq('address', address);
+
+    // If the address doesn't exist, insert it
+    if (!existingAddresses || existingAddresses.length === 0) {
+      const { error } = await supabase
+        .from('addresses')
+        .insert([{ address }]);
+
+      if (error) {
+        console.error('Error saving address:', error);
+        throw error;
+      }
+    }
+
+    // Return the updated list of addresses
+    return await fetchSavedAddresses();
+  } catch (error) {
+    console.error('Failed to save address:', error);
+    throw error;
   }
-  return savedAddresses;
 };
 
 export const removeAddress = async (index: number): Promise<string[]> => {
-  savedAddresses = savedAddresses.filter((_, i) => i !== index);
-  return savedAddresses;
+  try {
+    // First, get all addresses to find the one at the given index
+    const addresses = await fetchSavedAddresses();
+    const addressToRemove = addresses[index];
+
+    if (!addressToRemove) {
+      throw new Error('Address not found at the given index');
+    }
+
+    // Delete the address from the database
+    const { error } = await supabase
+      .from('addresses')
+      .delete()
+      .eq('address', addressToRemove);
+
+    if (error) {
+      console.error('Error removing address:', error);
+      throw error;
+    }
+
+    // Return the updated list of addresses
+    return await fetchSavedAddresses();
+  } catch (error) {
+    console.error('Failed to remove address:', error);
+    throw error;
+  }
 };
 
 interface WPRDCResponse {
