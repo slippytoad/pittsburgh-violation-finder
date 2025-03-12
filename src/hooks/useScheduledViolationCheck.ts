@@ -14,11 +14,16 @@ import {
 import { initEmailService } from '@/utils/emailService';
 
 export function useScheduledViolationCheck() {
-  const [isScheduled, setIsScheduled] = useState<boolean>(false);
+  // Load initial states from localStorage with fallbacks
+  const initialIsScheduled = localStorage.getItem('violationChecksEnabled') === 'true';
+  const initialEmailEnabled = localStorage.getItem('emailReportsEnabled') === 'true';
+  const initialEmailAddress = localStorage.getItem('emailReportAddress') || '';
+
+  const [isScheduled, setIsScheduled] = useState<boolean>(initialIsScheduled);
   const [lastCheckTime, setLastCheckTime] = useState<Date | null>(null);
   const [nextCheckTime, setNextCheckTime] = useState<Date | null>(null);
-  const [emailEnabled, setEmailEnabled] = useState<boolean>(false);
-  const [emailAddress, setEmailAddress] = useState<string>('');
+  const [emailEnabled, setEmailEnabled] = useState<boolean>(initialEmailEnabled);
+  const [emailAddress, setEmailAddress] = useState<string>(initialEmailAddress);
   const { handleSearchAll } = useViolations();
   const { addresses } = useAddresses();
   const { toast } = useToast();
@@ -175,19 +180,8 @@ export function useScheduledViolationCheck() {
     // Initialize the email service
     initEmailService();
     
-    // Load the scheduled state from localStorage
-    const savedScheduledState = localStorage.getItem('violationChecksEnabled');
-    const isCheckingEnabled = savedScheduledState === 'true';
-    setIsScheduled(isCheckingEnabled);
-    
-    // Load email settings
-    const savedEmailEnabled = localStorage.getItem('emailReportsEnabled') === 'true';
-    const savedEmailAddress = localStorage.getItem('emailReportAddress') || '';
-    setEmailEnabled(savedEmailEnabled);
-    setEmailAddress(savedEmailAddress);
-    
     // If checks are enabled, schedule the next check
-    if (isCheckingEnabled) {
+    if (isScheduled) {
       // Try to recover the next check time from localStorage
       const savedNextCheckTime = localStorage.getItem('nextViolationCheckTime');
       

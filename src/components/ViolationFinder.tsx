@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import SearchForm from '@/components/SearchForm';
 import ResultsList from '@/components/ResultsList';
@@ -33,6 +34,7 @@ const ViolationFinder = () => {
   const [tempEmailAddress, setTempEmailAddress] = useState<string>(emailAddress);
   const { toast } = useToast();
 
+  // Update temp email state when the real state changes
   useEffect(() => {
     setTempEmailEnabled(emailEnabled);
     setTempEmailAddress(emailAddress);
