@@ -62,6 +62,68 @@ const Index = () => {
     }
   };
 
+  const handleSearchAll = async () => {
+    if (addresses.length === 0) {
+      toast({
+        title: "No saved addresses",
+        description: "You don't have any saved addresses to search",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setSelectedAddress('all');
+    
+    try {
+      // Search for all addresses in parallel
+      const searchPromises = addresses.map(address => searchViolationsByAddress(address));
+      const resultsArrays = await Promise.all(searchPromises);
+      
+      // Flatten the results and remove duplicates by id
+      const allViolations = resultsArrays.flat();
+      const uniqueViolations: ViolationType[] = [];
+      const seenIds = new Set();
+      
+      allViolations.forEach(violation => {
+        if (!seenIds.has(violation.id)) {
+          seenIds.add(violation.id);
+          uniqueViolations.push(violation);
+        }
+      });
+      
+      // Sort the combined results
+      uniqueViolations.sort((a, b) => {
+        const dateA = a.dateIssued ? new Date(a.dateIssued).getTime() : 0;
+        const dateB = b.dateIssued ? new Date(b.dateIssued).getTime() : 0;
+        return dateB - dateA;
+      });
+      
+      setViolations(uniqueViolations);
+      
+      if (uniqueViolations.length === 0) {
+        toast({
+          title: "No violations found",
+          description: "No property violations found for any of your saved addresses",
+        });
+      } else {
+        toast({
+          title: "Search complete",
+          description: `Found ${uniqueViolations.length} violations across ${addresses.length} addresses`,
+        });
+      }
+    } catch (error) {
+      console.error('Search all error:', error);
+      toast({
+        title: "Search failed",
+        description: "An error occurred while searching across all addresses",
+        variant: "destructive",
+      });
+      setViolations([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleAddAddress = (address: string) => {
     if (!addresses.includes(address)) {
       setAddresses(prev => [...prev, address]);
@@ -101,6 +163,7 @@ const Index = () => {
               addresses={addresses} 
               onRemove={handleRemoveAddress}
               onSearch={handleSearch}
+              onSearchAll={handleSearchAll}
               selectedAddress={selectedAddress}
             />
             

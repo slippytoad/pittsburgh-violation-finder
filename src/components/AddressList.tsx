@@ -2,24 +2,36 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { X, Search } from 'lucide-react';
+import { X, Search, ListFilter } from 'lucide-react';
 import AnimatedContainer from './AnimatedContainer';
 
 interface AddressListProps {
   addresses: string[];
   onRemove: (index: number) => void;
   onSearch: (address: string) => void;
+  onSearchAll: () => void;
   selectedAddress: string | null;
 }
 
-const AddressList = ({ addresses, onRemove, onSearch, selectedAddress }: AddressListProps) => {
+const AddressList = ({ addresses, onRemove, onSearch, onSearchAll, selectedAddress }: AddressListProps) => {
   if (addresses.length === 0) {
     return null;
   }
 
   return (
     <AnimatedContainer className="w-full mt-6">
-      <h2 className="text-lg font-medium mb-3">Saved Addresses</h2>
+      <div className="flex justify-between items-center mb-3">
+        <h2 className="text-lg font-medium">Saved Addresses</h2>
+        <Button 
+          onClick={onSearchAll}
+          size="sm"
+          variant="outline"
+          className="gap-1"
+        >
+          <ListFilter className="h-4 w-4" />
+          Search All
+        </Button>
+      </div>
       <Card>
         <CardContent className="p-3">
           <ul className="divide-y">
