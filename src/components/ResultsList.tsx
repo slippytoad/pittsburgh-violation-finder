@@ -22,11 +22,7 @@ const ResultsList = ({ violations, isLoading }: ResultsListProps) => {
   }
 
   if (violations.length === 0) {
-    return (
-      <AnimatedContainer className="w-full text-center py-12">
-        <p className="text-muted-foreground">No violations found for the provided address.</p>
-      </AnimatedContainer>
-    );
+    return null;
   }
 
   return (
@@ -36,7 +32,7 @@ const ResultsList = ({ violations, isLoading }: ResultsListProps) => {
       </AnimatedContainer>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {violations.map((violation, index) => (
-          <ViolationCard key={violation.id} violation={violation} index={index} />
+          <ViolationCard key={`${violation.id}-${index}`} violation={violation} index={index} />
         ))}
       </div>
     </div>

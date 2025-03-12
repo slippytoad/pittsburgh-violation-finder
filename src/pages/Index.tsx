@@ -6,8 +6,9 @@ import Footer from '@/components/Footer';
 import SearchForm from '@/components/SearchForm';
 import ResultsList from '@/components/ResultsList';
 import AddressList from '@/components/AddressList';
-import { getViolationsByAddress, ViolationType } from '@/utils/mockData';
+import { ViolationType } from '@/utils/mockData';
 import AnimatedContainer from '@/components/AnimatedContainer';
+import { searchViolationsByAddress } from '@/utils/api';
 
 const Index = () => {
   const [violations, setViolations] = useState<ViolationType[]>([]);
@@ -38,16 +39,14 @@ const Index = () => {
     setSelectedAddress(address);
     
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const results = getViolationsByAddress(address);
+      // Use the real API service instead of mock data
+      const results = await searchViolationsByAddress(address);
       setViolations(results);
       
       if (results.length === 0) {
         toast({
           title: "No violations found",
-          description: `No property violations found for this address in 2025`,
+          description: `No property violations found for this address`,
         });
       }
     } catch (error) {
@@ -57,6 +56,7 @@ const Index = () => {
         description: "An error occurred while searching for violations",
         variant: "destructive",
       });
+      setViolations([]);
     } finally {
       setIsLoading(false);
     }
@@ -86,7 +86,7 @@ const Index = () => {
           <AnimatedContainer className="mb-8 text-center">
             <h1 className="text-3xl font-semibold mb-2">Pittsburgh Property Violation Finder</h1>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Search for property violation notices in Pittsburgh, PA for the year 2025. Add multiple addresses to your list for easy reference.
+              Search for property violation notices in Pittsburgh, PA using the official WPRDC data. Add multiple addresses to your list for easy reference.
             </p>
           </AnimatedContainer>
           

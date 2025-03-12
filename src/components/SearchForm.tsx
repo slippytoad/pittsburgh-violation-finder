@@ -28,13 +28,6 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
       return;
     }
     
-    if (!address.toLowerCase().includes('pittsburgh')) {
-      toast({
-        title: "Location restriction",
-        description: "Only Pittsburgh, PA addresses are supported",
-      });
-    }
-    
     onSearch(address);
   };
 
@@ -63,7 +56,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-grow">
               <Input
-                placeholder="Enter Pittsburgh address..."
+                placeholder="Enter Pittsburgh address (e.g. 123 Main St)..."
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 className="w-full bg-background/70"
@@ -91,7 +84,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            Enter a complete address in Pittsburgh, PA to search for property violations
+            Enter a Pittsburgh address to search for property violations (e.g. 123 Forbes Ave)
           </p>
         </form>
       </div>
