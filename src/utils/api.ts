@@ -116,10 +116,20 @@ export const searchViolationsByAddress = async (address: string): Promise<Violat
       // Use the first (most recent) record as the primary record
       const primaryRecord = records[0];
       
-      // Combine descriptions if there are multiple violations for the same case
-      const combinedDescription = records.length > 1 
-        ? records.map(r => r.violation_description).join("\n\n")
-        : primaryRecord.violation_description || '';
+      // If there are multiple violations, add them as related violations
+      const relatedViolations = records.length > 1 
+        ? records.slice(1).map((record, index) => ({
+            id: `${caseNumber}-${index + 1}`,
+            address: record.address || primaryRecord.address || '',
+            violationType: record.violation_code_section || 'Unknown',
+            dateIssued: record.investigation_date || record.violation_date || record.inspection_date || '',
+            status: mapViolationStatus(record.status),
+            description: record.violation_description || '',
+            fineAmount: null,
+            dueDate: null,
+            propertyOwner: record.owner_name || primaryRecord.owner_name || 'Unknown'
+          })) 
+        : undefined;
       
       // Return the merged violation
       return {
@@ -128,11 +138,12 @@ export const searchViolationsByAddress = async (address: string): Promise<Violat
         violationType: primaryRecord.violation_code_section || 'Unknown',
         dateIssued: primaryRecord.investigation_date || primaryRecord.violation_date || primaryRecord.inspection_date || '',
         status: mapViolationStatus(primaryRecord.status),
-        description: combinedDescription,
+        description: primaryRecord.violation_description || '',
         fineAmount: null, // API doesn't provide fine amounts
         dueDate: null, // API doesn't provide due dates
         propertyOwner: primaryRecord.owner_name || 'Unknown',
-        relatedViolationsCount: records.length > 1 ? records.length : null
+        relatedViolationsCount: records.length > 1 ? records.length - 1 : null,
+        relatedViolations: relatedViolations
       };
     });
     

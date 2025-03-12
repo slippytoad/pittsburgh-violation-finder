@@ -9,6 +9,8 @@ export interface ViolationType {
   fineAmount: number | null;
   dueDate: string | null;
   propertyOwner: string;
+  relatedViolationsCount?: number | null;
+  relatedViolations?: ViolationType[];
 }
 
 export const mockViolations: ViolationType[] = [
