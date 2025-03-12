@@ -35,7 +35,7 @@ export const initSupabaseTables = async () => {
         console.warn('Please run the following SQL in your Supabase SQL Editor to create the required table:');
         console.warn(`
 CREATE TABLE IF NOT EXISTS app_settings (
-  id SERIAL PRIMARY KEY,
+  id INTEGER PRIMARY KEY CHECK (id = 1),
   violation_checks_enabled BOOLEAN DEFAULT false,
   email_reports_enabled BOOLEAN DEFAULT false,
   email_report_address TEXT DEFAULT '',
@@ -44,14 +44,17 @@ CREATE TABLE IF NOT EXISTS app_settings (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Add default settings record if none exists
+-- Add default settings record if it doesn't exist
 INSERT INTO app_settings (
+  id,
   violation_checks_enabled, 
   email_reports_enabled, 
   email_report_address
 )
-SELECT false, false, ''
-WHERE NOT EXISTS (SELECT 1 FROM app_settings LIMIT 1);
+VALUES (
+  1, false, false, ''
+)
+ON CONFLICT (id) DO NOTHING;
         `);
         
         // Try to create through direct table operations as a last resort
@@ -81,6 +84,7 @@ WHERE NOT EXISTS (SELECT 1 FROM app_settings LIMIT 1);
         const { error: insertError } = await supabase
           .from('app_settings')
           .insert({
+            id: 1,
             violation_checks_enabled: false,
             email_reports_enabled: false,
             email_report_address: '',
@@ -106,6 +110,7 @@ const createTableWithDirectOperations = async () => {
     const { error: insertError } = await supabase
       .from('app_settings')
       .insert({
+        id: 1,
         violation_checks_enabled: false,
         email_reports_enabled: false,
         email_report_address: '',
@@ -133,29 +138,20 @@ export const runTableInitialization = () => {
 // Add a simple function to reset the database to initial state
 export const resetDatabase = async () => {
   try {
-    // Delete all records from app_settings
-    const { error: deleteError } = await supabase
+    // Instead of deleting, update the single record
+    const { error: updateError } = await supabase
       .from('app_settings')
-      .delete()
-      .neq('id', 0); // Delete all records
-      
-    if (deleteError) {
-      console.error('Error deleting app_settings records:', deleteError);
-      return false;
-    }
-    
-    // Insert the default record
-    const { error: insertError } = await supabase
-      .from('app_settings')
-      .insert({
+      .update({
         violation_checks_enabled: false,
         email_reports_enabled: false,
         email_report_address: '',
-        next_violation_check_time: null
-      });
+        next_violation_check_time: null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', 1);
       
-    if (insertError) {
-      console.error('Error inserting default app_settings record:', insertError);
+    if (updateError) {
+      console.error('Error updating app_settings record:', updateError);
       return false;
     }
     

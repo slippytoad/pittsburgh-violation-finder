@@ -11,7 +11,7 @@ export const fetchSettings = async (): Promise<AppSettings | null> => {
     const { data, error } = await supabase
       .from('app_settings')
       .select('*')
-      .limit(1)
+      .eq('id', 1)
       .single();
     
     if (error) {
@@ -31,13 +31,16 @@ export const fetchSettings = async (): Promise<AppSettings | null> => {
  * @param settings The settings to save
  * @returns Whether the save was successful
  */
-export const saveSettings = async (settings: AppSettings): Promise<boolean> => {
+export const saveSettings = async (settings: Partial<AppSettings>): Promise<boolean> => {
   try {
-    const { data, error } = await supabase
+    // Always use id=1 for the single settings record
+    const { error } = await supabase
       .from('app_settings')
-      .upsert(settings, { onConflict: 'id' })
-      .select()
-      .single();
+      .update({
+        ...settings,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', 1);
     
     if (error) {
       console.error('Error saving settings:', error);

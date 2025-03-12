@@ -38,10 +38,10 @@ export const scheduleNextCheck = (
   localStorage.setItem('nextViolationCheckTime', nextCheck.toISOString());
   
   // Update Supabase with the next check time
-  const updatedSettings: AppSettings = {
-    violationChecksEnabled: settings.violationChecksEnabled !== undefined ? settings.violationChecksEnabled : false,
-    emailReportsEnabled: settings.emailReportsEnabled !== undefined ? settings.emailReportsEnabled : false,
-    emailReportAddress: settings.emailReportAddress || '',
+  const updatedSettings: Partial<AppSettings> = {
+    violationChecksEnabled: settings.violationChecksEnabled,
+    emailReportsEnabled: settings.emailReportsEnabled,
+    emailReportAddress: settings.emailReportAddress,
     nextViolationCheckTime: nextCheck.toISOString()
   };
   
