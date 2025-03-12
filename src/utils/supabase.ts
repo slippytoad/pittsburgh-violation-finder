@@ -8,12 +8,8 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 // Create a Supabase client
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Define types for our database structure
-export interface Address {
-  id: number;
-  address: string;
-  created_at: string;
-}
+// Export the Address type from the types file
+export type { Address } from './types';
 
 // Log to confirm client creation
 console.log('Supabase client initialized');
