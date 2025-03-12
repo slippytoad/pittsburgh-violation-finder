@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -96,10 +97,16 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
             <p className="text-sm mb-3 whitespace-pre-line">{violation.description}</p>
             <div className="text-xs text-muted-foreground space-y-1">
               {violation.investigationOutcome && (
-                <p><span className="font-medium">Investigation Outcome:</span> {violation.investigationOutcome}</p>
+                <div className="flex items-start gap-1">
+                  <CheckCircle className="h-3.5 w-3.5 mt-0.5 text-green-500" />
+                  <span><span className="font-medium">Outcome:</span> {violation.investigationOutcome}</span>
+                </div>
               )}
               {violation.investigationFindings && (
-                <p><span className="font-medium">Investigation Findings:</span> {violation.investigationFindings}</p>
+                <div className="flex items-start gap-1">
+                  <FileText className="h-3.5 w-3.5 mt-0.5 text-blue-500" />
+                  <span><span className="font-medium">Findings:</span> {violation.investigationFindings}</span>
+                </div>
               )}
               {violation.fineAmount && (
                 <p><span className="font-medium">Fine Amount:</span> ${violation.fineAmount.toFixed(2)}</p>
@@ -169,10 +176,16 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                 <CardContent className="p-3 pt-1">
                   <p className="text-xs mb-2 whitespace-pre-line">{relatedViolation.description}</p>
                   {relatedViolation.investigationOutcome && (
-                    <p className="text-xs text-muted-foreground"><span className="font-medium">Investigation Outcome:</span> {relatedViolation.investigationOutcome}</p>
+                    <div className="flex items-start gap-1 text-xs text-muted-foreground">
+                      <CheckCircle className="h-3 w-3 mt-0.5 text-green-500" />
+                      <span><span className="font-medium">Outcome:</span> {relatedViolation.investigationOutcome}</span>
+                    </div>
                   )}
                   {relatedViolation.investigationFindings && (
-                    <p className="text-xs text-muted-foreground"><span className="font-medium">Investigation Findings:</span> {relatedViolation.investigationFindings}</p>
+                    <div className="flex items-start gap-1 text-xs text-muted-foreground">
+                      <FileText className="h-3 w-3 mt-0.5 text-blue-500" />
+                      <span><span className="font-medium">Findings:</span> {relatedViolation.investigationFindings}</span>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -220,14 +233,17 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                     </div>
                     {violation.investigationOutcome && (
                       <div className="flex items-center gap-1">
-                        <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                        <CheckCircle className="h-4 w-4 text-green-500" />
                         <span><strong>Investigation Outcome:</strong> {violation.investigationOutcome}</span>
                       </div>
                     )}
                     {violation.investigationFindings && (
-                      <div className="flex items-center gap-1">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span><strong>Investigation Findings:</strong> {violation.investigationFindings}</span>
+                      <div className="flex items-start gap-1">
+                        <FileText className="h-4 w-4 text-blue-500 mt-0.5" />
+                        <div>
+                          <strong>Investigation Findings:</strong> 
+                          <p className="whitespace-pre-line">{violation.investigationFindings}</p>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -286,14 +302,17 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                           </div>
                           {relatedViolation.investigationOutcome && (
                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <CheckCircle className="h-3 w-3" />
-                              <span>Investigation Outcome: {relatedViolation.investigationOutcome}</span>
+                              <CheckCircle className="h-3 w-3 text-green-500" />
+                              <span>Outcome: {relatedViolation.investigationOutcome}</span>
                             </div>
                           )}
                           {relatedViolation.investigationFindings && (
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <FileText className="h-3 w-3" />
-                              <span>Investigation Findings: {relatedViolation.investigationFindings}</span>
+                            <div className="flex items-start gap-1 text-xs text-muted-foreground">
+                              <FileText className="h-3 w-3 mt-0.5 text-blue-500" />
+                              <div>
+                                <span>Findings: </span>
+                                <p className="whitespace-pre-line">{relatedViolation.investigationFindings}</p>
+                              </div>
                             </div>
                           )}
                         </div>
