@@ -14,81 +14,78 @@ export const initSupabaseTables = async () => {
   try {
     console.log('Starting Supabase tables initialization...');
     
-    // Create the app_settings table using SQL query
-    const { error: createTableError } = await supabase.rpc(
-      'exec_sql', 
-      { 
-        query: `
-          CREATE TABLE IF NOT EXISTS app_settings (
-            id SERIAL PRIMARY KEY,
-            violation_checks_enabled BOOLEAN DEFAULT false,
-            email_reports_enabled BOOLEAN DEFAULT false,
-            email_report_address TEXT DEFAULT '',
-            next_violation_check_time TIMESTAMP WITH TIME ZONE,
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-          );
-
-          -- Add default settings record if none exists
-          INSERT INTO app_settings (
-            violation_checks_enabled, 
-            email_reports_enabled, 
-            email_report_address
-          )
-          SELECT false, false, ''
-          WHERE NOT EXISTS (SELECT 1 FROM app_settings LIMIT 1);
-
-          -- Create function to update the 'updated_at' timestamp
-          CREATE OR REPLACE FUNCTION update_updated_at_column()
-          RETURNS TRIGGER AS $$
-          BEGIN
-             NEW.updated_at = NOW();
-             RETURN NEW;
-          END;
-          $$ LANGUAGE 'plpgsql';
-
-          -- Create trigger to update 'updated_at' automatically
-          DROP TRIGGER IF EXISTS update_app_settings_updated_at ON app_settings;
-          CREATE TRIGGER update_app_settings_updated_at
-          BEFORE UPDATE ON app_settings
-          FOR EACH ROW
-          EXECUTE FUNCTION update_updated_at_column();
-        `
-      }
-    );
+    // Check if app_settings table exists
+    const { error: tableCheckError } = await supabase
+      .from('app_settings')
+      .select('id')
+      .limit(1);
     
-    if (createTableError) {
-      console.error('Failed to create app_settings table with SQL query:', createTableError);
+    if (tableCheckError && tableCheckError.code === 'PGRST116') {
+      console.log('The app_settings table does not exist. Creating it...');
       
-      // Fallback: try to check if the table exists via SELECT
-      const { data: tableExists, error: tableCheckError } = await supabase
+      // Create the app_settings table using SQL (via the SQL editor in the Supabase dashboard)
+      // This requires you to manually run this SQL in your Supabase SQL editor once:
+      /*
+      CREATE TABLE IF NOT EXISTS app_settings (
+        id SERIAL PRIMARY KEY,
+        violation_checks_enabled BOOLEAN DEFAULT false,
+        email_reports_enabled BOOLEAN DEFAULT false,
+        email_report_address TEXT DEFAULT '',
+        next_violation_check_time TIMESTAMP WITH TIME ZONE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      );
+      
+      -- Add default settings record if none exists
+      INSERT INTO app_settings (
+        violation_checks_enabled, 
+        email_reports_enabled, 
+        email_report_address
+      )
+      SELECT false, false, ''
+      WHERE NOT EXISTS (SELECT 1 FROM app_settings LIMIT 1);
+      */
+      
+      // Since we can't run SQL directly, let's try to create through insertion
+      const { error: insertError } = await supabase
         .from('app_settings')
-        .select('id')
-        .limit(1)
-        .maybeSingle();
-      
-      if (tableCheckError && tableCheckError.code === 'PGRST116') {
-        console.log('The app_settings table does not exist. Creating it with fallback method...');
+        .insert({
+          violation_checks_enabled: false,
+          email_reports_enabled: false,
+          email_report_address: '',
+          next_violation_check_time: null
+        });
         
-        // Fallback: try to insert a record anyway, which might auto-create the table
-        const { error: insertError } = await supabase
-          .from('app_settings')
-          .insert({
-            violation_checks_enabled: false,
-            email_reports_enabled: false,
-            email_report_address: '',
-          });
-          
-        if (insertError && insertError.code !== '23505') { // Ignore unique constraint violations
-          console.error('Could not initialize app_settings table:', insertError);
-        } else {
-          console.log('app_settings table initialized successfully');
-        }
+      if (insertError) {
+        console.error('Failed to initialize app_settings table:', insertError);
+        
+        // Show instructions to the user
+        console.warn('Please run the following SQL in your Supabase SQL Editor to create the required table:');
+        console.warn(`
+CREATE TABLE IF NOT EXISTS app_settings (
+  id SERIAL PRIMARY KEY,
+  violation_checks_enabled BOOLEAN DEFAULT false,
+  email_reports_enabled BOOLEAN DEFAULT false,
+  email_report_address TEXT DEFAULT '',
+  next_violation_check_time TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Add default settings record if none exists
+INSERT INTO app_settings (
+  violation_checks_enabled, 
+  email_reports_enabled, 
+  email_report_address
+)
+SELECT false, false, ''
+WHERE NOT EXISTS (SELECT 1 FROM app_settings LIMIT 1);
+        `);
       } else {
-        console.log('app_settings table already exists');
+        console.log('app_settings table initialized successfully');
       }
     } else {
-      console.log('app_settings table created or confirmed successfully');
+      console.log('app_settings table already exists');
     }
   } catch (error) {
     console.error('Error initializing Supabase tables:', error);
@@ -105,6 +102,50 @@ export const runTableInitialization = () => {
 initSupabaseTables()
   .then(() => console.log('Database tables initialization complete'))
   .catch(err => console.error('Failed to initialize database tables:', err));
+
+// Add a simple function to reset the database to initial state
+export const resetDatabase = async () => {
+  try {
+    // Delete all records from app_settings
+    const { error: deleteError } = await supabase
+      .from('app_settings')
+      .delete()
+      .neq('id', 0); // Delete all records
+      
+    if (deleteError) {
+      console.error('Error deleting app_settings records:', deleteError);
+      return false;
+    }
+    
+    // Insert the default record
+    const { error: insertError } = await supabase
+      .from('app_settings')
+      .insert({
+        violation_checks_enabled: false,
+        email_reports_enabled: false,
+        email_report_address: '',
+        next_violation_check_time: null
+      });
+      
+    if (insertError) {
+      console.error('Error inserting default app_settings record:', insertError);
+      return false;
+    }
+    
+    // Clear localStorage
+    localStorage.removeItem('violationChecksEnabled');
+    localStorage.removeItem('emailReportsEnabled');
+    localStorage.removeItem('emailReportAddress');
+    localStorage.removeItem('nextViolationCheckTime');
+    localStorage.removeItem('violationCheckTimeoutId');
+    
+    console.log('Database and localStorage reset successfully');
+    return true;
+  } catch (error) {
+    console.error('Error resetting database:', error);
+    return false;
+  }
+};
 
 // Log to confirm client creation
 console.log('Supabase client initialized');
