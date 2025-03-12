@@ -96,6 +96,9 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
           <CardContent className="p-4 pt-2">
             <p className="text-sm mb-3 whitespace-pre-line">{violation.description}</p>
             <div className="text-xs text-muted-foreground space-y-1">
+              {violation.investigationOutcome && (
+                <p><span className="font-medium">Investigation Outcome:</span> {violation.investigationOutcome}</p>
+              )}
               {violation.fineAmount && (
                 <p><span className="font-medium">Fine Amount:</span> ${violation.fineAmount.toFixed(2)}</p>
               )}
@@ -164,6 +167,9 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                 </CardHeader>
                 <CardContent className="p-3 pt-1">
                   <p className="text-xs mb-2 whitespace-pre-line">{relatedViolation.description}</p>
+                  {relatedViolation.investigationOutcome && (
+                    <p className="text-xs text-muted-foreground"><span className="font-medium">Investigation Outcome:</span> {relatedViolation.investigationOutcome}</p>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -209,6 +215,12 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                       <Info className="h-4 w-4 text-muted-foreground" />
                       <span><strong>Property Owner:</strong> {violation.propertyOwner}</span>
                     </div>
+                    {violation.investigationOutcome && (
+                      <div className="flex items-center gap-1">
+                        <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                        <span><strong>Investigation Outcome:</strong> {violation.investigationOutcome}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
@@ -264,6 +276,12 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                             <Info className="h-3 w-3" />
                             <span>Property Owner: {relatedViolation.propertyOwner}</span>
                           </div>
+                          {relatedViolation.investigationOutcome && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <CheckCircle className="h-3 w-3" />
+                              <span>Investigation Outcome: {relatedViolation.investigationOutcome}</span>
+                            </div>
+                          )}
                         </div>
                       </CardHeader>
                       <CardContent className="p-3 pt-1">

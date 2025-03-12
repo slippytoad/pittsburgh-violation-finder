@@ -15,6 +15,7 @@ export interface ViolationType {
   propertyOwner: string;
   relatedViolationsCount?: number | null;
   relatedViolations?: ViolationType[];
+  investigationOutcome?: string;
 }
 
 export interface Address {
