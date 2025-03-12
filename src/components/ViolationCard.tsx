@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { AlertTriangle, CheckCircle, Clock, Calendar, Hash } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Clock, Calendar, Hash, Layers } from 'lucide-react';
 import { ViolationType } from '@/utils/mockData';
 import AnimatedContainer from './AnimatedContainer';
 
@@ -58,6 +58,12 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                 <Hash className="h-3.5 w-3.5" />
                 <span>Case #: {violation.id}</span>
               </div>
+              {violation.relatedViolationsCount && (
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <Layers className="h-3.5 w-3.5" />
+                  <span>{violation.relatedViolationsCount} related violation{violation.relatedViolationsCount !== 1 ? 's' : ''}</span>
+                </div>
+              )}
             </div>
           </div>
           <Badge 
@@ -69,7 +75,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
           </Badge>
         </CardHeader>
         <CardContent className="p-4 pt-2">
-          <p className="text-sm mb-3">{violation.description}</p>
+          <p className="text-sm mb-3 whitespace-pre-line">{violation.description}</p>
           <div className="text-xs text-muted-foreground space-y-1">
             <p><span className="font-medium">Property Owner:</span> {violation.propertyOwner}</p>
             {violation.fineAmount && (

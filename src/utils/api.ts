@@ -86,24 +86,62 @@ export const searchViolationsByAddress = async (address: string): Promise<Violat
     
     console.log('API Response:', data); // Log the API response for debugging
     
-    // Map the API response to our ViolationType and filter for 2025 violations only
-    return data.result.records
-      .filter(record => {
-        // Use investigation_date as priority, then fall back to others
-        const dateToCheck = record.investigation_date || record.violation_date || record.inspection_date;
-        return isFrom2025(dateToCheck);
-      })
-      .map(record => ({
-        id: record.violation_id || record.casefile_number || String(record._id),
-        address: record.address || '',
-        violationType: record.violation_code_section || 'Unknown',
-        dateIssued: record.investigation_date || record.violation_date || record.inspection_date || '',
-        status: mapViolationStatus(record.status),
-        description: record.violation_description || '',
+    // Filter for 2025 violations only
+    const filtered2025Records = data.result.records.filter(record => {
+      // Use investigation_date as priority, then fall back to others
+      const dateToCheck = record.investigation_date || record.violation_date || record.inspection_date;
+      return isFrom2025(dateToCheck);
+    });
+    
+    // Create a map to group violations by case number
+    const casefileMap = new Map<string, WPRDCViolation[]>();
+    
+    filtered2025Records.forEach(record => {
+      const caseNumber = record.casefile_number || String(record._id);
+      if (!casefileMap.has(caseNumber)) {
+        casefileMap.set(caseNumber, []);
+      }
+      casefileMap.get(caseNumber)?.push(record);
+    });
+    
+    // Convert the grouped records into our ViolationType format
+    const mergedViolations: ViolationType[] = Array.from(casefileMap.entries()).map(([caseNumber, records]) => {
+      // Sort the records by investigation_date in descending order
+      records.sort((a, b) => {
+        const dateA = a.investigation_date ? new Date(a.investigation_date).getTime() : 0;
+        const dateB = b.investigation_date ? new Date(b.investigation_date).getTime() : 0;
+        return dateB - dateA;
+      });
+      
+      // Use the first (most recent) record as the primary record
+      const primaryRecord = records[0];
+      
+      // Combine descriptions if there are multiple violations for the same case
+      const combinedDescription = records.length > 1 
+        ? records.map(r => r.violation_description).join("\n\n")
+        : primaryRecord.violation_description || '';
+      
+      // Return the merged violation
+      return {
+        id: caseNumber,
+        address: primaryRecord.address || '',
+        violationType: primaryRecord.violation_code_section || 'Unknown',
+        dateIssued: primaryRecord.investigation_date || primaryRecord.violation_date || primaryRecord.inspection_date || '',
+        status: mapViolationStatus(primaryRecord.status),
+        description: combinedDescription,
         fineAmount: null, // API doesn't provide fine amounts
         dueDate: null, // API doesn't provide due dates
-        propertyOwner: record.owner_name || 'Unknown'
-      }));
+        propertyOwner: primaryRecord.owner_name || 'Unknown',
+        relatedViolationsCount: records.length > 1 ? records.length : null
+      };
+    });
+    
+    // Sort the final list by investigation date (descending)
+    return mergedViolations.sort((a, b) => {
+      const dateA = a.dateIssued ? new Date(a.dateIssued).getTime() : 0;
+      const dateB = b.dateIssued ? new Date(b.dateIssued).getTime() : 0;
+      return dateB - dateA;
+    });
   } catch (error) {
     console.error('Error fetching violations:', error);
     throw error;
