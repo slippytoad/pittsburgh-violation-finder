@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { loadSettingsFromLocalStorage } from '@/services/settingsService';
 import { initializeEmailService } from '@/services/violationCheckService';
 import { useSettingsInitialization } from '@/hooks/useSettingsInitialization';
@@ -45,7 +44,7 @@ export const useScheduledCheckState = () => {
   );
   
   // Update last check time when it changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (checkLastTime) {
       setLastCheckTime(checkLastTime);
     }
