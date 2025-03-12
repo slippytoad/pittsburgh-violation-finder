@@ -36,6 +36,21 @@ interface WPRDCViolation {
 }
 
 /**
+ * Check if a date string is from the year 2025
+ * @param dateString The date string to check
+ * @returns True if the date is from 2025, false otherwise
+ */
+const isFrom2025 = (dateString: string): boolean => {
+  if (!dateString) return false;
+  try {
+    const date = new Date(dateString);
+    return date.getFullYear() === 2025;
+  } catch (e) {
+    return false;
+  }
+};
+
+/**
  * Search for violations by address
  * @param address The address to search for
  * @returns A promise that resolves to an array of violations
@@ -70,18 +85,20 @@ export const searchViolationsByAddress = async (address: string): Promise<Violat
     
     console.log('API Response:', data); // Log the API response for debugging
     
-    // Map the API response to our ViolationType
-    return data.result.records.map(record => ({
-      id: record.violation_id || record.casefile_number || String(record._id),
-      address: record.address || '',
-      violationType: record.violation_code_section || 'Unknown',
-      dateIssued: record.violation_date || record.inspection_date || '',
-      status: mapViolationStatus(record.status),
-      description: record.violation_description || '',
-      fineAmount: null, // API doesn't provide fine amounts
-      dueDate: null, // API doesn't provide due dates
-      propertyOwner: record.owner_name || 'Unknown'
-    }));
+    // Map the API response to our ViolationType and filter for 2025 violations only
+    return data.result.records
+      .filter(record => isFrom2025(record.violation_date || record.inspection_date))
+      .map(record => ({
+        id: record.violation_id || record.casefile_number || String(record._id),
+        address: record.address || '',
+        violationType: record.violation_code_section || 'Unknown',
+        dateIssued: record.violation_date || record.inspection_date || '',
+        status: mapViolationStatus(record.status),
+        description: record.violation_description || '',
+        fineAmount: null, // API doesn't provide fine amounts
+        dueDate: null, // API doesn't provide due dates
+        propertyOwner: record.owner_name || 'Unknown'
+      }));
   } catch (error) {
     console.error('Error fetching violations:', error);
     throw error;
