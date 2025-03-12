@@ -85,6 +85,13 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
               investigationFindings={violation.investigationFindings} 
             />
             
+            {violation.investigationOutcome && (
+              <div className="mt-2">
+                <span className="text-sm font-medium">Investigation Outcome: </span>
+                <span className="text-sm text-yellow-500">{violation.investigationOutcome}</span>
+              </div>
+            )}
+            
             <div className="text-xs text-muted-foreground space-y-1">
               {violation.fineAmount && (
                 <p><span className="font-medium">Fine Amount:</span> ${violation.fineAmount.toFixed(2)}</p>
