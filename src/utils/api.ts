@@ -45,8 +45,9 @@ export const searchViolationsByAddress = async (address: string): Promise<Violat
     // Clean up and prepare the address for search
     const cleanAddress = address.trim();
     
-    // Build the query for address search - this does a simple text search on the address field
-    const query = `address:${cleanAddress}*`;
+    // Build the query - using just q= instead of q=address:
+    // This searches across all fields instead of just the address field
+    const query = cleanAddress;
     
     // Build the URL with the query
     const url = new URL(WPRDC_API_BASE_URL);
