@@ -118,7 +118,8 @@ export const searchViolationsByAddress = async (address: string): Promise<Violat
             fineAmount: null,
             dueDate: null,
             propertyOwner: record.owner_name || primaryRecord.owner_name || 'Unknown',
-            investigationOutcome: record.inspection_result || null
+            investigationOutcome: record.inspection_result || null,
+            investigationFindings: record.inspection_findings || null
           })) 
         : undefined;
       
@@ -134,6 +135,7 @@ export const searchViolationsByAddress = async (address: string): Promise<Violat
         dueDate: null, // API doesn't provide due dates
         propertyOwner: primaryRecord.owner_name || 'Unknown',
         investigationOutcome: primaryRecord.inspection_result || null,
+        investigationFindings: primaryRecord.inspection_findings || null,
         relatedViolationsCount: records.length > 1 ? records.length - 1 : null,
         relatedViolations: relatedViolations
       };

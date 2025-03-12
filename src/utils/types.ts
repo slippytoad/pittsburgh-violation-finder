@@ -1,4 +1,3 @@
-
 /**
  * Shared type definitions
  */
@@ -16,6 +15,7 @@ export interface ViolationType {
   relatedViolationsCount?: number | null;
   relatedViolations?: ViolationType[];
   investigationOutcome?: string;
+  investigationFindings?: string;
 }
 
 export interface Address {

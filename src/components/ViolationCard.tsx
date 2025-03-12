@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { AlertTriangle, CheckCircle, Clock, Calendar, Hash, Layers, MapPin, ChevronDown, ChevronUp, Info } from 'lucide-react';
-import { ViolationType } from '@/utils/mockData';
+import { AlertTriangle, CheckCircle, Clock, Calendar, Hash, Layers, MapPin, ChevronDown, ChevronUp, Info, FileText } from 'lucide-react';
+import { ViolationType } from '@/utils/types';
 import AnimatedContainer from './AnimatedContainer';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
@@ -99,6 +98,9 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
               {violation.investigationOutcome && (
                 <p><span className="font-medium">Investigation Outcome:</span> {violation.investigationOutcome}</p>
               )}
+              {violation.investigationFindings && (
+                <p><span className="font-medium">Investigation Findings:</span> {violation.investigationFindings}</p>
+              )}
               {violation.fineAmount && (
                 <p><span className="font-medium">Fine Amount:</span> ${violation.fineAmount.toFixed(2)}</p>
               )}
@@ -134,7 +136,6 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
           )}
         </Card>
         
-        {/* Related violations */}
         {expanded && hasRelatedViolations && (
           <div className="pl-6 border-l-2 border-dashed border-gray-300 ml-4 mt-2 space-y-3">
             {violation.relatedViolations?.map((relatedViolation, relatedIndex) => (
@@ -170,6 +171,9 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                   {relatedViolation.investigationOutcome && (
                     <p className="text-xs text-muted-foreground"><span className="font-medium">Investigation Outcome:</span> {relatedViolation.investigationOutcome}</p>
                   )}
+                  {relatedViolation.investigationFindings && (
+                    <p className="text-xs text-muted-foreground"><span className="font-medium">Investigation Findings:</span> {relatedViolation.investigationFindings}</p>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -177,7 +181,6 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
         )}
       </AnimatedContainer>
 
-      {/* Details Dialog */}
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
           <DialogHeader>
@@ -221,6 +224,12 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                         <span><strong>Investigation Outcome:</strong> {violation.investigationOutcome}</span>
                       </div>
                     )}
+                    {violation.investigationFindings && (
+                      <div className="flex items-center gap-1">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <span><strong>Investigation Findings:</strong> {violation.investigationFindings}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
@@ -245,7 +254,6 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
               </div>
             </div>
             
-            {/* Related violations section */}
             {hasRelatedViolations && (
               <div>
                 <h3 className="text-base font-medium mb-3">Related Violations ({violation.relatedViolationsCount})</h3>
@@ -280,6 +288,12 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <CheckCircle className="h-3 w-3" />
                               <span>Investigation Outcome: {relatedViolation.investigationOutcome}</span>
+                            </div>
+                          )}
+                          {relatedViolation.investigationFindings && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <FileText className="h-3 w-3" />
+                              <span>Investigation Findings: {relatedViolation.investigationFindings}</span>
                             </div>
                           )}
                         </div>

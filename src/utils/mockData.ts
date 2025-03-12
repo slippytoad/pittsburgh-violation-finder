@@ -11,6 +11,8 @@ export interface ViolationType {
   propertyOwner: string;
   relatedViolationsCount?: number | null;
   relatedViolations?: ViolationType[];
+  investigationOutcome?: string;
+  investigationFindings?: string;
 }
 
 export const mockViolations: ViolationType[] = [
