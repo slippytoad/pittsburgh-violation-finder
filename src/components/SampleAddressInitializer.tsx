@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 
 interface SampleAddressInitializerProps {
@@ -8,8 +8,12 @@ interface SampleAddressInitializerProps {
 
 const SampleAddressInitializer: React.FC<SampleAddressInitializerProps> = ({ handleBulkImport }) => {
   const { toast } = useToast();
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
+    // Only run this effect once
+    if (initialized) return;
+
     const addProvidedAddresses = async () => {
       const addressesToAdd = [
         "10 Edith Place",
@@ -40,12 +44,16 @@ const SampleAddressInitializer: React.FC<SampleAddressInitializerProps> = ({ han
       if (addressesToAdd.length > 0) {
         try {
           await handleBulkImport(addressesToAdd);
+          // Set initialized to true to prevent repeated execution
+          setInitialized(true);
           toast({
             title: "Addresses added",
             description: `Successfully added the provided addresses to your saved list.`,
           });
         } catch (error) {
           console.error("Failed to add addresses:", error);
+          // Still mark as initialized even on error to prevent spamming the user
+          setInitialized(true);
           toast({
             title: "Error",
             description: "Failed to add the addresses to your saved list.",
@@ -56,7 +64,7 @@ const SampleAddressInitializer: React.FC<SampleAddressInitializerProps> = ({ han
     };
     
     addProvidedAddresses();
-  }, [handleBulkImport, toast]);
+  }, [handleBulkImport, toast, initialized]);
 
   return null;
 };
