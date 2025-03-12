@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ViolationType } from '@/utils/types';
-import ViolationCard from './ViolationCard';
+import ViolationCard from './violations/ViolationCard';
 import AnimatedContainer from './AnimatedContainer';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
