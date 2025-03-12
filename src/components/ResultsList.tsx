@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ViolationType } from '@/utils/types';
 import ViolationCard from './violations/ViolationCard';
@@ -6,6 +5,7 @@ import AnimatedContainer from './AnimatedContainer';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Filter, X, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
+import { Spinner } from '@/components/ui/spinner';
 
 interface ResultsListProps {
   violations: ViolationType[];
@@ -27,12 +27,12 @@ const ResultsList = ({ violations, isLoading }: ResultsListProps) => {
 
   if (isLoading) {
     return (
-      <div className="w-full flex justify-center py-12">
-        <div className="flex flex-col items-center">
-          <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-muted-foreground">Searching for violations...</p>
+      <AnimatedContainer className="w-full flex justify-center items-center py-12">
+        <div className="text-center">
+          <Spinner size="lg" className="mx-auto mb-4" />
+          <p className="text-muted-foreground">Searching for violations...</p>
         </div>
-      </div>
+      </AnimatedContainer>
     );
   }
 

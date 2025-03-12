@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import SearchForm from '@/components/SearchForm';
 import ResultsList from '@/components/ResultsList';
@@ -81,6 +80,7 @@ const ViolationFinderContent: React.FC = () => {
           selectedAddress={selectedAddress}
           onToggleBulkImport={() => setShowBulkImport(!showBulkImport)}
           showBulkImport={showBulkImport}
+          isLoading={isLoading}
         />
         
         <BulkImportSection 

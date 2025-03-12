@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, Search, ListFilter, Import, ChevronDown, ChevronUp } from 'lucide-react';
 import AnimatedContainer from './AnimatedContainer';
+import { Spinner } from '@/components/ui/spinner';
 
 interface AddressListProps {
   addresses: string[];
@@ -13,6 +13,7 @@ interface AddressListProps {
   selectedAddress: string | null;
   onToggleBulkImport?: () => void;
   showBulkImport?: boolean;
+  isLoading?: boolean;
 }
 
 const AddressList = ({ 
@@ -22,7 +23,8 @@ const AddressList = ({
   onSearchAll, 
   selectedAddress,
   onToggleBulkImport,
-  showBulkImport
+  showBulkImport,
+  isLoading = false
 }: AddressListProps) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
 
@@ -55,13 +57,18 @@ const AddressList = ({
             <Import className="h-4 w-4" />
             Bulk Import
           </Button>
-          <Button 
+          <Button
             onClick={onSearchAll}
             size="sm"
             variant="outline"
+            disabled={isLoading}
             className="gap-1"
           >
-            <ListFilter className="h-4 w-4" />
+            {isLoading ? (
+              <Spinner size="sm" className="mr-2" />
+            ) : (
+              <Search className="h-4 w-4" />
+            )}
             Search All
           </Button>
         </div>

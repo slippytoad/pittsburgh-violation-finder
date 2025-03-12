@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Plus } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import AnimatedContainer from './AnimatedContainer';
+import { Spinner } from '@/components/ui/spinner';
 
 interface SearchFormProps {
   onSearch: (address: string) => void;
@@ -69,7 +69,11 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
                 disabled={isLoading} 
                 className="transition-all duration-300"
               >
-                <Search className="mr-2 h-4 w-4" />
+                {isLoading ? (
+                  <Spinner size="sm" className="mr-2" />
+                ) : (
+                  <Search className="mr-2 h-4 w-4" />
+                )}
                 Search
               </Button>
               <Button
