@@ -21,32 +21,17 @@ export const initSupabaseTables = async () => {
     if (error) {
       console.log('Error with RPC call, falling back to SQL script execution');
       
-      // Create the table using raw SQL
-      const { error: sqlError } = await supabase.from('_sql').select('*').execute(`
-        CREATE TABLE IF NOT EXISTS app_settings (
-          id SERIAL PRIMARY KEY,
-          violation_checks_enabled BOOLEAN DEFAULT false,
-          email_reports_enabled BOOLEAN DEFAULT false,
-          email_report_address TEXT DEFAULT '',
-          next_violation_check_time TIMESTAMP WITH TIME ZONE,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        );
+      // Try to query the table to see if it exists
+      const { error: queryError } = await supabase
+        .from('app_settings')
+        .select('*')
+        .limit(1);
         
-        -- Add default settings record if none exists
-        INSERT INTO app_settings (
-          violation_checks_enabled, 
-          email_reports_enabled, 
-          email_report_address
-        )
-        SELECT false, false, ''
-        WHERE NOT EXISTS (SELECT 1 FROM app_settings LIMIT 1);
-      `);
-      
-      if (sqlError) {
-        console.error('Error executing SQL:', sqlError);
+      if (queryError && queryError.code === '42P01') {
+        // Table doesn't exist, try to create it using direct SQL
+        console.log('Table does not exist. Attempting to create manually.');
         
-        // Show SQL to run manually
+        // Log SQL that would need to be run manually
         console.warn('Please run the following SQL in your Supabase SQL Editor to create the required table:');
         console.warn(`
 CREATE TABLE IF NOT EXISTS app_settings (
@@ -72,8 +57,10 @@ WHERE NOT EXISTS (SELECT 1 FROM app_settings LIMIT 1);
         // Try to create through direct table operations as a last resort
         console.log('Attempting to create through direct operations...');
         await createTableWithDirectOperations();
+      } else if (queryError) {
+        console.error('Error querying app_settings table:', queryError);
       } else {
-        console.log('app_settings table created successfully via SQL script');
+        console.log('app_settings table exists, but RPC call failed. Table may already be set up.');
       }
     } else {
       console.log('app_settings table created successfully via RPC');
