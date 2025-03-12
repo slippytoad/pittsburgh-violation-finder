@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { fetchSavedAddresses, saveAddress, removeAddress, normalizeAddress } from '@/utils/addressService';
+import { fetchSavedAddresses, saveAddress, removeAddress, normalizeAddress, bulkImportAddresses } from '@/utils/addressService';
 
 export function useAddresses() {
   const [addresses, setAddresses] = useState<string[]>([]);
@@ -55,6 +54,42 @@ export function useAddresses() {
     }
   };
 
+  const handleBulkImport = async (addressList: string[]) => {
+    try {
+      // Filter out empty lines and trim each address
+      const validAddresses = addressList
+        .map(addr => addr.trim())
+        .filter(addr => addr.length > 0);
+      
+      if (validAddresses.length === 0) {
+        toast({
+          title: "No valid addresses",
+          description: "Please provide at least one valid address",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      const originalCount = addresses.length;
+      const updatedAddresses = await bulkImportAddresses(validAddresses);
+      const newCount = updatedAddresses.length - originalCount;
+      
+      setAddresses(updatedAddresses);
+      
+      toast({
+        title: "Addresses imported",
+        description: `${newCount} new addresses have been added to your saved list`,
+      });
+    } catch (error) {
+      console.error('Error importing addresses:', error);
+      toast({
+        title: "Import failed",
+        description: "There was an error importing the addresses",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleRemoveAddress = async (index: number) => {
     try {
       const updatedAddresses = await removeAddress(index);
@@ -76,6 +111,7 @@ export function useAddresses() {
   return {
     addresses,
     handleAddAddress,
-    handleRemoveAddress
+    handleRemoveAddress,
+    handleBulkImport
   };
 }

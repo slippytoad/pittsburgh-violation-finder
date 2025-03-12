@@ -1,4 +1,3 @@
-
 /**
  * Address service for managing saved addresses in Supabase
  */
@@ -84,6 +83,47 @@ export const saveAddress = async (address: string): Promise<string[]> => {
     return await fetchSavedAddresses();
   } catch (error) {
     console.error('Failed to save address:', error);
+    throw error;
+  }
+};
+
+/**
+ * Bulk import multiple addresses at once
+ * @param addressList Array of addresses to import
+ * @returns Updated list of addresses
+ */
+export const bulkImportAddresses = async (addressList: string[]): Promise<string[]> => {
+  try {
+    // Get existing addresses
+    const existingAddresses = await fetchSavedAddresses();
+    const normalizedExisting = existingAddresses.map(addr => normalizeAddress(addr));
+    
+    // Filter out addresses that already exist in normalized form
+    const newAddresses = addressList.filter(addr => 
+      !normalizedExisting.includes(normalizeAddress(addr))
+    );
+    
+    if (newAddresses.length === 0) {
+      return existingAddresses;
+    }
+    
+    // Create array of address objects for insert
+    const addressObjects = newAddresses.map(address => ({ address }));
+    
+    // Insert new addresses
+    const { error } = await supabase
+      .from('addresses')
+      .insert(addressObjects);
+      
+    if (error) {
+      console.error('Error bulk importing addresses:', error);
+      throw error;
+    }
+    
+    // Fetch updated list
+    return await fetchSavedAddresses();
+  } catch (error) {
+    console.error('Failed to bulk import addresses:', error);
     throw error;
   }
 };

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { X, Search, ListFilter } from 'lucide-react';
+import { X, Search, ListFilter, Import } from 'lucide-react';
 import AnimatedContainer from './AnimatedContainer';
 
 interface AddressListProps {
@@ -11,9 +11,19 @@ interface AddressListProps {
   onSearch: (address: string) => void;
   onSearchAll: () => void;
   selectedAddress: string | null;
+  onToggleBulkImport?: () => void;
+  showBulkImport?: boolean;
 }
 
-const AddressList = ({ addresses, onRemove, onSearch, onSearchAll, selectedAddress }: AddressListProps) => {
+const AddressList = ({ 
+  addresses, 
+  onRemove, 
+  onSearch, 
+  onSearchAll, 
+  selectedAddress,
+  onToggleBulkImport,
+  showBulkImport
+}: AddressListProps) => {
   if (addresses.length === 0) {
     return null;
   }
@@ -22,15 +32,26 @@ const AddressList = ({ addresses, onRemove, onSearch, onSearchAll, selectedAddre
     <AnimatedContainer className="w-full mt-6">
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-lg font-medium">Saved Addresses</h2>
-        <Button 
-          onClick={onSearchAll}
-          size="sm"
-          variant="outline"
-          className="gap-1"
-        >
-          <ListFilter className="h-4 w-4" />
-          Search All
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={onToggleBulkImport}
+            size="sm"
+            variant={showBulkImport ? "secondary" : "outline"}
+            className="gap-1"
+          >
+            <Import className="h-4 w-4" />
+            Bulk Import
+          </Button>
+          <Button 
+            onClick={onSearchAll}
+            size="sm"
+            variant="outline"
+            className="gap-1"
+          >
+            <ListFilter className="h-4 w-4" />
+            Search All
+          </Button>
+        </div>
       </div>
       <Card>
         <CardContent className="p-3">
