@@ -3,6 +3,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { ViolationType } from '@/utils/types';
 import { useViolations } from './useViolations';
 import { useAddresses } from './useAddresses';
+import { sendEmail, initEmailService } from '@/utils/emailService';
 
 // Time to check for violations (6 AM PST)
 const CHECK_HOUR_PST = 6;
@@ -118,23 +119,26 @@ export function useScheduledViolationCheck() {
         emailBody += "Good news! No new violations were found today.";
       }
       
-      // Using EmailJS for sending emails from the frontend
-      // In a production app, this should be handled by a backend service
-      const emailData = {
-        email: emailAddress,
+      // Format for HTML email
+      const htmlMessage = emailBody.replace(/\n/g, '<br>');
+      
+      // Send the email using our email service
+      const emailParams = {
+        to_email: emailAddress,
         subject: emailSubject,
-        message: emailBody
+        message: htmlMessage
       };
       
-      // For demonstration purposes, we'll just log this
-      console.log("Would send email with data:", emailData);
+      const success = await sendEmail(emailParams);
       
-      // In a real implementation, you would send this to your backend or email service
-      
-      toast({
-        title: "Email Report Sent",
-        description: `A report has been sent to ${emailAddress}`,
-      });
+      if (success) {
+        toast({
+          title: "Email Report Sent",
+          description: `A report has been sent to ${emailAddress}`,
+        });
+      } else {
+        throw new Error("Failed to send email");
+      }
     } catch (error) {
       console.error("Failed to send email report:", error);
       toast({
@@ -281,6 +285,9 @@ export function useScheduledViolationCheck() {
   
   // Initialize on mount
   useEffect(() => {
+    // Initialize the email service
+    initEmailService();
+    
     // Load the scheduled state from localStorage
     const savedScheduledState = localStorage.getItem('violationChecksEnabled');
     const isCheckingEnabled = savedScheduledState === 'true';
