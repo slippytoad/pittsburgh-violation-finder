@@ -9,6 +9,26 @@ import { ViolationType } from './mockData';
 const WPRDC_API_BASE_URL = 'https://data.wprdc.org/api/3/action/datastore_search';
 const RESOURCE_ID = '70c06278-92c5-4040-ab28-17671866f81c';
 
+// Mock database for addresses
+let savedAddresses: string[] = [];
+
+// Mock API functions for address management
+export const fetchSavedAddresses = async (): Promise<string[]> => {
+  return savedAddresses;
+};
+
+export const saveAddress = async (address: string): Promise<string[]> => {
+  if (!savedAddresses.includes(address)) {
+    savedAddresses = [...savedAddresses, address];
+  }
+  return savedAddresses;
+};
+
+export const removeAddress = async (index: number): Promise<string[]> => {
+  savedAddresses = savedAddresses.filter((_, i) => i !== index);
+  return savedAddresses;
+};
+
 interface WPRDCResponse {
   success: boolean;
   result: {
