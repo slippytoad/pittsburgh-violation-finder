@@ -11,7 +11,7 @@ import { Import } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 const ViolationFinder = () => {
-  const { violations, isLoading, selectedAddress, handleSearch, handleSearchAll } = useViolations();
+  const { violations, isLoading, selectedAddress, handleSearch, handleSearchAll, searchCount } = useViolations();
   const { addresses, handleAddAddress, handleRemoveAddress, handleBulkImport } = useAddresses();
   const [bulkImportText, setBulkImportText] = useState<string>('');
   const [showBulkImport, setShowBulkImport] = useState<boolean>(false);
@@ -71,11 +71,39 @@ const ViolationFinder = () => {
   }, []);
 
   const onSearchAll = () => {
+    if (addresses.length > 10) {
+      toast({
+        title: "Processing in batches",
+        description: `Searching ${addresses.length} addresses in smaller batches to avoid timeouts.`,
+      });
+    }
     handleSearchAll(addresses);
   };
 
   const processBulkImport = () => {
-    const addressList = bulkImportText.split('\n');
+    if (!bulkImportText.trim()) {
+      toast({
+        title: "No addresses provided",
+        description: "Please enter at least one address to import.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const addressList = bulkImportText
+      .split('\n')
+      .map(address => address.trim())
+      .filter(address => address.length > 0);
+      
+    if (addressList.length === 0) {
+      toast({
+        title: "No valid addresses",
+        description: "No valid addresses found in the input.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     handleBulkImport(addressList);
     setBulkImportText('');
     setShowBulkImport(false);
@@ -87,6 +115,7 @@ const ViolationFinder = () => {
         <h1 className="text-3xl font-semibold mb-2">Pittsburgh Property Violation Finder</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
           Search for property violation notices in Pittsburgh, PA using addresses with the official WPRDC data.
+          {searchCount > 0 && <span className="block mt-1 text-sm">Completed {searchCount} searches so far</span>}
         </p>
       </AnimatedContainer>
       
