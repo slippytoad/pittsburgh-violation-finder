@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import SearchForm from '@/components/SearchForm';
 import ResultsList from '@/components/ResultsList';
@@ -6,18 +5,19 @@ import AddressList from '@/components/AddressList';
 import AnimatedContainer from '@/components/AnimatedContainer';
 import { useViolations } from '@/hooks/useViolations';
 import { useAddresses } from '@/hooks/useAddresses';
+import { useScheduledViolationCheck } from '@/hooks/useScheduledViolationCheck';
 import { Button } from '@/components/ui/button';
-import { Import } from 'lucide-react';
+import { Import, Bell, BellOff } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 const ViolationFinder = () => {
   const { violations, isLoading, selectedAddress, handleSearch, handleSearchAll, searchCount } = useViolations();
   const { addresses, handleAddAddress, handleRemoveAddress, handleBulkImport } = useAddresses();
+  const { isScheduled, nextCheckTime, toggleScheduledChecks } = useScheduledViolationCheck();
   const [bulkImportText, setBulkImportText] = useState<string>('');
   const [showBulkImport, setShowBulkImport] = useState<boolean>(false);
   const { toast } = useToast();
 
-  // Add the provided addresses on component mount
   useEffect(() => {
     const addProvidedAddresses = async () => {
       const addressesToAdd = [
@@ -46,7 +46,6 @@ const ViolationFinder = () => {
         "3817 Bates St"
       ];
       
-      // Only add addresses if there are addresses to add
       if (addressesToAdd.length > 0) {
         try {
           await handleBulkImport(addressesToAdd);
@@ -66,8 +65,6 @@ const ViolationFinder = () => {
     };
     
     addProvidedAddresses();
-    // This effect should only run once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onSearchAll = () => {
@@ -117,7 +114,37 @@ const ViolationFinder = () => {
           Search for property violation notices in Pittsburgh, PA using addresses with the official WPRDC data.
           {searchCount > 0 && <span className="block mt-1 text-sm">Completed {searchCount} searches so far</span>}
         </p>
+        
+        <div className="mt-4 flex items-center justify-center">
+          <Button
+            variant={isScheduled ? "default" : "outline"}
+            onClick={() => toggleScheduledChecks(!isScheduled)}
+            className="flex items-center gap-2 text-sm"
+          >
+            {isScheduled ? (
+              <>
+                <BellOff className="h-4 w-4" />
+                Disable Daily Checks
+              </>
+            ) : (
+              <>
+                <Bell className="h-4 w-4" />
+                Enable Daily Checks at 6 AM PST
+              </>
+            )}
+          </Button>
+        </div>
+        
+        {isScheduled && nextCheckTime && (
+          <div className="mt-2 text-xs text-muted-foreground">
+            Next check scheduled for: {nextCheckTime.toLocaleString()}
+          </div>
+        )}
       </AnimatedContainer>
+      
+      <div id="violations-data" style={{ display: 'none' }}>
+        {JSON.stringify(violations)}
+      </div>
       
       <div className="grid grid-cols-1 gap-8">
         <SearchForm 

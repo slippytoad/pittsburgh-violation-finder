@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { ViolationType } from '@/utils/types';
@@ -137,6 +136,12 @@ export function useViolations() {
       });
       
       setViolations(uniqueViolations);
+      
+      // Update the hidden element for scheduled checks
+      const violationsDataElement = document.getElementById('violations-data');
+      if (violationsDataElement) {
+        violationsDataElement.textContent = JSON.stringify(uniqueViolations);
+      }
       
       if (uniqueViolations.length === 0) {
         toast({
