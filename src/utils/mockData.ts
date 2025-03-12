@@ -1,19 +1,5 @@
 
-export interface ViolationType {
-  id: string;
-  address: string;
-  violationType: string;
-  dateIssued: string;
-  status: 'Open' | 'Closed' | 'In Progress';
-  description: string;
-  fineAmount: number | null;
-  dueDate: string | null;
-  propertyOwner: string;
-  relatedViolationsCount?: number | null;
-  relatedViolations?: ViolationType[];
-  investigationOutcome?: string;
-  investigationFindings?: string;
-}
+import { ViolationType } from './types';
 
 export const mockViolations: ViolationType[] = [
   {
@@ -25,7 +11,9 @@ export const mockViolations: ViolationType[] = [
     description: "Exterior wall deterioration requiring repair",
     fineAmount: 350,
     dueDate: "2025-03-15",
-    propertyOwner: "Oakland Properties LLC"
+    propertyOwner: "Oakland Properties LLC",
+    investigationOutcome: "Failed Inspection", // Adding mock values
+    investigationFindings: "Significant structural issues found"
   },
   {
     id: "v2",
@@ -36,7 +24,9 @@ export const mockViolations: ViolationType[] = [
     description: "Improper garbage disposal",
     fineAmount: 150,
     dueDate: null,
-    propertyOwner: "Squirrel Hill Holdings"
+    propertyOwner: "Squirrel Hill Holdings",
+    investigationOutcome: "Passed Re-inspection",
+    investigationFindings: "Issues resolved"
   },
   {
     id: "v3",
@@ -47,7 +37,9 @@ export const mockViolations: ViolationType[] = [
     description: "Unauthorized business operation in residential zone",
     fineAmount: 500,
     dueDate: "2025-04-05",
-    propertyOwner: "Lawrenceville Development"
+    propertyOwner: "Lawrenceville Development",
+    investigationOutcome: "Pending Review",
+    investigationFindings: "Documentation requested from owner"
   },
   {
     id: "v4",
@@ -58,7 +50,9 @@ export const mockViolations: ViolationType[] = [
     description: "Missing smoke detectors on premises",
     fineAmount: 250,
     dueDate: "2025-04-10",
-    propertyOwner: "Oakland Properties LLC"
+    propertyOwner: "Oakland Properties LLC",
+    investigationOutcome: "Failed Inspection",
+    investigationFindings: "Multiple code violations found"
   },
   {
     id: "v5",
@@ -69,7 +63,9 @@ export const mockViolations: ViolationType[] = [
     description: "Overgrown vegetation exceeding 10 inches",
     fineAmount: 100,
     dueDate: "2025-03-12",
-    propertyOwner: "Downtown Realty Group"
+    propertyOwner: "Downtown Realty Group",
+    investigationOutcome: "Initial Inspection",
+    investigationFindings: "Violation confirmed"
   }
 ];
 

@@ -1,3 +1,4 @@
+
 /**
  * Shared type definitions
  */
