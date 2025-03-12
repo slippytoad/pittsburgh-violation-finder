@@ -1,4 +1,3 @@
-
 /**
  * Shared type definitions
  */
@@ -33,6 +32,8 @@ export interface PaymentDetails {
 export interface ViolationType extends ViolationBase, PaymentDetails, InvestigationDetails {
   relatedViolationsCount?: number | null;
   relatedViolations?: ViolationType[];
+  previousStatesCount?: number | null;
+  previousStates?: ViolationType[];
 }
 
 export interface Address {

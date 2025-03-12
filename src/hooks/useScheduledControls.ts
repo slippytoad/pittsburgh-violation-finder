@@ -1,102 +1,135 @@
-
-import { useToast } from '@/hooks/use-toast';
+import { useState, useCallback } from 'react';
 import { saveSettings } from '@/services/settingsService';
-import { saveSettingsToLocalStorage } from '@/services/settingsService';
 import { scheduleNextCheck } from '@/services/violationCheckService';
-import type { AppSettings } from '@/utils/types';
+import { useToast } from '@/components/ui/use-toast';
 
 export const useScheduledControls = (
   isScheduled: boolean,
-  setIsScheduled: React.Dispatch<React.SetStateAction<boolean>>,
   emailEnabled: boolean,
-  setEmailEnabled: React.Dispatch<React.SetStateAction<boolean>>,
   emailAddress: string,
-  setEmailAddress: React.Dispatch<React.SetStateAction<string>>,
-  nextCheckTime: Date | null,
-  setNextCheckTime: React.Dispatch<React.SetStateAction<Date | null>>,
+  setIsScheduled: (value: boolean) => void,
+  setEmailEnabled: (value: boolean) => void,
+  setEmailAddress: (value: string) => void,
+  setNextCheckTime: (value: Date | null) => void,
   checkForViolations: () => Promise<(() => void) | undefined>
 ) => {
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Enable or disable scheduled checks
-  const toggleScheduledChecks = async (enable: boolean) => {
-    setIsScheduled(enable);
-    
-    saveSettingsToLocalStorage({
-      violationChecksEnabled: enable
-    });
-    
-    if (enable) {
-      // Start the first check cycle
-      const cleanup = scheduleNextCheck({
-        violationChecksEnabled: true,
+  const handleScheduleToggle = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      // Save new settings to database
+      await saveSettings({
+        violationChecksEnabled: !isScheduled,
         emailReportsEnabled: emailEnabled,
         emailReportAddress: emailAddress
-      }, checkForViolations);
-      
-      // Update next check time for UI
-      const nextCheckTimeStr = localStorage.getItem('nextViolationCheckTime');
-      if (nextCheckTimeStr) {
-        setNextCheckTime(new Date(nextCheckTimeStr));
-      }
-      
-      toast({
-        title: "Daily checks enabled",
-        description: `Violation checks will run daily at 6 AM PST. Next check: ${nextCheckTime?.toLocaleString() || 'calculating...'}`,
       });
-      
-      return cleanup;
-    } else {
-      // Disable scheduled checks
-      const timeoutId = localStorage.getItem('violationCheckTimeoutId');
-      if (timeoutId) {
-        clearTimeout(parseInt(timeoutId));
-        localStorage.removeItem('violationCheckTimeoutId');
+
+      // Update UI state
+      setIsScheduled(!isScheduled);
+
+      // Schedule next check if enabling
+      if (!isScheduled) {
+        const cleanup = await scheduleNextCheck({
+          violationChecksEnabled: true,
+          emailReportsEnabled: emailEnabled,
+          emailReportAddress: emailAddress
+        }, checkForViolations);
+
+        if (cleanup) {
+          return cleanup;
+        }
+      } else {
+        // Clear next check time when disabling
+        setNextCheckTime(null);
       }
-      
+
       toast({
-        title: "Daily checks disabled",
-        description: "Scheduled violation checks have been turned off.",
+        title: !isScheduled ? "Daily Checks Enabled" : "Daily Checks Disabled",
+        description: !isScheduled 
+          ? "The application will now check for violations daily." 
+          : "Daily violation checks have been disabled.",
+        variant: "default",
       });
+    } catch (error) {
+      console.error('Error toggling schedule:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update schedule settings. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-    
-    // Save to Supabase
-    const settings: Partial<AppSettings> = {
-      violationChecksEnabled: enable,
-      emailReportsEnabled: emailEnabled,
-      emailReportAddress: emailAddress
-    };
-    
-    await saveSettings(settings);
-  };
-  
-  // Update email settings
-  const updateEmailSettings = async (enabled: boolean, email: string = '') => {
-    setEmailEnabled(enabled);
-    if (email) setEmailAddress(email);
-    
-    saveSettingsToLocalStorage({
-      emailReportsEnabled: enabled,
-      emailReportAddress: email || emailAddress
-    });
-    
-    // Save settings to Supabase
-    const settings: Partial<AppSettings> = {
-      violationChecksEnabled: isScheduled,
-      emailReportsEnabled: enabled,
-      emailReportAddress: email || emailAddress
-    };
-    
-    await saveSettings(settings);
-    
-    toast({
-      title: enabled ? "Email Reports Enabled" : "Email Reports Disabled",
-      description: enabled ? `Reports will be sent to ${email || emailAddress}` : "Email reports have been turned off.",
-    });
-  };
+  }, [isScheduled, emailEnabled, emailAddress, setIsScheduled, setNextCheckTime, checkForViolations, toast]);
+
+  const handleEmailToggle = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      // Save new settings to database
+      await saveSettings({
+        violationChecksEnabled: isScheduled,
+        emailReportsEnabled: !emailEnabled,
+        emailReportAddress: emailAddress
+      });
+
+      // Update UI state
+      setEmailEnabled(!emailEnabled);
+
+      toast({
+        title: !emailEnabled ? "Email Reports Enabled" : "Email Reports Disabled",
+        description: !emailEnabled 
+          ? "You will now receive email reports for violations." 
+          : "Email reports have been disabled.",
+        variant: "default",
+      });
+    } catch (error) {
+      console.error('Error toggling email:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update email settings. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isScheduled, emailEnabled, emailAddress, setEmailEnabled, toast]);
+
+  const handleEmailAddressChange = useCallback(async (newAddress: string) => {
+    setIsLoading(true);
+    try {
+      // Save new settings to database
+      await saveSettings({
+        violationChecksEnabled: isScheduled,
+        emailReportsEnabled: emailEnabled,
+        emailReportAddress: newAddress
+      });
+
+      // Update UI state
+      setEmailAddress(newAddress);
+
+      toast({
+        title: "Email Address Updated",
+        description: "Your email address has been updated successfully.",
+        variant: "default",
+      });
+    } catch (error) {
+      console.error('Error updating email address:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update email address. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isScheduled, emailEnabled, setEmailAddress, toast]);
 
   return {
-    toggleScheduledChecks,
-    updateEmailSettings
+    isLoading,
+    handleScheduleToggle,
+    handleEmailToggle,
+    handleEmailAddressChange
   };
 };

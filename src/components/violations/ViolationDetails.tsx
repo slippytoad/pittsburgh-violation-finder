@@ -1,0 +1,48 @@
+import React from 'react';
+import { ViolationType } from '@/utils/types';
+import { MapPin, Calendar, Info } from 'lucide-react';
+
+interface ViolationDetailsProps {
+  violation: ViolationType;
+}
+
+const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation }) => {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 text-sm">
+        <MapPin className="h-4 w-4 text-muted-foreground" />
+        <span>{violation.address}</span>
+      </div>
+      
+      {violation.dateIssued && (
+        <div className="flex items-center gap-2 text-sm">
+          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <span>Date Issued: {new Date(violation.dateIssued).toLocaleDateString()}</span>
+        </div>
+      )}
+      
+      {violation.description && (
+        <div className="flex items-start gap-2 text-sm">
+          <Info className="h-4 w-4 text-muted-foreground mt-0.5" />
+          <span>{violation.description}</span>
+        </div>
+      )}
+      
+      {violation.investigationOutcome && (
+        <div className="text-sm">
+          <span className="font-medium">Outcome: </span>
+          <span className="text-yellow-500">{violation.investigationOutcome}</span>
+        </div>
+      )}
+      
+      {violation.investigationFindings && (
+        <div className="text-sm">
+          <span className="font-medium">Findings: </span>
+          <span>{violation.investigationFindings}</span>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ViolationDetails; 

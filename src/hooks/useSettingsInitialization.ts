@@ -2,7 +2,6 @@ import type { Dispatch, SetStateAction } from 'react';
 import { useState, useEffect } from 'react';
 import { 
   fetchSettings, 
-  saveSettingsToLocalStorage,
   saveSettings,
 } from '@/services/settingsService';
 import { scheduleNextCheck } from '@/services/violationCheckService';
@@ -18,7 +17,6 @@ export interface InitializedSettings {
 }
 
 export const useSettingsInitialization = (
-  initialSettings: Partial<AppSettings>,
   checkForViolations: () => Promise<(() => void) | undefined>
 ): [
   InitializedSettings,
@@ -60,14 +58,6 @@ export const useSettingsInitialization = (
       }
     }
 
-    // Save to localStorage
-    saveSettingsToLocalStorage({
-      violationChecksEnabled,
-      emailReportsEnabled,
-      emailReportAddress,
-      nextViolationCheckTime
-    });
-
     // If checks are enabled, set up the schedule
     if (violationChecksEnabled) {
       return scheduleNextCheck({
@@ -97,41 +87,14 @@ export const useSettingsInitialization = (
             nextViolationCheckTime: settings.nextViolationCheckTime
           });
 
-          // Ensure database and localStorage are in sync
-          await saveSettings({
-            violationChecksEnabled: settings.violationChecksEnabled,
-            emailReportsEnabled: settings.emailReportsEnabled,
-            emailReportAddress: settings.emailReportAddress,
-            nextViolationCheckTime: settings.nextViolationCheckTime
-          });
-
           return cleanup;
         } else {
-          console.log('No database settings found, using localStorage:', initialSettings);
-          
-          // Update all settings from localStorage
-          const cleanup = await updateAllSettings({
-            violationChecksEnabled: initialSettings.violationChecksEnabled,
-            emailReportsEnabled: initialSettings.emailReportsEnabled,
-            emailReportAddress: initialSettings.emailReportAddress,
-            nextViolationCheckTime: initialSettings.nextViolationCheckTime
-          });
-          
+          console.log('No settings found in database');
           toast({
-            title: "Using Local Settings",
-            description: "Could not fetch settings from database, using locally stored settings.",
+            title: "Settings Not Found",
+            description: "Could not load settings from database. Using default values.",
             variant: "default",
           });
-
-          // Try to save localStorage values to database
-          await saveSettings({
-            violationChecksEnabled: initialSettings.violationChecksEnabled,
-            emailReportsEnabled: initialSettings.emailReportsEnabled,
-            emailReportAddress: initialSettings.emailReportAddress,
-            nextViolationCheckTime: initialSettings.nextViolationCheckTime
-          });
-
-          return cleanup;
         }
       } catch (error) {
         console.error('Error initializing settings:', error);
@@ -152,9 +115,10 @@ export const useSettingsInitialization = (
       const timeoutId = localStorage.getItem('violationCheckTimeoutId');
       if (timeoutId) {
         clearTimeout(parseInt(timeoutId));
+        localStorage.removeItem('violationCheckTimeoutId');
       }
     };
-  }, [isInitialized, initialSettings, checkForViolations, toast]);
+  }, [isInitialized, checkForViolations, toast]);
 
   return [
     { 

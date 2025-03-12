@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MapPin, Calendar, Hash, Info } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -15,11 +14,11 @@ interface ViolationDetailsDialogProps {
 }
 
 const ViolationDetailsDialog = ({ violation, open, onOpenChange, formatDate }: ViolationDetailsDialogProps) => {
-  const hasRelatedViolations = 
-    violation.relatedViolationsCount && 
-    violation.relatedViolationsCount > 0 && 
-    violation.relatedViolations && 
-    violation.relatedViolations.length > 0;
+  const hasPreviousStates =
+    violation.previousStatesCount &&
+    violation.previousStatesCount > 0 &&
+    violation.previousStates &&
+    violation.previousStates.length > 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -87,17 +86,20 @@ const ViolationDetailsDialog = ({ violation, open, onOpenChange, formatDate }: V
             </div>
           </div>
           
-          {hasRelatedViolations && (
-            <div>
-              <h3 className="text-base font-medium mb-3">Related Violations ({violation.relatedViolationsCount})</h3>
+          {hasPreviousStates && (
+            <div className="mt-6">
+              <h3 className="text-base font-medium mb-3">Previous States ({violation.previousStatesCount})</h3>
               <div className="space-y-4">
-                {violation.relatedViolations?.map((relatedViolation, idx) => (
-                  <RelatedViolationCard 
-                    key={idx} 
-                    violation={relatedViolation} 
-                    formatDate={formatDate} 
-                    variant="detailed"
-                  />
+                {violation.previousStates?.map((previousState, idx) => (
+                  <div
+                    key={previousState.id}
+                    className="rounded-lg border p-4"
+                  >
+                    <div className="mb-2 font-medium">
+                      State {idx + 1}
+                    </div>
+                    <ViolationDetails violation={previousState} />
+                  </div>
                 ))}
               </div>
             </div>

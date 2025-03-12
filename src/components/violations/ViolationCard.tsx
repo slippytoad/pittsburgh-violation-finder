@@ -1,14 +1,16 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MapPin, Calendar, Hash, Layers, ChevronDown, ChevronUp } from 'lucide-react';
+import { MapPin, Calendar, Hash, Layers, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
 import { ViolationType } from '@/utils/types';
 import AnimatedContainer from '../AnimatedContainer';
 import StatusBadge from './StatusBadge';
 import InvestigationInfo from './InvestigationInfo';
 import ViolationDetailsDialog from './ViolationDetailsDialog';
 import RelatedViolationCard from './RelatedViolationCard';
+import { cn } from '@/lib/utils';
+import { History } from 'lucide-react';
+import ViolationDetails from './ViolationDetails';
 
 interface ViolationCardProps {
   violation: ViolationType;
@@ -32,11 +34,11 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
     setExpanded(!expanded);
   };
 
-  const hasRelatedViolations = 
-    violation.relatedViolationsCount && 
-    violation.relatedViolationsCount > 0 && 
-    violation.relatedViolations && 
-    violation.relatedViolations.length > 0;
+  const hasPreviousStates =
+    violation.previousStatesCount &&
+    violation.previousStatesCount > 0 &&
+    violation.previousStates &&
+    violation.previousStates.length > 0;
 
   return (
     <>
@@ -64,10 +66,10 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                   <Hash className="h-3.5 w-3.5" />
                   <span>Case #: {violation.id}</span>
                 </div>
-                {violation.relatedViolationsCount && violation.relatedViolationsCount > 0 && (
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <Layers className="h-3.5 w-3.5" />
-                    <span>{violation.relatedViolationsCount} related violation{violation.relatedViolationsCount !== 1 ? 's' : ''}</span>
+                {violation.previousStatesCount && violation.previousStatesCount > 0 && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <History className="h-4 w-4" />
+                    <span>{violation.previousStatesCount} previous state{violation.previousStatesCount !== 1 ? 's' : ''}</span>
                   </div>
                 )}
               </div>
@@ -93,40 +95,35 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
             </div>
           </CardContent>
           
-          {hasRelatedViolations && (
-            <CardFooter className="p-4 pt-0">
-              <Button 
-                variant="outline" 
-                className="w-full text-sm flex items-center justify-center gap-1"
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent card click when clicking this button
-                  toggleExpanded();
-                }}
-              >
-                {expanded ? (
-                  <>
-                    <ChevronUp className="h-4 w-4" />
-                    Hide related violations
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown className="h-4 w-4" />
-                    View {violation.relatedViolationsCount} related violation{violation.relatedViolationsCount !== 1 ? 's' : ''}
-                  </>
-                )}
-              </Button>
-            </CardFooter>
+          {hasPreviousStates && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-sm"
+              onClick={() => setExpanded(!expanded)}
+            >
+              <ChevronRight
+                className={cn("h-4 w-4 transition-transform", {
+                  "rotate-90": expanded,
+                })}
+              />
+              View {violation.previousStatesCount} previous state{violation.previousStatesCount !== 1 ? 's' : ''}
+            </Button>
           )}
         </Card>
         
-        {expanded && hasRelatedViolations && (
-          <div className="pl-6 border-l-2 border-dashed border-gray-300 ml-4 mt-2 space-y-3">
-            {violation.relatedViolations?.map((relatedViolation, relatedIndex) => (
-              <RelatedViolationCard 
-                key={relatedIndex} 
-                violation={relatedViolation} 
-                formatDate={formatDate} 
-              />
+        {expanded && hasPreviousStates && (
+          <div className="mt-4 space-y-4">
+            {violation.previousStates?.map((previousState, stateIndex) => (
+              <div
+                key={previousState.id}
+                className="rounded-lg border p-4 text-sm"
+              >
+                <div className="mb-2 font-medium">
+                  State {stateIndex + 1}
+                </div>
+                <ViolationDetails violation={previousState} />
+              </div>
             ))}
           </div>
         )}

@@ -1,4 +1,3 @@
-
 /**
  * API service for the WPRDC Pittsburgh PLI Violations data
  * API Reference: https://data.wprdc.org/dataset/pittsburgh-pli-violations-report/resource/70c06278-92c5-4040-ab28-17671866f81c
@@ -119,8 +118,8 @@ export const searchViolationsByAddress = async (address: string): Promise<Violat
         propertyOwner: primaryRecord.owner_name || 'Unknown',
         investigationOutcome: primaryRecord.investigation_outcome || primaryRecord.inspection_result || null,
         investigationFindings: primaryRecord.investigation_findings || null,
-        relatedViolationsCount: records.length > 1 ? records.length - 1 : null,
-        relatedViolations: records.length > 1 ? records.slice(1).map((record, index) => ({
+        previousStatesCount: records.length > 1 ? records.length - 1 : null,
+        previousStates: records.length > 1 ? records.slice(1).map((record, index) => ({
           id: `${caseNumber}-${index + 1}`,
           address: record.address || primaryRecord.address || '',
           violationType: record.violation_code_section || 'Unknown',
