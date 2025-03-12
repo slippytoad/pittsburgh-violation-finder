@@ -5,10 +5,10 @@ import { useToast } from '@/components/ui/use-toast';
 
 export const useScheduledControls = (
   isScheduled: boolean,
-  emailEnabled: boolean,
-  emailAddress: string,
   setIsScheduled: (value: boolean) => void,
+  emailEnabled: boolean,
   setEmailEnabled: (value: boolean) => void,
+  emailAddress: string,
   setEmailAddress: (value: string) => void,
   setNextCheckTime: (value: Date | null) => void,
   checkForViolations: () => Promise<(() => void) | undefined>

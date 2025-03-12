@@ -5,6 +5,7 @@ import { ViolationType } from '@/utils/types';
 import StatusBadge from './StatusBadge';
 import InvestigationInfo from './InvestigationInfo';
 import RelatedViolationCard from './RelatedViolationCard';
+import ViolationDetails from './ViolationDetails';
 
 interface ViolationDetailsDialogProps {
   violation: ViolationType;
