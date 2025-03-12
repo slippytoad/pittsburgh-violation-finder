@@ -12,6 +12,8 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 // Function to create necessary tables if they don't exist
 export const initSupabaseTables = async () => {
   try {
+    console.log('Starting Supabase tables initialization...');
+    
     // Create the app_settings table using SQL query
     const { error: createTableError } = await supabase.rpc(
       'exec_sql', 
@@ -91,6 +93,12 @@ export const initSupabaseTables = async () => {
   } catch (error) {
     console.error('Error initializing Supabase tables:', error);
   }
+};
+
+// Function to manually run the initialization - can be called from components
+export const runTableInitialization = () => {
+  console.log('Manually running table initialization...');
+  return initSupabaseTables();
 };
 
 // Initialize tables when this file is imported
