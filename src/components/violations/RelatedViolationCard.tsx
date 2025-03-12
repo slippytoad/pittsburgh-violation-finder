@@ -41,8 +41,8 @@ const RelatedViolationCard = ({ violation, formatDate, variant = 'compact' }: Re
         <p className="text-xs mb-2 whitespace-pre-line">{violation.description}</p>
         
         <InvestigationInfo 
-          outcome={violation.investigationOutcome} 
-          findings={violation.investigationFindings}
+          investigationOutcome={violation.investigationOutcome} 
+          investigationFindings={violation.investigationFindings}
           size="sm"
         />
         

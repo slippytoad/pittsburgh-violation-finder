@@ -79,8 +79,8 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
             
             {/* Investigation Info */}
             <InvestigationInfo 
-              outcome={violation.investigationOutcome} 
-              findings={violation.investigationFindings} 
+              investigationOutcome={violation.investigationOutcome} 
+              investigationFindings={violation.investigationFindings} 
             />
             
             <div className="text-xs text-muted-foreground space-y-1">
