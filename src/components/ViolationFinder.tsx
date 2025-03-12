@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import SearchForm from '@/components/SearchForm';
 import ResultsList from '@/components/ResultsList';
@@ -10,8 +11,9 @@ import { useAddresses } from '@/hooks/useAddresses';
 import { useScheduledViolationCheck } from '@/hooks/useScheduledViolationCheck';
 import { useToast } from '@/components/ui/use-toast';
 import { initSupabaseTables } from '@/utils/supabase';
+import { ScheduledCheckProvider } from '@/contexts/ScheduledCheckContext';
 
-const ViolationFinder = () => {
+const ViolationFinderContent = () => {
   const { violations, isLoading, selectedAddress, handleSearch, handleSearchAll, searchCount } = useViolations();
   const { addresses, handleAddAddress, handleRemoveAddress, handleBulkImport } = useAddresses();
   const { 
@@ -189,6 +191,14 @@ const ViolationFinder = () => {
         onSave={saveEmailSettings}
       />
     </div>
+  );
+};
+
+const ViolationFinder = () => {
+  return (
+    <ScheduledCheckProvider>
+      <ViolationFinderContent />
+    </ScheduledCheckProvider>
   );
 };
 
