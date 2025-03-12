@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { fetchSavedAddresses, saveAddress, removeAddress } from '@/utils/addressService';
+import { fetchSavedAddresses, saveAddress, removeAddress, normalizeAddress } from '@/utils/addressService';
 
 export function useAddresses() {
   const [addresses, setAddresses] = useState<string[]>([]);
@@ -28,7 +28,11 @@ export function useAddresses() {
 
   const handleAddAddress = async (address: string) => {
     try {
-      if (!addresses.includes(address)) {
+      // Check if normalized version of this address already exists
+      const normalizedNewAddress = normalizeAddress(address);
+      const normalizedExisting = addresses.map(addr => normalizeAddress(addr));
+      
+      if (!normalizedExisting.includes(normalizedNewAddress)) {
         const updatedAddresses = await saveAddress(address);
         setAddresses(updatedAddresses);
         toast({
@@ -38,7 +42,7 @@ export function useAddresses() {
       } else {
         toast({
           title: "Address exists",
-          description: "This address is already in your saved list",
+          description: "This address (or a variation of it) is already in your saved list",
         });
       }
     } catch (error) {

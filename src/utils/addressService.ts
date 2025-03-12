@@ -7,6 +7,19 @@ import { supabase } from './supabase';
 import { Address } from './types';
 
 /**
+ * Normalize an address by removing unit/apartment numbers
+ * @param address The address to normalize
+ * @returns Normalized address string
+ */
+export const normalizeAddress = (address: string): string => {
+  // Remove common unit/apartment identifiers and what follows them
+  return address
+    .replace(/\s+(apt|apartment|unit|#|suite|ste|floor|fl)\.?\s+\w+/i, '')
+    .replace(/\s+#\w+/i, '')
+    .trim();
+};
+
+/**
  * Fetch all saved addresses from the database
  * @returns Array of address strings
  */
@@ -38,14 +51,25 @@ export const fetchSavedAddresses = async (): Promise<string[]> => {
  */
 export const saveAddress = async (address: string): Promise<string[]> => {
   try {
-    // Check if the address already exists to avoid duplicates
+    // Normalize the address to ignore units
+    const normalizedAddress = normalizeAddress(address);
+    
+    // Check if any version of this normalized address already exists
     const { data: existingAddresses } = await supabase
       .from('addresses')
-      .select('*')
-      .eq('address', address);
-
-    // If the address doesn't exist, insert it
-    if (!existingAddresses || existingAddresses.length === 0) {
+      .select('*');
+      
+    if (!existingAddresses) {
+      throw new Error('Failed to check existing addresses');
+    }
+    
+    // Check if any existing address normalizes to the same as our new address
+    const normalizedExisting = existingAddresses.map((addr: Address) => 
+      normalizeAddress(addr.address)
+    );
+    
+    // If no normalized version of this address exists, insert it
+    if (!normalizedExisting.includes(normalizedAddress)) {
       const { error } = await supabase
         .from('addresses')
         .insert([{ address }]);
