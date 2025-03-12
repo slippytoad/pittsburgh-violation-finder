@@ -2,6 +2,21 @@ import { supabase } from '@/utils/supabase';
 import type { AppSettings } from '@/utils/types';
 
 /**
+ * Transform database record to AppSettings type
+ */
+const transformDatabaseRecord = (record: any): AppSettings => {
+  return {
+    id: record.id,
+    violationChecksEnabled: record.violation_checks_enabled,
+    emailReportsEnabled: record.email_reports_enabled,
+    emailReportAddress: record.email_report_address || '',
+    nextViolationCheckTime: record.next_violation_check_time,
+    created_at: record.created_at,
+    updated_at: record.updated_at
+  };
+};
+
+/**
  * Fetch app settings from Supabase
  * @returns The app settings or null if there's an error
  */
@@ -18,7 +33,16 @@ export const fetchSettings = async (): Promise<AppSettings | null> => {
       return null;
     }
     
-    return data as AppSettings;
+    if (!data) {
+      console.log('No settings found in database');
+      return null;
+    }
+
+    console.log('Raw database record:', data);
+    const transformed = transformDatabaseRecord(data);
+    console.log('Transformed settings:', transformed);
+    
+    return transformed;
   } catch (error) {
     console.error('Failed to fetch settings:', error);
     return null;
@@ -48,6 +72,8 @@ export const saveSettings = async (settings: Partial<AppSettings>): Promise<bool
       }
     });
 
+    console.log('Saving settings to database:', formattedSettings);
+
     // First check if the record exists
     const { data: existingData, error: checkError } = await supabase
       .from('app_settings')
@@ -70,6 +96,7 @@ export const saveSettings = async (settings: Partial<AppSettings>): Promise<bool
           console.error('Error creating settings record:', insertError);
           return false;
         }
+        console.log('Created new settings record');
         return true;
       }
       return false;
@@ -86,6 +113,7 @@ export const saveSettings = async (settings: Partial<AppSettings>): Promise<bool
       return false;
     }
     
+    console.log('Updated existing settings record');
     return true;
   } catch (error) {
     console.error('Failed to save settings:', error);
@@ -98,12 +126,14 @@ export const saveSettings = async (settings: Partial<AppSettings>): Promise<bool
  * @returns AppSettings object with values from localStorage
  */
 export const loadSettingsFromLocalStorage = (): Partial<AppSettings> => {
-  return {
+  const settings = {
     violationChecksEnabled: localStorage.getItem('violationChecksEnabled') === 'true',
     emailReportsEnabled: localStorage.getItem('emailReportsEnabled') === 'true',
     emailReportAddress: localStorage.getItem('emailReportAddress') || '',
     nextViolationCheckTime: localStorage.getItem('nextViolationCheckTime') || undefined
   };
+  console.log('Loaded settings from localStorage:', settings);
+  return settings;
 };
 
 /**
@@ -111,6 +141,8 @@ export const loadSettingsFromLocalStorage = (): Partial<AppSettings> => {
  * @param settings The settings to save
  */
 export const saveSettingsToLocalStorage = (settings: Partial<AppSettings>): void => {
+  console.log('Saving settings to localStorage:', settings);
+  
   if (settings.violationChecksEnabled !== undefined) {
     localStorage.setItem('violationChecksEnabled', String(settings.violationChecksEnabled));
   }

@@ -8,40 +8,50 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1N
 // Create a Supabase client
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Default settings record
+const defaultSettings = {
+  id: 1,
+  violation_checks_enabled: false,
+  email_reports_enabled: false,
+  email_report_address: '',
+  next_violation_check_time: null,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString()
+};
+
 // Function to create necessary tables if they don't exist
 export const initSupabaseTables = async () => {
   try {
     console.log('Starting Supabase tables initialization...');
     
     // First try to query the table to see if it exists
-    const { error: queryError } = await supabase
+    const { data: existingData, error: queryError } = await supabase
       .from('app_settings')
       .select('*')
       .limit(1);
       
+    console.log('Initial query result:', { existingData, queryError });
+      
     if (queryError && queryError.code === '42P01') {
+      console.log('Table does not exist, attempting to create...');
       // Table doesn't exist, create it
       const { error: createError } = await supabase.rpc('create_app_settings_table');
       
       if (createError) {
         console.error('Failed to create table via RPC:', createError);
+        console.log('Attempting direct insert as fallback...');
         // Try direct SQL as fallback (this requires appropriate permissions)
         const { error: sqlError } = await supabase
           .from('app_settings')
-          .insert({
-            id: 1,
-            violation_checks_enabled: false,
-            email_reports_enabled: false,
-            email_report_address: '',
-            next_violation_check_time: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
+          .insert(defaultSettings);
           
         if (sqlError) {
           console.error('Failed to create table via direct insert:', sqlError);
           return false;
         }
+        console.log('Successfully created table via direct insert');
+      } else {
+        console.log('Successfully created table via RPC');
       }
     }
     
@@ -52,25 +62,22 @@ export const initSupabaseTables = async () => {
       .eq('id', 1)
       .single();
       
-    if (verifyError) {
-      console.error('Table verification failed:', verifyError);
+    console.log('Verification query result:', { data, verifyError });
+      
+    if (verifyError || !data) {
+      console.log('No default record found, creating one...');
       // Try to create the default record
       const { error: insertError } = await supabase
         .from('app_settings')
-        .insert({
-          id: 1,
-          violation_checks_enabled: false,
-          email_reports_enabled: false,
-          email_report_address: '',
-          next_violation_check_time: null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
+        .insert(defaultSettings);
         
       if (insertError) {
         console.error('Failed to create default record:', insertError);
         return false;
       }
+      console.log('Successfully created default record');
+    } else {
+      console.log('Existing record found:', data);
     }
     
     console.log('Database initialization complete');
@@ -78,32 +85,6 @@ export const initSupabaseTables = async () => {
   } catch (error) {
     console.error('Error initializing Supabase tables:', error);
     return false;
-  }
-};
-
-// Helper function to create table with direct operations
-const createTableWithDirectOperations = async () => {
-  try {
-    // Try to insert a record, which will fail if the table doesn't exist
-    const { error: insertError } = await supabase
-      .from('app_settings')
-      .insert({
-        id: 1,
-        violation_checks_enabled: false,
-        email_reports_enabled: false,
-        email_report_address: '',
-        next_violation_check_time: null
-      });
-      
-    if (insertError && insertError.code === '42P01') {
-      console.error('Table does not exist and cannot be created through direct operations');
-    } else if (insertError) {
-      console.error('Error inserting into app_settings:', insertError);
-    } else {
-      console.log('app_settings record inserted successfully');
-    }
-  } catch (error) {
-    console.error('Error in createTableWithDirectOperations:', error);
   }
 };
 
@@ -116,6 +97,7 @@ export const runTableInitialization = () => {
 // Add a simple function to reset the database to initial state
 export const resetDatabase = async () => {
   try {
+    console.log('Resetting database to initial state...');
     // Instead of deleting, update the single record
     const { error: updateError } = await supabase
       .from('app_settings')
