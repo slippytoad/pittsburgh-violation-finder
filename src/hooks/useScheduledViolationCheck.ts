@@ -3,52 +3,15 @@ import { useToast } from '@/components/ui/use-toast';
 import { ViolationType } from '@/utils/types';
 import { useViolations } from './useViolations';
 import { useAddresses } from './useAddresses';
-import { sendEmail, initEmailService } from '@/utils/emailService';
-
-// Time to check for violations (6 AM PST)
-const CHECK_HOUR_PST = 6;
-
-// Convert PST hour to local time
-const getPSTCheckTimeInLocalTime = (): Date => {
-  const now = new Date();
-  const localTime = new Date();
-  
-  // PST is UTC-8 (standard time) or UTC-7 (daylight saving time)
-  // We'll use a simple approach to determine if DST is in effect
-  const isDST = (): boolean => {
-    // Simple check for DST in the US
-    const januaryOffset = new Date(now.getFullYear(), 0, 1).getTimezoneOffset();
-    const julyOffset = new Date(now.getFullYear(), 6, 1).getTimezoneOffset();
-    return Math.max(januaryOffset, julyOffset) !== now.getTimezoneOffset();
-  };
-  
-  // PST/PDT offset in hours (negative means behind UTC)
-  const pstOffset = isDST() ? -7 : -8;
-  // Get local offset in hours (negative means behind UTC)
-  const localOffset = -now.getTimezoneOffset() / 60;
-  // Calculate the difference between local time and PST
-  const hourDifference = localOffset - pstOffset;
-  
-  // Set the check time in local timezone
-  localTime.setHours(CHECK_HOUR_PST + hourDifference);
-  localTime.setMinutes(0);
-  localTime.setSeconds(0);
-  localTime.setMilliseconds(0);
-  
-  // If the calculated time is in the past for today, schedule for tomorrow
-  if (localTime < now) {
-    localTime.setDate(localTime.getDate() + 1);
-  }
-  
-  return localTime;
-};
-
-// Calculate milliseconds until next check time
-const getMillisecondsUntilNextCheck = (): number => {
-  const nextCheckTime = getPSTCheckTimeInLocalTime();
-  const now = new Date();
-  return nextCheckTime.getTime() - now.getTime();
-};
+import { 
+  getPSTCheckTimeInLocalTime, 
+  getMillisecondsUntilNextCheck 
+} from '@/utils/timeUtils';
+import { 
+  filterNewViolations, 
+  sendViolationEmailReport 
+} from '@/utils/violationTracking';
+import { initEmailService } from '@/utils/emailService';
 
 export function useScheduledViolationCheck() {
   const [isScheduled, setIsScheduled] = useState<boolean>(false);
@@ -59,95 +22,6 @@ export function useScheduledViolationCheck() {
   const { handleSearchAll } = useViolations();
   const { addresses } = useAddresses();
   const { toast } = useToast();
-  
-  // Load previously known violations from localStorage
-  const loadKnownViolations = (): Record<string, string[]> => {
-    const saved = localStorage.getItem('knownViolations');
-    return saved ? JSON.parse(saved) : {};
-  };
-  
-  // Save known violations to localStorage
-  const saveKnownViolations = (violations: Record<string, string[]>) => {
-    localStorage.setItem('knownViolations', JSON.stringify(violations));
-  };
-  
-  // Compare new violations with known ones and return only the new ones
-  const filterNewViolations = (allViolations: ViolationType[]): ViolationType[] => {
-    const knownViolations = loadKnownViolations();
-    const newViolations: ViolationType[] = [];
-    const updatedKnownViolations: Record<string, string[]> = { ...knownViolations };
-    
-    allViolations.forEach(violation => {
-      const address = violation.address;
-      const violationId = violation.id;
-      
-      // Initialize array for this address if it doesn't exist
-      if (!updatedKnownViolations[address]) {
-        updatedKnownViolations[address] = [];
-      }
-      
-      // Check if this violation ID is known for this address
-      if (!updatedKnownViolations[address].includes(violationId)) {
-        newViolations.push(violation);
-        updatedKnownViolations[address].push(violationId);
-      }
-    });
-    
-    // Save the updated known violations
-    saveKnownViolations(updatedKnownViolations);
-    
-    return newViolations;
-  };
-  
-  // Send email report
-  const sendEmailReport = async (newViolations: ViolationType[]) => {
-    if (!emailEnabled || !emailAddress) return;
-    
-    try {
-      // Basic email content
-      const emailSubject = `Property Violation Report - ${new Date().toLocaleDateString()}`;
-      let emailBody = `Daily Property Violation Report\n\n`;
-      
-      if (newViolations.length > 0) {
-        emailBody += `${newViolations.length} new violations found:\n\n`;
-        newViolations.forEach(violation => {
-          emailBody += `- Address: ${violation.address}\n`;
-          emailBody += `  Violation: ${violation.violationType}\n`;
-          emailBody += `  Date Issued: ${violation.dateIssued}\n\n`;
-        });
-      } else {
-        emailBody += "Good news! No new violations were found today.";
-      }
-      
-      // Format for HTML email
-      const htmlMessage = emailBody.replace(/\n/g, '<br>');
-      
-      // Send the email using our email service
-      const emailParams = {
-        to_email: emailAddress,
-        subject: emailSubject,
-        message: htmlMessage
-      };
-      
-      const success = await sendEmail(emailParams);
-      
-      if (success) {
-        toast({
-          title: "Email Report Sent",
-          description: `A report has been sent to ${emailAddress}`,
-        });
-      } else {
-        throw new Error("Failed to send email");
-      }
-    } catch (error) {
-      console.error("Failed to send email report:", error);
-      toast({
-        title: "Email Report Failed",
-        description: "Failed to send the email report. Please check your email configuration.",
-        variant: "destructive",
-      });
-    }
-  };
   
   // Perform the violation check
   const checkForViolations = async () => {
@@ -184,14 +58,27 @@ export function useScheduledViolationCheck() {
                   description: `${newViolations.length} new violations were found during the scheduled check.`,
                   variant: "default",
                 });
-                
-                // Send email report with new violations
-                sendEmailReport(newViolations);
               } else {
                 console.log('No new violations found');
-                // Send empty report
-                sendEmailReport([]);
               }
+              
+              // Send email report
+              sendViolationEmailReport(newViolations, emailEnabled, emailAddress)
+                .then(success => {
+                  if (success) {
+                    toast({
+                      title: "Email Report Sent",
+                      description: `A report has been sent to ${emailAddress}`,
+                    });
+                  } else if (emailEnabled && emailAddress) {
+                    toast({
+                      title: "Email Report Failed",
+                      description: "Failed to send the email report. Please check your email configuration.",
+                      variant: "destructive",
+                    });
+                  }
+                });
+              
             } catch (e) {
               console.error('Error parsing violations data', e);
             }
