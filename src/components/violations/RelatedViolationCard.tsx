@@ -22,10 +22,6 @@ const RelatedViolationCard = ({ violation, formatDate, variant = 'compact' }: Re
         </div>
         <div className="flex flex-col space-y-1 mt-1">
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPin className="h-3 w-3" />
-            <span>{violation.address}</span>
-          </div>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Calendar className="h-3 w-3" />
             <span>Investigation Date: {formatDate(violation.dateIssued)}</span>
           </div>

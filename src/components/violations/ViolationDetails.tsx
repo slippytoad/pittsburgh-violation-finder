@@ -46,4 +46,4 @@ const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation }) => {
   );
 };
 
-export default ViolationDetails; 
+export default ViolationDetails;
