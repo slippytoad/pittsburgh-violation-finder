@@ -28,7 +28,7 @@ const InvestigationInfo: React.FC<InvestigationInfoProps> = ({
         {investigationOutcome && (
           <div>
             <span className={`font-medium ${textSize}`}>Outcome: </span>
-            <span className={`${textSize} text-yellow-500`}>{investigationOutcome}</span>
+            <span className={`${textSize}`}>{investigationOutcome}</span>
           </div>
         )}
         
