@@ -48,7 +48,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
         >
           <CardHeader className="p-4 pb-2 flex flex-row items-start justify-between space-y-0">
             <div className="flex flex-col space-y-1.5">
-              <h3 className="font-medium text-base">{violation.violationType}</h3>
+              <h3 className="font-medium text-base">Case #: {violation.id}</h3>
               <div className="flex flex-col space-y-1">
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <MapPin className="h-3.5 w-3.5" />
@@ -60,7 +60,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                 </div>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Hash className="h-3.5 w-3.5" />
-                  <span>Case #: {violation.id}</span>
+                  <span>Type: {violation.violationType}</span>
                 </div>
                 {violation.previousStatesCount && violation.previousStatesCount > 0 && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">

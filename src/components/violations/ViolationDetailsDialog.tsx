@@ -30,7 +30,7 @@ const ViolationDetailsDialog = ({ violation, open, onOpenChange, formatDate }: V
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
         <DialogHeader>
-          <DialogTitle>{violation.violationType}</DialogTitle>
+          <DialogTitle>Case #: {violation.id}</DialogTitle>
           <div className="mt-2">
             <StatusBadge status={violation.status} />
           </div>
@@ -52,7 +52,7 @@ const ViolationDetailsDialog = ({ violation, open, onOpenChange, formatDate }: V
                   </div>
                   <div className="flex items-center gap-1">
                     <Hash className="h-4 w-4 text-muted-foreground" />
-                    <span><strong>Case #:</strong> {violation.id}</span>
+                    <span><strong>Violation Type:</strong> {violation.violationType}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Info className="h-4 w-4 text-muted-foreground" />
