@@ -52,6 +52,14 @@ const AddressList = ({
     years.push(year);
   }
 
+  // Add console log for debugging
+  const handleSearchAllClick = () => {
+    console.log("Search All button clicked, calling onSearchAll function");
+    if (!isLoading) {
+      onSearchAll();
+    }
+  };
+
   return (
     <AnimatedContainer className="w-full mt-6">
       <div className="flex justify-between items-center mb-3">
@@ -85,7 +93,7 @@ const AddressList = ({
                 variant="outline"
                 disabled={isLoading}
                 className="gap-1"
-                onClick={() => !isLoading && onSearchAll()}
+                onClick={handleSearchAllClick}
               >
                 {isLoading ? (
                   <Spinner size="sm" className="mr-2" />

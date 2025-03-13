@@ -18,6 +18,8 @@ export const processBatch = async (
   year: number = new Date().getFullYear(),
   allResults: ViolationType[] = []
 ): Promise<ViolationType[]> => {
+  console.log(`Processing batch from index ${startIndex} with year ${year}`);
+  
   if (startIndex >= addresses.length) {
     return allResults;
   }
@@ -27,7 +29,10 @@ export const processBatch = async (
   
   try {
     // Search for all addresses in the current batch in parallel, using the year parameter
-    const searchPromises = batch.map(address => searchViolationsByAddress(address, year));
+    const searchPromises = batch.map(address => {
+      console.log(`Searching violations for address: ${address}, year: ${year}`);
+      return searchViolationsByAddress(address, year);
+    });
     const batchResults = await Promise.all(searchPromises);
     
     // Update search counter

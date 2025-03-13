@@ -37,6 +37,7 @@ const ViolationFinderContent: React.FC = () => {
   }, [emailEnabled, emailAddress]);
 
   const handleYearChange = (year: number) => {
+    console.log("Year changed to:", year);
     setSelectedYear(year);
   };
 
@@ -45,6 +46,7 @@ const ViolationFinderContent: React.FC = () => {
   };
 
   const onSearchAll = useCallback(() => {
+    console.log("onSearchAll called with year:", selectedYear);
     if (addresses.length > 10) {
       toast({
         title: "Processing in batches",

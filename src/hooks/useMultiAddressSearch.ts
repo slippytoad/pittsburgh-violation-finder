@@ -14,6 +14,8 @@ export function useMultiAddressSearch(
   const { toast } = useToast();
 
   const handleSearchAll = async (addresses: string[], year: number = new Date().getFullYear()) => {
+    console.log("handleSearchAll called with year:", year);
+    
     if (addresses.length === 0) {
       toast({
         title: "No saved addresses",
@@ -27,6 +29,7 @@ export function useMultiAddressSearch(
     
     try {
       // Process addresses in batches, passing the year parameter
+      console.log("Starting batch processing with year:", year);
       const allViolations = await processBatch(addresses, 0, setSearchCount, year);
       
       // Process results (deduplicate and sort)
