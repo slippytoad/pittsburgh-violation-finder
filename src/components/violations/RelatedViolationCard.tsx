@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MapPin, Calendar, Info } from 'lucide-react';
+import { Calendar, Info } from 'lucide-react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { ViolationType } from '@/utils/types';
 import StatusBadge from './StatusBadge';
@@ -41,6 +41,10 @@ const RelatedViolationCard = ({ violation, formatDate, variant = 'compact' }: Re
           investigationFindings={violation.investigationFindings}
           size="sm"
         />
+        
+        <div className="mt-2 text-xs">
+          <strong>Status:</strong> <StatusBadge status={violation.status} size="sm" />
+        </div>
         
         {violation.fineAmount && (
           <div className="text-xs"><strong>Fine Amount:</strong> ${violation.fineAmount.toFixed(2)}</div>
