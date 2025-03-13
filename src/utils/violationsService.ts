@@ -119,8 +119,8 @@ export const searchViolationsByAddress = async (address: string): Promise<Violat
         }
         
         // If dates are equal, sort by ID
-        const idA = a._id ? parseInt(a._id, 10) : 0;
-        const idB = b._id ? parseInt(b._id, 10) : 0;
+        const idA = a._id ? parseInt(String(a._id), 10) : 0;
+        const idB = b._id ? parseInt(String(b._id), 10) : 0;
         return idB - idA;
       });
       
@@ -168,4 +168,3 @@ export const searchViolationsByAddress = async (address: string): Promise<Violat
     throw error;
   }
 };
-
