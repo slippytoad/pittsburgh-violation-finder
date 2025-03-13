@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -85,13 +86,6 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
               investigationFindings={violation.investigationFindings} 
             />
             
-            {violation.investigationOutcome && (
-              <div className="mt-2">
-                <span className="text-sm font-medium">Investigation Outcome: </span>
-                <span className="text-sm text-yellow-500">{violation.investigationOutcome}</span>
-              </div>
-            )}
-            
             <div className="text-xs text-muted-foreground space-y-1">
               {violation.fineAmount && (
                 <p><span className="font-medium">Fine Amount:</span> ${violation.fineAmount.toFixed(2)}</p>
@@ -107,7 +101,10 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
               variant="ghost"
               size="sm"
               className="text-sm"
-              onClick={() => setExpanded(!expanded)}
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent the card click event from firing
+                setExpanded(!expanded);
+              }}
             >
               <ChevronRight
                 className={cn("h-4 w-4 transition-transform", {
