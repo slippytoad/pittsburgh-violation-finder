@@ -6,8 +6,6 @@ import AddressList from '@/components/AddressList';
 import ViolationFinderHeader from '@/components/ViolationFinderHeader';
 import BulkImportSection from '@/components/BulkImportSection';
 import EmailSettingsSection from '@/components/EmailSettingsSection';
-import SampleAddressInitializer from '@/components/SampleAddressInitializer';
-import DatabaseInitializer from '@/components/DatabaseInitializer';
 import { useViolations } from '@/hooks/useViolations';
 import { useAddresses } from '@/hooks/useAddresses';
 import { useScheduledViolationCheck } from '@/hooks/useScheduledViolationCheck';
@@ -58,9 +56,6 @@ const ViolationFinderContent: React.FC = () => {
 
   return (
     <div className="max-w-screen-xl mx-auto">
-      <DatabaseInitializer />
-      <SampleAddressInitializer handleBulkImport={handleBulkImport} />
-      
       <ViolationFinderHeader
         searchCount={searchCount}
         isScheduled={isScheduled}

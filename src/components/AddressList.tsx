@@ -2,10 +2,16 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { X, Search, ListFilter, Import, ChevronDown, ChevronUp, Calendar } from 'lucide-react';
+import { X, Search, Import, ChevronDown, ChevronUp, Calendar } from 'lucide-react';
 import AnimatedContainer from './AnimatedContainer';
 import { Spinner } from '@/components/ui/spinner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface AddressListProps {
   addresses: string[];
@@ -44,7 +50,7 @@ const AddressList = ({
   // Generate years from 2024 to current year for the dropdown
   const years = [];
   for (let year = 2024; year <= currentYear; year++) {
-    years.push(year.toString());
+    years.push(year);
   }
 
   return (
@@ -73,38 +79,38 @@ const AddressList = ({
             Bulk Import
           </Button>
           
-          <div className="flex items-center gap-2">
-            <Select
-              value={selectedYear.toString()}
-              onValueChange={(value) => onYearChange(parseInt(value))}
-              disabled={isLoading}
-            >
-              <SelectTrigger className="w-[90px]">
-                <Calendar className="h-4 w-4 mr-1" />
-                <SelectValue placeholder="Year" />
-              </SelectTrigger>
-              <SelectContent>
-                {years.map(year => (
-                  <SelectItem key={year} value={year}>{year}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            <Button
-              onClick={onSearchAll}
-              size="sm"
-              variant="outline"
-              disabled={isLoading}
-              className="gap-1"
-            >
-              {isLoading ? (
-                <Spinner size="sm" className="mr-2" />
-              ) : (
-                <Search className="h-4 w-4" />
-              )}
-              Search All
-            </Button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={isLoading}
+                className="gap-1"
+              >
+                {isLoading ? (
+                  <Spinner size="sm" className="mr-2" />
+                ) : (
+                  <Search className="h-4 w-4" />
+                )}
+                Search All ({selectedYear})
+                <ChevronDown className="h-3 w-3 ml-1 opacity-70" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {years.map(year => (
+                <DropdownMenuItem 
+                  key={year}
+                  onClick={() => {
+                    onYearChange(year);
+                    onSearchAll();
+                  }}
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  {year}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       
