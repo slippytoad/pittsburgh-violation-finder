@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ViolationType } from '@/utils/types';
 import { MapPin, Calendar, Info } from 'lucide-react';
@@ -31,7 +32,7 @@ const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation }) => {
       {violation.investigationOutcome && (
         <div className="text-sm">
           <span className="font-medium">Outcome: </span>
-          <span className="text-yellow-500">{violation.investigationOutcome}</span>
+          <span>{violation.investigationOutcome}</span>
         </div>
       )}
       

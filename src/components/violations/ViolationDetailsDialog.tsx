@@ -1,11 +1,14 @@
-import React from 'react';
-import { MapPin, Calendar, Hash, Info } from 'lucide-react';
+
+import React, { useState } from 'react';
+import { MapPin, Calendar, Hash, Info, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { ViolationType } from '@/utils/types';
 import StatusBadge from './StatusBadge';
 import InvestigationInfo from './InvestigationInfo';
 import RelatedViolationCard from './RelatedViolationCard';
 import ViolationDetails from './ViolationDetails';
+import { cn } from '@/lib/utils';
 
 interface ViolationDetailsDialogProps {
   violation: ViolationType;
@@ -15,6 +18,8 @@ interface ViolationDetailsDialogProps {
 }
 
 const ViolationDetailsDialog = ({ violation, open, onOpenChange, formatDate }: ViolationDetailsDialogProps) => {
+  const [expanded, setExpanded] = useState(false);
+  
   const hasPreviousStates =
     violation.previousStatesCount &&
     violation.previousStatesCount > 0 &&
@@ -89,20 +94,35 @@ const ViolationDetailsDialog = ({ violation, open, onOpenChange, formatDate }: V
           
           {hasPreviousStates && (
             <div className="mt-6">
-              <h3 className="text-base font-medium mb-3">Previous States ({violation.previousStatesCount})</h3>
-              <div className="space-y-4">
-                {violation.previousStates?.map((previousState, idx) => (
-                  <div
-                    key={previousState.id}
-                    className="rounded-lg border p-4"
-                  >
-                    <div className="mb-2 font-medium">
-                      State {idx + 1}
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-sm mb-3"
+                onClick={() => setExpanded(!expanded)}
+              >
+                <ChevronRight
+                  className={cn("h-4 w-4 transition-transform mr-1", {
+                    "rotate-90": expanded,
+                  })}
+                />
+                {expanded ? "Hide" : "View"} {violation.previousStatesCount} previous state{violation.previousStatesCount !== 1 ? 's' : ''}
+              </Button>
+              
+              {expanded && (
+                <div className="space-y-4 mt-2">
+                  {violation.previousStates?.map((previousState, idx) => (
+                    <div
+                      key={previousState.id}
+                      className="rounded-lg border p-4 text-sm"
+                    >
+                      <div className="mb-2 font-medium">
+                        State {idx + 1}
+                      </div>
+                      <ViolationDetails violation={previousState} />
                     </div>
-                    <ViolationDetails violation={previousState} />
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

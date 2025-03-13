@@ -19,7 +19,6 @@ interface ViolationCardProps {
 }
 
 const ViolationCard = ({ violation, index }: ViolationCardProps) => {
-  const [expanded, setExpanded] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   
   const formatDate = (dateString: string) => {
@@ -29,10 +28,6 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
       month: 'short',
       day: 'numeric'
     });
-  };
-
-  const toggleExpanded = () => {
-    setExpanded(!expanded);
   };
 
   const hasPreviousStates =
@@ -95,42 +90,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
               )}
             </div>
           </CardContent>
-          
-          {hasPreviousStates && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-sm"
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent the card click event from firing
-                setExpanded(!expanded);
-              }}
-            >
-              <ChevronRight
-                className={cn("h-4 w-4 transition-transform", {
-                  "rotate-90": expanded,
-                })}
-              />
-              View {violation.previousStatesCount} previous state{violation.previousStatesCount !== 1 ? 's' : ''}
-            </Button>
-          )}
         </Card>
-        
-        {expanded && hasPreviousStates && (
-          <div className="mt-4 space-y-4">
-            {violation.previousStates?.map((previousState, stateIndex) => (
-              <div
-                key={previousState.id}
-                className="rounded-lg border p-4 text-sm"
-              >
-                <div className="mb-2 font-medium">
-                  State {stateIndex + 1}
-                </div>
-                <ViolationDetails violation={previousState} />
-              </div>
-            ))}
-          </div>
-        )}
       </AnimatedContainer>
 
       <ViolationDetailsDialog 
