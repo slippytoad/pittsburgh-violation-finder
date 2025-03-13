@@ -42,7 +42,7 @@ const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation }) => {
       {violation.status && (
         <div className="text-sm">
           <span className="font-medium">Status: </span>
-          <StatusBadge status={violation.status} size="sm" />
+          <span>{violation.status}</span>
         </div>
       )}
     </div>
