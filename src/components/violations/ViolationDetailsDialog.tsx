@@ -105,7 +105,7 @@ const ViolationDetailsDialog = ({ violation, open, onOpenChange, formatDate }: V
                     "rotate-90": expanded,
                   })}
                 />
-                {expanded ? "Hide" : "View"} {violation.previousStatesCount} previous state{violation.previousStatesCount !== 1 ? 's' : ''}
+                {expanded ? "Hide" : "View"} {violation.previousStatesCount} related record{violation.previousStatesCount !== 1 ? 's' : ''}
               </Button>
               
               {expanded && (
@@ -116,7 +116,7 @@ const ViolationDetailsDialog = ({ violation, open, onOpenChange, formatDate }: V
                       className="rounded-lg border p-4 text-sm"
                     >
                       <div className="mb-2 font-medium">
-                        State {idx + 1}
+                        Record {idx + 1}
                       </div>
                       <ViolationDetails violation={previousState} />
                     </div>

@@ -65,7 +65,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                 {violation.previousStatesCount && violation.previousStatesCount > 0 && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <History className="h-4 w-4" />
-                    <span>{violation.previousStatesCount} previous state{violation.previousStatesCount !== 1 ? 's' : ''}</span>
+                    <span>{violation.previousStatesCount} related record{violation.previousStatesCount !== 1 ? 's' : ''}</span>
                   </div>
                 )}
               </div>
