@@ -1,9 +1,11 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { X, Search, ListFilter, Import, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Search, ListFilter, Import, ChevronDown, ChevronUp, Calendar } from 'lucide-react';
 import AnimatedContainer from './AnimatedContainer';
 import { Spinner } from '@/components/ui/spinner';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface AddressListProps {
   addresses: string[];
@@ -14,6 +16,8 @@ interface AddressListProps {
   onToggleBulkImport?: () => void;
   showBulkImport?: boolean;
   isLoading?: boolean;
+  selectedYear: number;
+  onYearChange: (year: number) => void;
 }
 
 const AddressList = ({ 
@@ -24,12 +28,23 @@ const AddressList = ({
   selectedAddress,
   onToggleBulkImport,
   showBulkImport,
-  isLoading = false
+  isLoading = false,
+  selectedYear,
+  onYearChange
 }: AddressListProps) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
 
   if (addresses.length === 0) {
     return null;
+  }
+
+  // Get current year
+  const currentYear = new Date().getFullYear();
+  
+  // Generate years from 2024 to current year for the dropdown
+  const years = [];
+  for (let year = 2024; year <= currentYear; year++) {
+    years.push(year.toString());
   }
 
   return (
@@ -57,20 +72,39 @@ const AddressList = ({
             <Import className="h-4 w-4" />
             Bulk Import
           </Button>
-          <Button
-            onClick={onSearchAll}
-            size="sm"
-            variant="outline"
-            disabled={isLoading}
-            className="gap-1"
-          >
-            {isLoading ? (
-              <Spinner size="sm" className="mr-2" />
-            ) : (
-              <Search className="h-4 w-4" />
-            )}
-            Search All
-          </Button>
+          
+          <div className="flex items-center gap-2">
+            <Select
+              value={selectedYear.toString()}
+              onValueChange={(value) => onYearChange(parseInt(value))}
+              disabled={isLoading}
+            >
+              <SelectTrigger className="w-[90px]">
+                <Calendar className="h-4 w-4 mr-1" />
+                <SelectValue placeholder="Year" />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map(year => (
+                  <SelectItem key={year} value={year}>{year}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Button
+              onClick={onSearchAll}
+              size="sm"
+              variant="outline"
+              disabled={isLoading}
+              className="gap-1"
+            >
+              {isLoading ? (
+                <Spinner size="sm" className="mr-2" />
+              ) : (
+                <Search className="h-4 w-4" />
+              )}
+              Search All
+            </Button>
+          </div>
         </div>
       </div>
       

@@ -98,6 +98,8 @@ const ViolationFinderContent: React.FC = () => {
           onToggleBulkImport={() => setShowBulkImport(!showBulkImport)}
           showBulkImport={showBulkImport}
           isLoading={isLoading}
+          selectedYear={selectedYear}
+          onYearChange={handleYearChange}
         />
         
         <BulkImportSection 
