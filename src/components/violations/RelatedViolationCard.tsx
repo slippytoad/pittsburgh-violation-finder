@@ -43,7 +43,7 @@ const RelatedViolationCard = ({ violation, formatDate, variant = 'compact' }: Re
         />
         
         <div className="mt-2 text-xs">
-          <strong>Status:</strong> <StatusBadge status={violation.status} size="sm" />
+          <strong>Status:</strong> <span>{violation.originalStatus || violation.status}</span>
         </div>
         
         {violation.fineAmount && (

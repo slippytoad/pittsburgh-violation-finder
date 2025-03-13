@@ -136,6 +136,7 @@ export const searchViolationsByAddress = async (address: string, year: number = 
         violationType: primaryRecord.violation_code_section || 'Unknown',
         dateIssued: primaryRecord.investigation_date || primaryRecord.violation_date || primaryRecord.inspection_date || '',
         status: mapViolationStatus(primaryRecord.status),
+        originalStatus: primaryRecord.status || '',
         description: primaryRecord.violation_description || '',
         fineAmount: null, // API doesn't provide fine amounts
         dueDate: null, // API doesn't provide due dates
@@ -149,6 +150,7 @@ export const searchViolationsByAddress = async (address: string, year: number = 
           violationType: record.violation_code_section || 'Unknown',
           dateIssued: record.investigation_date || record.violation_date || record.inspection_date || '',
           status: mapViolationStatus(record.status),
+          originalStatus: record.status || '',
           description: record.violation_description || '',
           fineAmount: null,
           dueDate: null,

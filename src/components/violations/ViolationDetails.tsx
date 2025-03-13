@@ -2,7 +2,6 @@
 import React from 'react';
 import { ViolationType } from '@/utils/types';
 import { Calendar, Info } from 'lucide-react';
-import StatusBadge from './StatusBadge';
 
 interface ViolationDetailsProps {
   violation: ViolationType;
@@ -42,7 +41,7 @@ const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation }) => {
       {violation.status && (
         <div className="text-sm">
           <span className="font-medium">Status: </span>
-          <span>{violation.status}</span>
+          <span>{violation.originalStatus || violation.status}</span>
         </div>
       )}
     </div>

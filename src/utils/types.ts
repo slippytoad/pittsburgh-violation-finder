@@ -1,3 +1,4 @@
+
 /**
  * Shared type definitions
  */
@@ -18,6 +19,7 @@ export interface ViolationBase {
   violationType: string;
   dateIssued: string;
   status: ViolationStatus;
+  originalStatus?: string;
   description: string;
   propertyOwner: string;
 }
