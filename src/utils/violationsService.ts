@@ -1,3 +1,4 @@
+
 /**
  * API service for the WPRDC Pittsburgh PLI Violations data
  * API Reference: https://data.wprdc.org/dataset/pittsburgh-pli-violations-report/resource/70c06278-92c5-4040-ab28-17671866f81c
@@ -37,6 +38,18 @@ const mapViolationStatus = (status: string | null): 'Open' | 'Closed' | 'In Prog
     return 'In Progress';
   } else {
     return 'Open';
+  }
+};
+
+/**
+ * Get date timestamp for sorting, handling null/empty dates
+ */
+const getDateTimestamp = (dateString: string | null): number => {
+  if (!dateString) return 0;
+  try {
+    return new Date(dateString).getTime();
+  } catch (e) {
+    return 0;
   }
 };
 
@@ -95,11 +108,20 @@ export const searchViolationsByAddress = async (address: string): Promise<Violat
     
     // Convert the grouped records into our ViolationType format
     const mergedViolations: ViolationType[] = Array.from(casefileMap.entries()).map(([caseNumber, records]) => {
-      // Sort the records by investigation_date in descending order
+      // Sort the records by investigation_date in descending order and then by _id descending
       records.sort((a, b) => {
-        const dateA = a.investigation_date ? new Date(a.investigation_date).getTime() : 0;
-        const dateB = b.investigation_date ? new Date(b.investigation_date).getTime() : 0;
-        return dateB - dateA;
+        const dateA = getDateTimestamp(a.investigation_date || a.violation_date || a.inspection_date);
+        const dateB = getDateTimestamp(b.investigation_date || b.violation_date || b.inspection_date);
+        
+        // First sort by date
+        if (dateB !== dateA) {
+          return dateB - dateA;
+        }
+        
+        // If dates are equal, sort by ID
+        const idA = a._id ? parseInt(a._id, 10) : 0;
+        const idB = b._id ? parseInt(b._id, 10) : 0;
+        return idB - idA;
       });
       
       // Use the first (most recent) record as the primary record
@@ -146,3 +168,4 @@ export const searchViolationsByAddress = async (address: string): Promise<Violat
     throw error;
   }
 };
+
