@@ -6,7 +6,6 @@ import { Search, Plus } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import AnimatedContainer from './AnimatedContainer';
 import { Spinner } from '@/components/ui/spinner';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface SearchFormProps {
   onSearch: (address: string, year: number) => void;
@@ -16,7 +15,7 @@ interface SearchFormProps {
   onYearChange: (year: number) => void;
 }
 
-const SearchForm = ({ onSearch, onAddAddress, isLoading, selectedYear, onYearChange }: SearchFormProps) => {
+const SearchForm = ({ onSearch, onAddAddress, isLoading, selectedYear }: SearchFormProps) => {
   const [address, setAddress] = useState('');
   const { toast } = useToast();
 
@@ -52,15 +51,6 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, selectedYear, onYearCha
     });
   };
 
-  // Get current year
-  const currentYear = new Date().getFullYear();
-  
-  // Generate years from 2024 to current year
-  const years = [];
-  for (let year = 2024; year <= currentYear; year++) {
-    years.push(year.toString());
-  }
-
   return (
     <AnimatedContainer className="w-full">
       <div className="glass rounded-xl p-6 subtle-shadow">
@@ -77,21 +67,6 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, selectedYear, onYearCha
               />
             </div>
             <div className="flex gap-2">
-              <Select
-                value={selectedYear.toString()}
-                onValueChange={(value) => onYearChange(parseInt(value))}
-                disabled={isLoading}
-              >
-                <SelectTrigger className="w-[90px]">
-                  <SelectValue placeholder="Year" />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map(year => (
-                    <SelectItem key={year} value={year}>{year}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
               <Button 
                 type="submit" 
                 disabled={isLoading} 
@@ -116,7 +91,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, selectedYear, onYearCha
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            Enter a Pittsburgh address to search for property violations. Select a year (2024 or later) to filter results.
+            Enter a Pittsburgh address to search for property violations. Select a year (2024 or later) in the top right corner to filter results.
           </p>
         </form>
       </div>

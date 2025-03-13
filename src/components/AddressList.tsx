@@ -2,15 +2,9 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { X, Search, Import, ChevronDown, ChevronUp, Calendar } from 'lucide-react';
+import { X, Search, Import, ChevronDown, ChevronUp } from 'lucide-react';
 import AnimatedContainer from './AnimatedContainer';
 import { Spinner } from '@/components/ui/spinner';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface AddressListProps {
   addresses: string[];
@@ -34,22 +28,12 @@ const AddressList = ({
   onToggleBulkImport,
   showBulkImport,
   isLoading = false,
-  selectedYear,
-  onYearChange
+  selectedYear
 }: AddressListProps) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
 
   if (addresses.length === 0) {
     return null;
-  }
-
-  // Get current year
-  const currentYear = new Date().getFullYear();
-  
-  // Generate years from 2024 to current year for the dropdown
-  const years = [];
-  for (let year = 2024; year <= currentYear; year++) {
-    years.push(year);
   }
 
   // Add console log for debugging
@@ -86,38 +70,20 @@ const AddressList = ({
             Bulk Import
           </Button>
           
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={isLoading}
-                className="gap-1"
-                onClick={handleSearchAllClick}
-              >
-                {isLoading ? (
-                  <Spinner size="sm" className="mr-2" />
-                ) : (
-                  <Search className="h-4 w-4" />
-                )}
-                Search All ({selectedYear})
-                <ChevronDown className="h-3 w-3 ml-1 opacity-70" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {years.map(year => (
-                <DropdownMenuItem 
-                  key={year}
-                  onClick={() => {
-                    onYearChange(year);
-                  }}
-                >
-                  <Calendar className="h-4 w-4 mr-2" />
-                  {year}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={isLoading}
+            className="gap-1"
+            onClick={handleSearchAllClick}
+          >
+            {isLoading ? (
+              <Spinner size="sm" className="mr-2" />
+            ) : (
+              <Search className="h-4 w-4" />
+            )}
+            Search All ({selectedYear})
+          </Button>
         </div>
       </div>
       

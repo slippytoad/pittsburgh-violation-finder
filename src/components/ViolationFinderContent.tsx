@@ -10,6 +10,8 @@ import { useViolations } from '@/hooks/useViolations';
 import { useAddresses } from '@/hooks/useAddresses';
 import { useScheduledViolationCheck } from '@/hooks/useScheduledViolationCheck';
 import { useToast } from '@/components/ui/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from 'lucide-react';
 
 const ViolationFinderContent: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
@@ -30,6 +32,15 @@ const ViolationFinderContent: React.FC = () => {
   const [tempEmailEnabled, setTempEmailEnabled] = useState<boolean>(emailEnabled);
   const [tempEmailAddress, setTempEmailAddress] = useState<string>(emailAddress);
   const { toast } = useToast();
+
+  // Get current year
+  const currentYear = new Date().getFullYear();
+  
+  // Generate years from 2024 to current year for the dropdown
+  const years = [];
+  for (let year = 2024; year <= currentYear; year++) {
+    years.push(year.toString());
+  }
 
   useEffect(() => {
     setTempEmailEnabled(emailEnabled);
@@ -58,15 +69,34 @@ const ViolationFinderContent: React.FC = () => {
 
   return (
     <div className="max-w-screen-xl mx-auto">
-      <ViolationFinderHeader
-        searchCount={searchCount}
-        isScheduled={isScheduled}
-        emailEnabled={emailEnabled}
-        nextCheckTime={nextCheckTime}
-        emailAddress={emailAddress}
-        onToggleSchedule={toggleScheduledChecks}
-        onOpenEmailSettings={() => setShowEmailSettings(true)}
-      />
+      <div className="flex justify-between items-center mb-4">
+        <ViolationFinderHeader
+          searchCount={searchCount}
+          isScheduled={isScheduled}
+          emailEnabled={emailEnabled}
+          nextCheckTime={nextCheckTime}
+          emailAddress={emailAddress}
+          onToggleSchedule={toggleScheduledChecks}
+          onOpenEmailSettings={() => setShowEmailSettings(true)}
+        />
+        
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Year:</span>
+          <Select
+            value={selectedYear.toString()}
+            onValueChange={(value) => handleYearChange(parseInt(value))}
+          >
+            <SelectTrigger className="w-[90px]">
+              <SelectValue placeholder="Year" />
+            </SelectTrigger>
+            <SelectContent>
+              {years.map(year => (
+                <SelectItem key={year} value={year}>{year}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
       
       <div id="violations-data" style={{ display: 'none' }}>
         {JSON.stringify(violations)}
