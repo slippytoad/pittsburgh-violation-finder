@@ -76,13 +76,10 @@ const ViolationDetailsDialog = ({ violation, open, onOpenChange, formatDate }: V
               )}
               
               {(violation.investigationOutcome || violation.investigationFindings) && (
-                <div className="border p-3 rounded-lg bg-gray-50 dark:bg-gray-900/30">
-                  <h3 className="text-sm font-medium mb-2">Investigation Results</h3>
-                  <InvestigationInfo 
-                    investigationOutcome={violation.investigationOutcome} 
-                    investigationFindings={violation.investigationFindings} 
-                  />
-                </div>
+                <InvestigationInfo 
+                  investigationOutcome={violation.investigationOutcome} 
+                  investigationFindings={violation.investigationFindings} 
+                />
               )}
             </div>
             
