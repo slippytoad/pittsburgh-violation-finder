@@ -10,15 +10,16 @@ const WPRDC_API_BASE_URL = 'https://data.wprdc.org/api/3/action/datastore_search
 const RESOURCE_ID = '70c06278-92c5-4040-ab28-17671866f81c';
 
 /**
- * Check if a date string is from the year 2025
+ * Check if a date string is from the specified year
  * @param dateString The date string to check
- * @returns True if the date is from 2025, false otherwise
+ * @param year The year to check against
+ * @returns True if the date is from the specified year, false otherwise
  */
-const isFrom2025 = (dateString: string): boolean => {
+const isFromYear = (dateString: string, year: number): boolean => {
   if (!dateString) return false;
   try {
     const date = new Date(dateString);
-    return date.getFullYear() === 2025;
+    return date.getFullYear() === year;
   } catch (e) {
     return false;
   }
@@ -56,9 +57,10 @@ const getDateTimestamp = (dateString: string | null): number => {
 /**
  * Search for violations by address
  * @param address The address to search for
+ * @param year The year to filter violations by (default is 2025)
  * @returns A promise that resolves to an array of violations
  */
-export const searchViolationsByAddress = async (address: string): Promise<ViolationType[]> => {
+export const searchViolationsByAddress = async (address: string, year: number = 2025): Promise<ViolationType[]> => {
   try {
     // Clean up and prepare the address for search
     const cleanAddress = address.trim();
@@ -88,17 +90,17 @@ export const searchViolationsByAddress = async (address: string): Promise<Violat
     
     console.log('API Response:', data); // Log the API response for debugging
     
-    // Filter for 2025 violations only
-    const filtered2025Records = data.result.records.filter(record => {
+    // Filter records by the specified year
+    const filteredRecords = data.result.records.filter(record => {
       // Use investigation_date as priority, then fall back to others
       const dateToCheck = record.investigation_date || record.violation_date || record.inspection_date;
-      return isFrom2025(dateToCheck);
+      return isFromYear(dateToCheck, year);
     });
     
     // Create a map to group violations by case number
     const casefileMap = new Map<string, WPRDCViolation[]>();
     
-    filtered2025Records.forEach(record => {
+    filteredRecords.forEach(record => {
       const caseNumber = record.casefile_number || String(record._id);
       if (!casefileMap.has(caseNumber)) {
         casefileMap.set(caseNumber, []);

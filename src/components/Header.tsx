@@ -19,7 +19,7 @@ const Header = ({ className }: HeaderProps) => {
             <h1 className="text-xl font-medium">Pittsburgh Violation Finder</h1>
           </div>
           <div className="text-sm text-muted-foreground">
-            2025 Data
+            Data from 2024 & later
           </div>
         </div>
       </AnimatedContainer>

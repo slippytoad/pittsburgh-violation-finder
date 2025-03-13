@@ -12,19 +12,19 @@ export function useSingleAddressSearch(
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleSearch = async (address: string) => {
+  const handleSearch = async (address: string, year: number = 2025) => {
     setIsLoading(true);
     setSelectedAddress(address);
     
     try {
-      const results = await searchViolationsByAddress(address);
+      const results = await searchViolationsByAddress(address, year);
       setViolations(results);
       setSearchCount(prev => prev + 1);
       
       if (results.length === 0) {
         toast({
           title: "No violations found",
-          description: `No property violations found for this address`,
+          description: `No property violations found for this address in ${year}`,
         });
       }
     } catch (error) {

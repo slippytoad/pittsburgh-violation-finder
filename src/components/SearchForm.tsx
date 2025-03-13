@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -5,15 +6,17 @@ import { Search, Plus } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import AnimatedContainer from './AnimatedContainer';
 import { Spinner } from '@/components/ui/spinner';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface SearchFormProps {
-  onSearch: (address: string) => void;
+  onSearch: (address: string, year: number) => void;
   onAddAddress: (address: string) => void;
   isLoading: boolean;
 }
 
 const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
   const [address, setAddress] = useState('');
+  const [selectedYear, setSelectedYear] = useState('2025');
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -28,7 +31,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
       return;
     }
     
-    onSearch(address);
+    onSearch(address, parseInt(selectedYear));
   };
 
   const handleAddAddress = () => {
@@ -48,6 +51,15 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
     });
   };
 
+  // Get current year
+  const currentYear = new Date().getFullYear();
+  
+  // Generate years from 2024 to current year
+  const years = [];
+  for (let year = 2024; year <= currentYear; year++) {
+    years.push(year.toString());
+  }
+
   return (
     <AnimatedContainer className="w-full">
       <div className="glass rounded-xl p-6 subtle-shadow">
@@ -64,6 +76,21 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
               />
             </div>
             <div className="flex gap-2">
+              <Select
+                value={selectedYear}
+                onValueChange={setSelectedYear}
+                disabled={isLoading}
+              >
+                <SelectTrigger className="w-[90px]">
+                  <SelectValue placeholder="Year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map(year => (
+                    <SelectItem key={year} value={year}>{year}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
               <Button 
                 type="submit" 
                 disabled={isLoading} 
@@ -88,7 +115,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            Enter a Pittsburgh address to search for property violations (e.g. 3208 DAWSON ST)
+            Enter a Pittsburgh address to search for property violations. Select a year (2024 or later) to filter results.
           </p>
         </form>
       </div>
