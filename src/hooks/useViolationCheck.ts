@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { scheduleNextCheck, processViolationResults } from '@/services/violationCheckService';
-import type { AppSettings } from '@/utils/types';
 
 interface ViolationCheckState {
   lastCheckTime: Date | null;
@@ -10,7 +9,7 @@ interface ViolationCheckState {
 }
 
 export const useViolationCheck = (
-  handleSearchAll: (addresses: string[]) => Promise<void>,
+  handleSearchAll: (addresses: string[], year?: number) => Promise<void>,
   addresses: string[],
   isScheduled: boolean,
   emailEnabled: boolean,
@@ -34,6 +33,9 @@ export const useViolationCheck = (
     try {
       // Create a custom event handler to capture the results of the search
       const patchedHandleSearchAll = async () => {
+        // Get current year for scheduled checks
+        const currentYear = new Date().getFullYear();
+        
         // Listen for state updates on the violations
         const checkInterval = setInterval(() => {
           // Get the violations from the DOM or localStorage if available
@@ -56,8 +58,8 @@ export const useViolationCheck = (
           clearInterval(checkInterval);
         }, 30000); // 30 seconds timeout
         
-        // Call the original search function
-        await handleSearchAll(addresses);
+        // Call the original search function with the current year
+        await handleSearchAll(addresses, currentYear);
       };
       
       await patchedHandleSearchAll();

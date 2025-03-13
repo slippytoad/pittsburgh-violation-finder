@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { X, Search, Import, ChevronDown, ChevronUp, Calendar } from 'lucide-react';
 import AnimatedContainer from './AnimatedContainer';
 import { Spinner } from '@/components/ui/spinner';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -102,7 +101,8 @@ const AddressList = ({
                   key={year}
                   onClick={() => {
                     onYearChange(year);
-                    onSearchAll();
+                    // Don't call onSearchAll directly as it doesn't guarantee 
+                    // the year has been updated before searching
                   }}
                 >
                   <Calendar className="h-4 w-4 mr-2" />
