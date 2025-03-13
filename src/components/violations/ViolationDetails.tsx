@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ViolationType } from '@/utils/types';
-import { MapPin, Calendar, Info } from 'lucide-react';
+import { Calendar, Info } from 'lucide-react';
 
 interface ViolationDetailsProps {
   violation: ViolationType;
@@ -10,11 +10,6 @@ interface ViolationDetailsProps {
 const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation }) => {
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2 text-sm">
-        <MapPin className="h-4 w-4 text-muted-foreground" />
-        <span>{violation.address}</span>
-      </div>
-      
       {violation.dateIssued && (
         <div className="flex items-center gap-2 text-sm">
           <Calendar className="h-4 w-4 text-muted-foreground" />
