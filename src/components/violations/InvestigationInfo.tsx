@@ -25,17 +25,17 @@ const InvestigationInfo: React.FC<InvestigationInfoProps> = ({
         <h4 className="font-semibold">Investigation Details</h4>
         <Separator className="my-1" />
         
-        {investigationOutcome && (
-          <div>
-            <span className={`font-medium ${textSize}`}>Outcome: </span>
-            <span className={`${textSize}`}>{investigationOutcome}</span>
-          </div>
-        )}
-        
         {investigationFindings && (
           <div>
             <span className={`font-medium ${textSize}`}>Findings: </span>
             <span className={`${textSize}`}>{investigationFindings}</span>
+          </div>
+        )}
+        
+        {investigationOutcome && (
+          <div>
+            <span className={`font-medium ${textSize}`}>Outcome: </span>
+            <span className={`${textSize}`}>{investigationOutcome}</span>
           </div>
         )}
       </CardContent>
