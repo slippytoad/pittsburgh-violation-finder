@@ -8,12 +8,21 @@ interface ViolationDetailsProps {
 }
 
 const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation }) => {
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'No date';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   return (
     <div className="space-y-2">
       {violation.dateIssued && (
         <div className="flex items-center gap-2 text-sm">
           <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span>Date Issued: {new Date(violation.dateIssued).toLocaleDateString()}</span>
+          <span>Date Issued: {formatDate(violation.dateIssued)}</span>
         </div>
       )}
       

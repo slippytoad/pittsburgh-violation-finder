@@ -13,6 +13,16 @@ interface RelatedViolationCardProps {
 }
 
 const RelatedViolationCard = ({ violation, formatDate, variant = 'compact' }: RelatedViolationCardProps) => {
+  // Override the formatDate function to ensure consistent formatting
+  const formatDateLong = (dateString: string) => {
+    if (!dateString) return 'No date';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   return (
     <Card className={variant === 'compact' ? "overflow-hidden border border-border" : "border border-border"}>
       <CardHeader className="p-3 pb-2">
@@ -23,7 +33,7 @@ const RelatedViolationCard = ({ violation, formatDate, variant = 'compact' }: Re
         <div className="flex flex-col space-y-1 mt-1">
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Calendar className="h-3 w-3" />
-            <span>Investigation Date: {formatDate(violation.dateIssued)}</span>
+            <span>Investigation Date: {formatDateLong(violation.dateIssued)}</span>
           </div>
           {variant === 'detailed' && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -50,7 +60,7 @@ const RelatedViolationCard = ({ violation, formatDate, variant = 'compact' }: Re
           <div className="text-xs"><strong>Fine Amount:</strong> ${violation.fineAmount.toFixed(2)}</div>
         )}
         {violation.dueDate && (
-          <div className="text-xs"><strong>Due Date:</strong> {formatDate(violation.dueDate)}</div>
+          <div className="text-xs"><strong>Due Date:</strong> {formatDateLong(violation.dueDate)}</div>
         )}
       </CardContent>
     </Card>

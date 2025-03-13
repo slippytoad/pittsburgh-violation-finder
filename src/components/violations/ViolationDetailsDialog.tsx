@@ -40,6 +40,16 @@ const ViolationDetailsDialog = ({
     violation.previousStates &&
     violation.previousStates.length > 0;
 
+  // Override the formatDate function to ensure consistent formatting
+  const formatDateLong = (dateString: string) => {
+    if (!dateString) return 'No date';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
@@ -62,7 +72,7 @@ const ViolationDetailsDialog = ({
                   </div>
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span><strong>Investigation Date:</strong> {formatDate(violation.dateIssued)}</span>
+                    <span><strong>Investigation Date:</strong> {formatDateLong(violation.dateIssued)}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Hash className="h-4 w-4 text-muted-foreground" />
@@ -79,7 +89,7 @@ const ViolationDetailsDialog = ({
                       <div><strong>Fine Amount:</strong> ${violation.fineAmount.toFixed(2)}</div>
                     )}
                     {violation.dueDate && (
-                      <div><strong>Due Date:</strong> {formatDate(violation.dueDate)}</div>
+                      <div><strong>Due Date:</strong> {formatDateLong(violation.dueDate)}</div>
                     )}
                   </div>
                 </div>

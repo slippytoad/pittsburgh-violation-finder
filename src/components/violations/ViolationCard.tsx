@@ -26,7 +26,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
     if (!dateString) return 'No date';
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
-      month: 'short',
+      month: 'long',
       day: 'numeric'
     });
   };
