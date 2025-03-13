@@ -73,7 +73,7 @@ export const searchViolationsByAddress = async (address: string, year: number = 
     const url = new URL(WPRDC_API_BASE_URL);
     url.searchParams.append('resource_id', RESOURCE_ID);
     url.searchParams.append('q', query);
-    url.searchParams.append('limit', '50');
+    url.searchParams.append('limit', '200');
     
     // Fetch the data
     const response = await fetch(url.toString());

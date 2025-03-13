@@ -35,6 +35,7 @@ export const useViolationCheck = (
       const patchedHandleSearchAll = async () => {
         // Get current year for scheduled checks
         const currentYear = new Date().getFullYear();
+        console.log('Daily check using current year:', currentYear);
         
         // Listen for state updates on the violations
         const checkInterval = setInterval(() => {
@@ -59,6 +60,7 @@ export const useViolationCheck = (
         }, 30000); // 30 seconds timeout
         
         // Call the original search function with the current year
+        console.log('Starting daily check search with current year:', currentYear);
         await handleSearchAll(addresses, currentYear);
       };
       
