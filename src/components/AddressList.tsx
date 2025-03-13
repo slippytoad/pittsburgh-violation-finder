@@ -85,6 +85,7 @@ const AddressList = ({
                 variant="outline"
                 disabled={isLoading}
                 className="gap-1"
+                onClick={() => !isLoading && onSearchAll()}
               >
                 {isLoading ? (
                   <Spinner size="sm" className="mr-2" />
@@ -101,8 +102,6 @@ const AddressList = ({
                   key={year}
                   onClick={() => {
                     onYearChange(year);
-                    // Don't call onSearchAll directly as it doesn't guarantee 
-                    // the year has been updated before searching
                   }}
                 >
                   <Calendar className="h-4 w-4 mr-2" />

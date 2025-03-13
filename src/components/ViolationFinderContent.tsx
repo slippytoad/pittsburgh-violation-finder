@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import SearchForm from '@/components/SearchForm';
 import ResultsList from '@/components/ResultsList';
 import AddressList from '@/components/AddressList';
@@ -44,7 +44,7 @@ const ViolationFinderContent: React.FC = () => {
     handleSearch(address, selectedYear);
   };
 
-  const onSearchAll = () => {
+  const onSearchAll = useCallback(() => {
     if (addresses.length > 10) {
       toast({
         title: "Processing in batches",
@@ -52,7 +52,7 @@ const ViolationFinderContent: React.FC = () => {
       });
     }
     handleSearchAll(addresses, selectedYear);
-  };
+  }, [addresses, handleSearchAll, selectedYear, toast]);
 
   return (
     <div className="max-w-screen-xl mx-auto">
