@@ -84,6 +84,11 @@ const ViolationFinderContent: React.FC = () => {
           onYearChange={handleYearChange}
         />
         
+        <ResultsList 
+          violations={violations}
+          isLoading={isLoading}
+        />
+        
         <AddressList 
           addresses={addresses} 
           onRemove={handleRemoveAddress}
@@ -101,11 +106,6 @@ const ViolationFinderContent: React.FC = () => {
           showBulkImport={showBulkImport}
           setShowBulkImport={setShowBulkImport}
           handleBulkImport={handleBulkImport}
-        />
-        
-        <ResultsList 
-          violations={violations}
-          isLoading={isLoading}
         />
       </div>
       
