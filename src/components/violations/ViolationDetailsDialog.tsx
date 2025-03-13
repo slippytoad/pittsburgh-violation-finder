@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Calendar, Hash, Info, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -15,10 +15,24 @@ interface ViolationDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   formatDate: (dateString: string) => string;
+  initialExpanded?: boolean;
 }
 
-const ViolationDetailsDialog = ({ violation, open, onOpenChange, formatDate }: ViolationDetailsDialogProps) => {
-  const [expanded, setExpanded] = useState(false);
+const ViolationDetailsDialog = ({ 
+  violation, 
+  open, 
+  onOpenChange, 
+  formatDate,
+  initialExpanded = false
+}: ViolationDetailsDialogProps) => {
+  const [expanded, setExpanded] = useState(initialExpanded);
+  
+  // When the dialog opens, set the expanded state based on initialExpanded
+  useEffect(() => {
+    if (open) {
+      setExpanded(initialExpanded);
+    }
+  }, [open, initialExpanded]);
   
   const hasPreviousStates =
     violation.previousStatesCount &&

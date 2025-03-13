@@ -20,6 +20,7 @@ interface ViolationCardProps {
 
 const ViolationCard = ({ violation, index }: ViolationCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
+  const [initialExpandState, setInitialExpandState] = useState(false);
   
   const formatDate = (dateString: string) => {
     if (!dateString) return 'No date';
@@ -36,6 +37,17 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
     violation.previousStates &&
     violation.previousStates.length > 0;
 
+  const handleCardClick = () => {
+    setInitialExpandState(false);
+    setShowDetails(true);
+  };
+
+  const handleRelatedRecordsClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setInitialExpandState(true);
+    setShowDetails(true);
+  };
+
   return (
     <>
       <AnimatedContainer 
@@ -44,7 +56,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
       >
         <Card 
           className="overflow-hidden hover:shadow-md transition-shadow duration-300 border border-border hover:bg-accent/5 cursor-pointer"
-          onClick={() => setShowDetails(true)}
+          onClick={handleCardClick}
         >
           <CardHeader className="p-4 pb-2 flex flex-row items-start justify-between space-y-0">
             <div className="flex flex-col space-y-1.5">
@@ -63,9 +75,14 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                   <span>Section: {violation.violationType}</span>
                 </div>
                 {violation.previousStatesCount && violation.previousStatesCount > 0 && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div 
+                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                    onClick={handleRelatedRecordsClick}
+                  >
                     <History className="h-4 w-4" />
-                    <span>{violation.previousStatesCount} related record{violation.previousStatesCount !== 1 ? 's' : ''}</span>
+                    <span className="cursor-pointer underline">
+                      {violation.previousStatesCount} related record{violation.previousStatesCount !== 1 ? 's' : ''}
+                    </span>
                   </div>
                 )}
               </div>
@@ -98,6 +115,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
         open={showDetails}
         onOpenChange={setShowDetails}
         formatDate={formatDate}
+        initialExpanded={initialExpandState}
       />
     </>
   );
