@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import SearchForm from '@/components/SearchForm';
 import ResultsList from '@/components/ResultsList';
@@ -13,6 +14,7 @@ import { useScheduledViolationCheck } from '@/hooks/useScheduledViolationCheck';
 import { useToast } from '@/components/ui/use-toast';
 
 const ViolationFinderContent: React.FC = () => {
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const { violations, isLoading, selectedAddress, handleSearch, handleSearchAll, searchCount } = useViolations();
   const { addresses, handleAddAddress, handleRemoveAddress, handleBulkImport } = useAddresses();
   const { 
@@ -36,6 +38,14 @@ const ViolationFinderContent: React.FC = () => {
     setTempEmailAddress(emailAddress);
   }, [emailEnabled, emailAddress]);
 
+  const handleYearChange = (year: number) => {
+    setSelectedYear(year);
+  };
+
+  const onSearch = (address: string) => {
+    handleSearch(address, selectedYear);
+  };
+
   const onSearchAll = () => {
     if (addresses.length > 10) {
       toast({
@@ -43,7 +53,7 @@ const ViolationFinderContent: React.FC = () => {
         description: `Searching ${addresses.length} addresses in smaller batches to avoid timeouts.`,
       });
     }
-    handleSearchAll(addresses);
+    handleSearchAll(addresses, selectedYear);
   };
 
   return (
@@ -67,15 +77,17 @@ const ViolationFinderContent: React.FC = () => {
       
       <div className="grid grid-cols-1 gap-8">
         <SearchForm 
-          onSearch={handleSearch} 
+          onSearch={onSearch} 
           onAddAddress={handleAddAddress}
           isLoading={isLoading}
+          selectedYear={selectedYear}
+          onYearChange={handleYearChange}
         />
         
         <AddressList 
           addresses={addresses} 
           onRemove={handleRemoveAddress}
-          onSearch={handleSearch}
+          onSearch={(address) => handleSearch(address, selectedYear)}
           onSearchAll={onSearchAll}
           selectedAddress={selectedAddress}
           onToggleBulkImport={() => setShowBulkImport(!showBulkImport)}

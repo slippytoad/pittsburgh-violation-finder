@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Plus } from 'lucide-react';
@@ -12,11 +12,12 @@ interface SearchFormProps {
   onSearch: (address: string, year: number) => void;
   onAddAddress: (address: string) => void;
   isLoading: boolean;
+  selectedYear: number;
+  onYearChange: (year: number) => void;
 }
 
-const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
+const SearchForm = ({ onSearch, onAddAddress, isLoading, selectedYear, onYearChange }: SearchFormProps) => {
   const [address, setAddress] = useState('');
-  const [selectedYear, setSelectedYear] = useState('2025');
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -31,7 +32,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
       return;
     }
     
-    onSearch(address, parseInt(selectedYear));
+    onSearch(address, selectedYear);
   };
 
   const handleAddAddress = () => {
@@ -77,8 +78,8 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
             </div>
             <div className="flex gap-2">
               <Select
-                value={selectedYear}
-                onValueChange={setSelectedYear}
+                value={selectedYear.toString()}
+                onValueChange={(value) => onYearChange(parseInt(value))}
                 disabled={isLoading}
               >
                 <SelectTrigger className="w-[90px]">

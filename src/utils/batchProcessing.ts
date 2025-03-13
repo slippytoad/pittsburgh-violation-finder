@@ -15,6 +15,7 @@ export const processBatch = async (
   addresses: string[], 
   startIndex: number, 
   setSearchCount: (callback: (prev: number) => number) => void,
+  year: number = new Date().getFullYear(),
   allResults: ViolationType[] = []
 ): Promise<ViolationType[]> => {
   if (startIndex >= addresses.length) {
@@ -25,8 +26,8 @@ export const processBatch = async (
   const batch = addresses.slice(startIndex, endIndex);
   
   try {
-    // Search for all addresses in the current batch in parallel
-    const searchPromises = batch.map(address => searchViolationsByAddress(address));
+    // Search for all addresses in the current batch in parallel, using the year parameter
+    const searchPromises = batch.map(address => searchViolationsByAddress(address, year));
     const batchResults = await Promise.all(searchPromises);
     
     // Update search counter
@@ -46,7 +47,7 @@ export const processBatch = async (
       // Process the next batch after a delay
       return new Promise(resolve => {
         setTimeout(async () => {
-          const nextResults = await processBatch(addresses, endIndex, setSearchCount, combinedResults);
+          const nextResults = await processBatch(addresses, endIndex, setSearchCount, year, combinedResults);
           resolve(nextResults);
         }, BATCH_DELAY);
       });
@@ -65,7 +66,7 @@ export const processBatch = async (
     // Process the next batch after a delay
     return new Promise(resolve => {
       setTimeout(async () => {
-        const nextResults = await processBatch(addresses, endIndex, setSearchCount, allResults);
+        const nextResults = await processBatch(addresses, endIndex, setSearchCount, year, allResults);
         resolve(nextResults);
       }, BATCH_DELAY);
     });
