@@ -60,7 +60,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                 </div>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Hash className="h-3.5 w-3.5" />
-                  <span>Type: {violation.violationType}</span>
+                  <span>Section: {violation.violationType}</span>
                 </div>
                 {violation.previousStatesCount && violation.previousStatesCount > 0 && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">

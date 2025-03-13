@@ -52,7 +52,7 @@ const ViolationDetailsDialog = ({ violation, open, onOpenChange, formatDate }: V
                   </div>
                   <div className="flex items-center gap-1">
                     <Hash className="h-4 w-4 text-muted-foreground" />
-                    <span><strong>Violation Type:</strong> {violation.violationType}</span>
+                    <span><strong>Violation Section:</strong> {violation.violationType}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Info className="h-4 w-4 text-muted-foreground" />
