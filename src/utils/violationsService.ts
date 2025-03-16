@@ -45,16 +45,13 @@ export const searchViolationsByAddress = async (address: string, year: number = 
       .from('violations')
       .select('*');
     
-    // Filter by date - checking for investigation_date to filter by year
-    query = query.or(`investigation_date.gte.${startDate},investigation_date.lte.${endDate}`);
-    
     // Only add address filter if an address was provided
     if (cleanAddress !== '') {
       // Use ilike for case-insensitive partial matching
       query = query.ilike('address', `%${cleanAddress}%`);
     }
     
-    // Execute the query
+    // Execute the query without date filtering first to see if we get any results
     const { data, error } = await query;
     
     if (error) {
@@ -62,7 +59,7 @@ export const searchViolationsByAddress = async (address: string, year: number = 
       throw error;
     }
     
-    console.log(`Found ${data?.length || 0} violations for address "${cleanAddress}"`);
+    console.log(`Found ${data?.length || 0} violations for address "${cleanAddress}" before date filtering`);
     
     // If no data was returned, return an empty array
     if (!data || data.length === 0) {
@@ -70,12 +67,26 @@ export const searchViolationsByAddress = async (address: string, year: number = 
     }
     
     // Filter the results by year based on investigation_date
-    const filteredByYear = data.filter(record => {
-      const recordDate = new Date(record.investigation_date);
-      return recordDate.getFullYear() === year;
-    });
+    let filteredByYear = data;
     
-    console.log(`After year filtering: ${filteredByYear.length} violations`);
+    // Only apply date filtering if the data has an investigation_date field
+    if (data.some(record => record.investigation_date)) {
+      filteredByYear = data.filter(record => {
+        if (!record.investigation_date) return false;
+        
+        try {
+          const recordDate = new Date(record.investigation_date);
+          return recordDate.getFullYear() === year;
+        } catch (e) {
+          console.error('Invalid date format for record:', record, e);
+          return false;
+        }
+      });
+      
+      console.log(`After year filtering: ${filteredByYear.length} violations`);
+    } else {
+      console.log('No investigation_date field found in results. Skipping year filtering.');
+    }
     
     // Create a map to group violations by violation_id
     const violationMap = new Map<string, any[]>();
@@ -92,8 +103,8 @@ export const searchViolationsByAddress = async (address: string, year: number = 
     const violations: ViolationType[] = Array.from(violationMap.entries()).map(([id, records]) => {
       // Sort records by date in descending order
       records.sort((a, b) => {
-        const dateA = new Date(a.investigation_date).getTime();
-        const dateB = new Date(b.investigation_date).getTime();
+        const dateA = new Date(a.investigation_date || 0).getTime();
+        const dateB = new Date(b.investigation_date || 0).getTime();
         return dateB - dateA;
       });
       

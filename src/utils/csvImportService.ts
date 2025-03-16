@@ -27,20 +27,25 @@ export const importViolationsFromCsv = async (file: File): Promise<number> => {
           console.log(`Successfully parsed ${data.length} records`);
           
           // Transform the data to match the violations table structure
-          const transformedData = data.map((row: any) => ({
-            violation_id: row.casefile_number || `VIO-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-            address: row.address || 'Unknown Address',
-            violation_type: row.violation_code_section || 'Unspecified Violation Type',
-            status: mapStatus(row.status),
-            original_status: row.status || 'Unknown',
-            description: row.violation_description || 'No description provided',
-            property_owner: row.parcel_id || 'Unknown Owner',
-            investigation_outcome: row.investigation_outcome || null,
-            investigation_findings: row.investigation_findings || null,
-            investigation_date: parseDate(row.investigation_date),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }));
+          const transformedData = data.map((row: any) => {
+            const parsedDate = parseDate(row.investigation_date);
+            console.log(`Parsed date for record: ${row.casefile_number || 'unknown'}, original: ${row.investigation_date}, parsed: ${parsedDate}`);
+            
+            return {
+              violation_id: row.casefile_number || `VIO-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+              address: row.address || 'Unknown Address',
+              violation_type: row.violation_code_section || 'Unspecified Violation Type',
+              status: mapStatus(row.status),
+              original_status: row.status || 'Unknown',
+              description: row.violation_description || 'No description provided',
+              property_owner: row.parcel_id || 'Unknown Owner',
+              investigation_outcome: row.investigation_outcome || null,
+              investigation_findings: row.investigation_findings || null,
+              investigation_date: parsedDate,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            };
+          });
           
           // Insert the data into the violations table
           const { data: insertedData, error } = await supabase
@@ -74,12 +79,16 @@ export const importViolationsFromCsv = async (file: File): Promise<number> => {
 const parseDate = (dateString?: string): string => {
   if (!dateString) return new Date().toISOString();
   
-  // Try to parse the date
-  const date = new Date(dateString);
-  
-  // Check if the date is valid
-  if (!isNaN(date.getTime())) {
-    return date.toISOString();
+  try {
+    // Try to parse the date
+    const date = new Date(dateString);
+    
+    // Check if the date is valid
+    if (!isNaN(date.getTime())) {
+      return date.toISOString();
+    }
+  } catch (e) {
+    console.error('Error parsing date:', dateString, e);
   }
   
   // Return current date if parsing failed
@@ -137,3 +146,4 @@ export const validateViolationsCsv = (file: File): Promise<boolean> => {
     });
   });
 };
+
