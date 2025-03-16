@@ -14,7 +14,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from 'lucide-react';
 
 const ViolationFinderContent: React.FC = () => {
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  // Use current year as default
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
   const { violations, isLoading, selectedAddress, handleSearch, handleSearchAll, searchCount } = useViolations();
   const { addresses, handleAddAddress, handleRemoveAddress, handleBulkImport } = useAddresses();
   const { 
@@ -33,12 +35,9 @@ const ViolationFinderContent: React.FC = () => {
   const [tempEmailAddress, setTempEmailAddress] = useState<string>(emailAddress);
   const { toast } = useToast();
 
-  // Get current year
-  const currentYear = new Date().getFullYear();
-  
-  // Generate years from 2024 to current year for the dropdown
+  // Generate years from 2020 to current year for the dropdown
   const years = [];
-  for (let year = 2024; year <= currentYear; year++) {
+  for (let year = 2020; year <= currentYear; year++) {
     years.push(year.toString());
   }
 

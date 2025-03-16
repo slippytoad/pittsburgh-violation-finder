@@ -91,7 +91,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, selectedYear }: SearchF
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            Enter a Pittsburgh address to search for property violations. Select a year (2024 or later) in the top right corner to filter results.
+            Enter a Pittsburgh address to search for property violations. Select a year in the top right corner to filter results.
           </p>
         </form>
       </div>

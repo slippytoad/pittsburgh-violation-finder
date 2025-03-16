@@ -12,7 +12,7 @@ export function useSingleAddressSearch(
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleSearch = async (address: string, year: number = 2025) => {
+  const handleSearch = async (address: string, year: number = new Date().getFullYear()) => {
     setIsLoading(true);
     setSelectedAddress(address);
     
