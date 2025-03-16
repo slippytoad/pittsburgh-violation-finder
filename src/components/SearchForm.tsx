@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, Bug } from 'lucide-react';
+import { Search, Bug } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import AnimatedContainer from './AnimatedContainer';
 import { Spinner } from '@/components/ui/spinner';
@@ -31,23 +31,6 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
     
     console.log(`Submitting search for "${address}"`);
     onSearch(address);
-  };
-
-  const handleAddAddress = () => {
-    if (!address.trim()) {
-      toast({
-        title: "Address required",
-        description: "Please enter an address to add",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    onAddAddress(address);
-    toast({
-      title: "Address added",
-      description: "Address has been saved to your list",
-    });
   };
 
   // Debug function for development only
@@ -83,15 +66,6 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
                   <Search className="mr-2 h-4 w-4" />
                 )}
                 Search
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleAddAddress}
-                disabled={isLoading}
-              >
-                <Plus className="h-4 w-4" />
-                <span className="sr-only sm:not-sr-only sm:ml-2">Add</span>
               </Button>
               
               {/* Debug button - only visible in development */}
