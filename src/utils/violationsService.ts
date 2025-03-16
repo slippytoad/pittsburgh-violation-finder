@@ -43,9 +43,11 @@ export const searchViolationsByAddress = async (address: string, year: number = 
     // Build the query - search in the violations table
     let query = supabase
       .from('violations')
-      .select('*')
-      .gte('date_issued', startDate)
-      .lte('date_issued', endDate);
+      .select('*');
+    
+    // Filter by date - checking both date_issued and created_at fields
+    // This handles the case where the database might use either column
+    query = query.or(`created_at.gte.${startDate},created_at.lte.${endDate}`);
     
     // Only add address filter if an address was provided
     if (cleanAddress !== '') {
@@ -68,10 +70,19 @@ export const searchViolationsByAddress = async (address: string, year: number = 
       return [];
     }
     
+    // Filter the results by year based on created_at date
+    // This is a fallback for databases that might not have the date_issued column
+    const filteredByYear = data.filter(record => {
+      const recordDate = new Date(record.created_at);
+      return recordDate.getFullYear() === year;
+    });
+    
+    console.log(`After year filtering: ${filteredByYear.length} violations`);
+    
     // Create a map to group violations by violation_id
     const violationMap = new Map<string, any[]>();
     
-    data.forEach(record => {
+    filteredByYear.forEach(record => {
       const violationId = record.violation_id || String(record.id);
       if (!violationMap.has(violationId)) {
         violationMap.set(violationId, []);
@@ -83,8 +94,8 @@ export const searchViolationsByAddress = async (address: string, year: number = 
     const violations: ViolationType[] = Array.from(violationMap.entries()).map(([id, records]) => {
       // Sort records by date in descending order
       records.sort((a, b) => {
-        const dateA = new Date(a.date_issued || a.created_at).getTime();
-        const dateB = new Date(b.date_issued || b.created_at).getTime();
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
         return dateB - dateA;
       });
       
@@ -95,7 +106,7 @@ export const searchViolationsByAddress = async (address: string, year: number = 
         id: id,
         address: primaryRecord.address || '',
         violationType: primaryRecord.violation_type || 'Unknown',
-        dateIssued: primaryRecord.date_issued || primaryRecord.created_at || '',
+        dateIssued: primaryRecord.created_at || '',
         status: mapViolationStatus(primaryRecord.status),
         originalStatus: primaryRecord.original_status || primaryRecord.status || '',
         description: primaryRecord.description || '',
@@ -109,7 +120,7 @@ export const searchViolationsByAddress = async (address: string, year: number = 
           id: `${id}-${index + 1}`,
           address: record.address || '',
           violationType: record.violation_type || 'Unknown',
-          dateIssued: record.date_issued || record.created_at || '',
+          dateIssued: record.created_at || '',
           status: mapViolationStatus(record.status),
           originalStatus: record.original_status || record.status || '',
           description: record.description || '',

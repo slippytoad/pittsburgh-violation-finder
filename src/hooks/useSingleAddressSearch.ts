@@ -17,6 +17,7 @@ export function useSingleAddressSearch(
     setSelectedAddress(address);
     
     try {
+      console.log(`Searching for violations at "${address}" in year ${year}`);
       const results = await searchViolationsByAddress(address, year);
       setViolations(results);
       setSearchCount(prev => prev + 1);

@@ -31,14 +31,13 @@ export const importViolationsFromCsv = async (file: File): Promise<number> => {
             violation_id: row.casefile_number || `VIO-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
             address: row.address || 'Unknown Address',
             violation_type: row.violation_code_section || 'Unspecified Violation Type',
-            date_issued: parseDate(row.investigation_date),
             status: mapStatus(row.status),
             original_status: row.status || 'Unknown',
             description: row.violation_description || 'No description provided',
             property_owner: row.parcel_id || 'Unknown Owner',
             investigation_outcome: row.investigation_outcome || null,
             investigation_findings: row.investigation_findings || null,
-            created_at: new Date().toISOString(),
+            created_at: parseDate(row.investigation_date),
             updated_at: new Date().toISOString()
           }));
           
