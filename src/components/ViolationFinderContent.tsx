@@ -10,13 +10,8 @@ import { useViolations } from '@/hooks/useViolations';
 import { useAddresses } from '@/hooks/useAddresses';
 import { useScheduledViolationCheck } from '@/hooks/useScheduledViolationCheck';
 import { useToast } from '@/components/ui/use-toast';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from 'lucide-react';
 
 const ViolationFinderContent: React.FC = () => {
-  // Use current year as default
-  const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
   const { violations, isLoading, selectedAddress, handleSearch, handleSearchAll, searchCount } = useViolations();
   const { addresses, handleAddAddress, handleRemoveAddress, handleBulkImport } = useAddresses();
   const { 
@@ -35,40 +30,29 @@ const ViolationFinderContent: React.FC = () => {
   const [tempEmailAddress, setTempEmailAddress] = useState<string>(emailAddress);
   const { toast } = useToast();
 
-  // Generate years from 2020 to current year for the dropdown
-  const years = [];
-  for (let year = 2020; year <= currentYear; year++) {
-    years.push(year.toString());
-  }
-
   useEffect(() => {
     setTempEmailEnabled(emailEnabled);
     setTempEmailAddress(emailAddress);
   }, [emailEnabled, emailAddress]);
 
-  const handleYearChange = (year: number) => {
-    console.log("Year changed to:", year);
-    setSelectedYear(year);
-  };
-
   const onSearch = (address: string) => {
-    handleSearch(address, selectedYear);
+    handleSearch(address);
   };
 
   const onSearchAll = useCallback(() => {
-    console.log("onSearchAll called with year:", selectedYear);
+    console.log("onSearchAll called");
     if (addresses.length > 10) {
       toast({
         title: "Processing in batches",
         description: `Searching ${addresses.length} addresses in smaller batches to avoid timeouts.`,
       });
     }
-    handleSearchAll(addresses, selectedYear);
-  }, [addresses, handleSearchAll, selectedYear, toast]);
+    handleSearchAll(addresses);
+  }, [addresses, handleSearchAll, toast]);
 
   return (
     <div className="max-w-screen-xl mx-auto">
-      <div className="flex justify-between items-center mb-4">
+      <div className="mb-4">
         <ViolationFinderHeader
           searchCount={searchCount}
           isScheduled={isScheduled}
@@ -78,23 +62,6 @@ const ViolationFinderContent: React.FC = () => {
           onToggleSchedule={toggleScheduledChecks}
           onOpenEmailSettings={() => setShowEmailSettings(true)}
         />
-        
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Year:</span>
-          <Select
-            value={selectedYear.toString()}
-            onValueChange={(value) => handleYearChange(parseInt(value))}
-          >
-            <SelectTrigger className="w-[90px]">
-              <SelectValue placeholder="Year" />
-            </SelectTrigger>
-            <SelectContent>
-              {years.map(year => (
-                <SelectItem key={year} value={year}>{year}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
       </div>
       
       <div id="violations-data" style={{ display: 'none' }}>
@@ -106,8 +73,6 @@ const ViolationFinderContent: React.FC = () => {
           onSearch={onSearch} 
           onAddAddress={handleAddAddress}
           isLoading={isLoading}
-          selectedYear={selectedYear}
-          onYearChange={handleYearChange}
         />
         
         <ResultsList 
@@ -118,14 +83,12 @@ const ViolationFinderContent: React.FC = () => {
         <AddressList 
           addresses={addresses} 
           onRemove={handleRemoveAddress}
-          onSearch={(address) => handleSearch(address, selectedYear)}
+          onSearch={onSearch}
           onSearchAll={onSearchAll}
           selectedAddress={selectedAddress}
           onToggleBulkImport={() => setShowBulkImport(!showBulkImport)}
           showBulkImport={showBulkImport}
           isLoading={isLoading}
-          selectedYear={selectedYear}
-          onYearChange={handleYearChange}
         />
         
         <BulkImportSection 

@@ -26,12 +26,11 @@ const mapViolationStatus = (status: string | null): 'Open' | 'Closed' | 'In Prog
 /**
  * Search for violations by address
  * @param address The address to search for
- * @param year The year to filter violations by
  * @returns A promise that resolves to an array of violations
  */
-export const searchViolationsByAddress = async (address: string, year: number = new Date().getFullYear()): Promise<ViolationType[]> => {
+export const searchViolationsByAddress = async (address: string): Promise<ViolationType[]> => {
   try {
-    console.log(`Starting search for violations at "${address}" in year ${year}`);
+    console.log(`Starting search for violations at "${address}"`);
     
     // Clean up and prepare the address for search
     const cleanAddress = address.trim().toUpperCase();
@@ -101,8 +100,7 @@ export const searchViolationsByAddress = async (address: string, year: number = 
     // Log query details for debugging - without using toSQL() which doesn't exist
     console.log('Executing Supabase query with filters:', {
       table: 'violations',
-      addressFilter: cleanAddress !== '' ? `ilike %${cleanAddress}%` : 'none',
-      yearFilter: year ? `${year}` : 'none'
+      addressFilter: cleanAddress !== '' ? `ilike %${cleanAddress}%` : 'none'
     });
     
     // Execute the query
@@ -121,7 +119,7 @@ export const searchViolationsByAddress = async (address: string, year: number = 
       console.log('Raw database response: no records found');
     }
     
-    console.log(`Found ${matchingRecords?.length || 0} violations for address "${cleanAddress}" before year filtering`);
+    console.log(`Found ${matchingRecords?.length || 0} violations for address "${cleanAddress}"`);
     
     // If no data was returned, return an empty array
     if (!matchingRecords || matchingRecords.length === 0) {
@@ -139,42 +137,10 @@ export const searchViolationsByAddress = async (address: string, year: number = 
       });
     }
     
-    // Filter the results by year based on investigation_date if a year was specified
-    let filteredByYear = matchingRecords;
-    
-    if (year) {
-      console.log(`Filtering results by year: ${year}`);
-      filteredByYear = matchingRecords.filter(record => {
-        if (!record.investigation_date) {
-          console.log(`Record with id ${record.id} has no investigation_date, excluding from year filter`);
-          return false;
-        }
-        
-        try {
-          const recordDate = new Date(record.investigation_date);
-          const recordYear = recordDate.getFullYear();
-          const matches = recordYear === year;
-          
-          if (!matches) {
-            console.log(`Record with date ${record.investigation_date} (year ${recordYear}) doesn't match filter year ${year}`);
-          }
-          
-          return matches;
-        } catch (e) {
-          console.error(`Invalid date format for record id ${record.id}: ${record.investigation_date}`, e);
-          return false;
-        }
-      });
-      
-      console.log(`After year filtering: ${filteredByYear.length} violations for ${year}`);
-    } else {
-      console.log('No year filtering applied');
-    }
-    
     // Create a map to group violations by violation_id
     const violationMap = new Map<string, any[]>();
     
-    filteredByYear.forEach(record => {
+    matchingRecords.forEach(record => {
       const violationId = record.violation_id || String(record.id);
       if (!violationMap.has(violationId)) {
         violationMap.set(violationId, []);

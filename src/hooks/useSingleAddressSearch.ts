@@ -12,13 +12,13 @@ export function useSingleAddressSearch(
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleSearch = async (address: string, year: number = new Date().getFullYear()) => {
+  const handleSearch = async (address: string) => {
     setIsLoading(true);
     setSelectedAddress(address);
     
     try {
-      console.log(`Searching for violations at "${address}" in year ${year}`);
-      const results = await searchViolationsByAddress(address, year);
+      console.log(`Searching for violations at "${address}"`);
+      const results = await searchViolationsByAddress(address);
       
       console.log(`Search completed, got ${results.length} results`);
       setViolations(results);
@@ -27,12 +27,12 @@ export function useSingleAddressSearch(
       if (results.length === 0) {
         toast({
           title: "No violations found",
-          description: `No property violations found for this address in ${year}`,
+          description: "No property violations found for this address",
         });
       } else {
         toast({
           title: "Search complete",
-          description: `Found ${results.length} violation${results.length !== 1 ? 's' : ''} for this address in ${year}`,
+          description: `Found ${results.length} violation${results.length !== 1 ? 's' : ''} for this address`,
         });
       }
     } catch (error) {

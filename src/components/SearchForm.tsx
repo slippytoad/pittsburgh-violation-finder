@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Plus, Bug } from 'lucide-react';
@@ -8,14 +8,12 @@ import AnimatedContainer from './AnimatedContainer';
 import { Spinner } from '@/components/ui/spinner';
 
 interface SearchFormProps {
-  onSearch: (address: string, year: number) => void;
+  onSearch: (address: string) => void;
   onAddAddress: (address: string) => void;
   isLoading: boolean;
-  selectedYear: number;
-  onYearChange: (year: number) => void;
 }
 
-const SearchForm = ({ onSearch, onAddAddress, isLoading, selectedYear, onYearChange }: SearchFormProps) => {
+const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
   const [address, setAddress] = useState('');
   const { toast } = useToast();
 
@@ -31,8 +29,8 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, selectedYear, onYearCha
       return;
     }
     
-    console.log(`Submitting search for "${address}" with year ${selectedYear}`);
-    onSearch(address, selectedYear);
+    console.log(`Submitting search for "${address}"`);
+    onSearch(address);
   };
 
   const handleAddAddress = () => {
@@ -55,7 +53,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, selectedYear, onYearCha
   // Debug function for development only
   const handleDebugSearch = () => {
     console.log('Triggering debug search');
-    onSearch('DEBUG', selectedYear);
+    onSearch('DEBUG');
   };
 
   return (
@@ -112,7 +110,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, selectedYear, onYearCha
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            Enter a Pittsburgh address to search for property violations. Select a year in the top right corner to filter results.
+            Enter a Pittsburgh address to search for property violations.
           </p>
         </form>
       </div>
