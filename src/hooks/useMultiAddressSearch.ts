@@ -13,8 +13,8 @@ export function useMultiAddressSearch(
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSearchAll = async (addresses: string[], year: number = new Date().getFullYear()) => {
-    console.log("handleSearchAll called with year:", year);
+  const handleSearchAll = async (addresses: string[]) => {
+    console.log("handleSearchAll called");
     
     if (addresses.length === 0) {
       toast({
@@ -28,9 +28,9 @@ export function useMultiAddressSearch(
     setSelectedAddress('all');
     
     try {
-      // Process addresses in batches, passing the year parameter
-      console.log("Starting batch processing with year:", year);
-      const allViolations = await processBatch(addresses, 0, setSearchCount, year);
+      // Process addresses in batches
+      console.log("Starting batch processing");
+      const allViolations = await processBatch(addresses, 0, setSearchCount);
       
       // Process results (deduplicate and sort)
       const uniqueViolations = processViolationResults(allViolations as ViolationType[]);
@@ -43,12 +43,12 @@ export function useMultiAddressSearch(
       if (uniqueViolations.length === 0) {
         toast({
           title: "No violations found",
-          description: `No property violations found for any of your saved addresses in ${year}`,
+          description: "No property violations found for any of your saved addresses",
         });
       } else {
         toast({
           title: "Search complete",
-          description: `Found ${uniqueViolations.length} violations across ${addresses.length} addresses in ${year}`,
+          description: `Found ${uniqueViolations.length} violations across ${addresses.length} addresses`,
         });
       }
     } catch (error) {

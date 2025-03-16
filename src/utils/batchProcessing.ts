@@ -15,10 +15,9 @@ export const processBatch = async (
   addresses: string[], 
   startIndex: number, 
   setSearchCount: (callback: (prev: number) => number) => void,
-  year: number = new Date().getFullYear(),
   allResults: ViolationType[] = []
 ): Promise<ViolationType[]> => {
-  console.log(`Processing batch from index ${startIndex} with year ${year}`);
+  console.log(`Processing batch from index ${startIndex}`);
   
   if (startIndex >= addresses.length) {
     return allResults;
@@ -28,10 +27,10 @@ export const processBatch = async (
   const batch = addresses.slice(startIndex, endIndex);
   
   try {
-    // Search for all addresses in the current batch in parallel, using the year parameter
+    // Search for all addresses in the current batch in parallel
     const searchPromises = batch.map(address => {
-      console.log(`Searching violations for address: ${address}, year: ${year}`);
-      return searchViolationsByAddress(address, year);
+      console.log(`Searching violations for address: ${address}`);
+      return searchViolationsByAddress(address);
     });
     const batchResults = await Promise.all(searchPromises);
     
@@ -52,7 +51,7 @@ export const processBatch = async (
       // Process the next batch after a delay
       return new Promise(resolve => {
         setTimeout(async () => {
-          const nextResults = await processBatch(addresses, endIndex, setSearchCount, year, combinedResults);
+          const nextResults = await processBatch(addresses, endIndex, setSearchCount, combinedResults);
           resolve(nextResults);
         }, BATCH_DELAY);
       });
@@ -71,7 +70,7 @@ export const processBatch = async (
     // Process the next batch after a delay
     return new Promise(resolve => {
       setTimeout(async () => {
-        const nextResults = await processBatch(addresses, endIndex, setSearchCount, year, allResults);
+        const nextResults = await processBatch(addresses, endIndex, setSearchCount, allResults);
         resolve(nextResults);
       }, BATCH_DELAY);
     });

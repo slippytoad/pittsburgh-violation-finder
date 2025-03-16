@@ -15,8 +15,6 @@ interface AddressListProps {
   onToggleBulkImport?: () => void;
   showBulkImport?: boolean;
   isLoading?: boolean;
-  selectedYear: number;
-  onYearChange: (year: number) => void;
 }
 
 const AddressList = ({ 
@@ -27,8 +25,7 @@ const AddressList = ({
   selectedAddress,
   onToggleBulkImport,
   showBulkImport,
-  isLoading = false,
-  selectedYear
+  isLoading = false
 }: AddressListProps) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
 
@@ -82,7 +79,7 @@ const AddressList = ({
             ) : (
               <Search className="h-4 w-4" />
             )}
-            Search All ({selectedYear})
+            Search All
           </Button>
         </div>
       </div>

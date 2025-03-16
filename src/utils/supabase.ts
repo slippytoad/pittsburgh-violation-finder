@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 import type { AppSettings, Address } from './types';
 
@@ -79,6 +80,16 @@ export const initSupabaseTables = async () => {
     } else {
       console.log('Existing record found:', data);
     }
+    
+    // Check if violations table exists
+    const { data: violationsData, error: violationsError } = await supabase
+      .from('violations')
+      .select('id')
+      .limit(1);
+      
+    console.log('Violations table check:', { violationsData, violationsError });
+    
+    // Initialize violations table if needed in future updates
     
     console.log('Database initialization complete');
     return true;

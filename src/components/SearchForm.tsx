@@ -1,21 +1,19 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus } from 'lucide-react';
+import { Search, Bug } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import AnimatedContainer from './AnimatedContainer';
 import { Spinner } from '@/components/ui/spinner';
 
 interface SearchFormProps {
-  onSearch: (address: string, year: number) => void;
+  onSearch: (address: string) => void;
   onAddAddress: (address: string) => void;
   isLoading: boolean;
-  selectedYear: number;
-  onYearChange: (year: number) => void;
 }
 
-const SearchForm = ({ onSearch, onAddAddress, isLoading, selectedYear }: SearchFormProps) => {
+const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
   const [address, setAddress] = useState('');
   const { toast } = useToast();
 
@@ -31,24 +29,14 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, selectedYear }: SearchF
       return;
     }
     
-    onSearch(address, selectedYear);
+    console.log(`Submitting search for "${address}"`);
+    onSearch(address);
   };
 
-  const handleAddAddress = () => {
-    if (!address.trim()) {
-      toast({
-        title: "Address required",
-        description: "Please enter an address to add",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    onAddAddress(address);
-    toast({
-      title: "Address added",
-      description: "Address has been saved to your list",
-    });
+  // Debug function for development only
+  const handleDebugSearch = () => {
+    console.log('Triggering debug search');
+    onSearch('DEBUG');
   };
 
   return (
@@ -79,19 +67,24 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, selectedYear }: SearchF
                 )}
                 Search
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleAddAddress}
-                disabled={isLoading}
-              >
-                <Plus className="h-4 w-4" />
-                <span className="sr-only sm:not-sr-only sm:ml-2">Add</span>
-              </Button>
+              
+              {/* Debug button - only visible in development */}
+              {import.meta.env.DEV && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleDebugSearch}
+                  disabled={isLoading}
+                  className="bg-yellow-500/10 hover:bg-yellow-500/20 border-yellow-500/30"
+                >
+                  <Bug className="h-4 w-4" />
+                  <span className="sr-only sm:not-sr-only sm:ml-2">Debug</span>
+                </Button>
+              )}
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            Enter a Pittsburgh address to search for property violations. Select a year (2024 or later) in the top right corner to filter results.
+            Enter a Pittsburgh address to search for property violations.
           </p>
         </form>
       </div>
