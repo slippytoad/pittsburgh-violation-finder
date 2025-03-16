@@ -1,4 +1,3 @@
-
 /**
  * API service for the WPRDC Pittsburgh PLI Violations data
  * API Reference: https://data.wprdc.org/dataset/pittsburgh-pli-violations-report/resource/70c06278-92c5-4040-ab28-17671866f81c
@@ -8,22 +7,6 @@ import { ViolationType, WPRDCResponse, WPRDCViolation } from './types';
 
 const WPRDC_API_BASE_URL = 'https://data.wprdc.org/api/3/action/datastore_search';
 const RESOURCE_ID = '70c06278-92c5-4040-ab28-17671866f81c';
-
-/**
- * Check if a date string is from the specified year
- * @param dateString The date string to check
- * @param year The year to check against
- * @returns True if the date is from the specified year, false otherwise
- */
-const isFromYear = (dateString: string, year: number): boolean => {
-  if (!dateString) return false;
-  try {
-    const date = new Date(dateString);
-    return date.getFullYear() === year;
-  } catch (e) {
-    return false;
-  }
-};
 
 /**
  * Map the API violation status to our status enum
@@ -57,22 +40,17 @@ const getDateTimestamp = (dateString: string | null): number => {
 /**
  * Search for violations by address
  * @param address The address to search for
- * @param year The year to filter violations by (default is 2025)
  * @returns A promise that resolves to an array of violations
  */
-export const searchViolationsByAddress = async (address: string, year: number = 2025): Promise<ViolationType[]> => {
+export const searchViolationsByAddress = async (address: string): Promise<ViolationType[]> => {
   try {
     // Clean up and prepare the address for search
     const cleanAddress = address.trim();
     
-    // Build the query - using just q= instead of q=address:
-    // This searches across all fields instead of just the address field
-    const query = cleanAddress;
-    
     // Build the URL with the query
     const url = new URL(WPRDC_API_BASE_URL);
     url.searchParams.append('resource_id', RESOURCE_ID);
-    url.searchParams.append('q', query);
+    url.searchParams.append('q', cleanAddress);
     url.searchParams.append('limit', '200');
     
     // Fetch the data
@@ -90,17 +68,10 @@ export const searchViolationsByAddress = async (address: string, year: number = 
     
     console.log('API Response:', data); // Log the API response for debugging
     
-    // Filter records by the specified year
-    const filteredRecords = data.result.records.filter(record => {
-      // Use investigation_date as priority, then fall back to others
-      const dateToCheck = record.investigation_date || record.violation_date || record.inspection_date;
-      return isFromYear(dateToCheck, year);
-    });
-    
     // Create a map to group violations by case number
     const casefileMap = new Map<string, WPRDCViolation[]>();
     
-    filteredRecords.forEach(record => {
+    data.result.records.forEach(record => {
       const caseNumber = record.casefile_number || String(record._id);
       if (!casefileMap.has(caseNumber)) {
         casefileMap.set(caseNumber, []);
