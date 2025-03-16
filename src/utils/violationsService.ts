@@ -47,11 +47,24 @@ export const searchViolationsByAddress = async (address: string, year: number = 
     
     // Only add address filter if an address was provided
     if (cleanAddress !== '') {
-      // Use ilike for case-insensitive partial matching
-      query = query.ilike('address', `%${cleanAddress}%`);
+      // Use broader matching by splitting the address and searching for partial matches
+      const addressParts = cleanAddress.split(' ');
+      
+      // If we have multiple parts (like a number and street), search more precisely
+      if (addressParts.length > 1) {
+        // Create a more flexible search pattern with just the number and street name
+        // This handles cases where the exact formatting differs
+        query = query.ilike('address', `%${addressParts.slice(0, 2).join(' ')}%`);
+        
+        console.log(`Searching with flexible address pattern: %${addressParts.slice(0, 2).join(' ')}%`);
+      } else {
+        // Just use the original search if it's a single word
+        query = query.ilike('address', `%${cleanAddress}%`);
+        console.log(`Searching with simple address pattern: %${cleanAddress}%`);
+      }
     }
     
-    // Execute the query without date filtering first to see if we get any results
+    // Execute the query without date filtering first
     const { data, error } = await query;
     
     if (error) {
@@ -59,18 +72,28 @@ export const searchViolationsByAddress = async (address: string, year: number = 
       throw error;
     }
     
-    console.log(`Found ${data?.length || 0} violations for address "${cleanAddress}" before date filtering`);
+    console.log(`Found ${data?.length || 0} violations for address "${cleanAddress}" before filtering`);
     
     // If no data was returned, return an empty array
     if (!data || data.length === 0) {
+      console.log(`No violations found for "${cleanAddress}". Query may need adjustment.`);
       return [];
+    }
+    
+    // Log a sample of the returned data to help with debugging
+    if (data.length > 0) {
+      console.log('Sample violation data:', {
+        id: data[0].id,
+        address: data[0].address,
+        investigation_date: data[0].investigation_date
+      });
     }
     
     // Filter the results by year based on investigation_date
     let filteredByYear = data;
     
-    // Only apply date filtering if the data has an investigation_date field
-    if (data.some(record => record.investigation_date)) {
+    // Only apply date filtering if a specific year was requested
+    if (year) {
       filteredByYear = data.filter(record => {
         if (!record.investigation_date) return false;
         
@@ -83,9 +106,9 @@ export const searchViolationsByAddress = async (address: string, year: number = 
         }
       });
       
-      console.log(`After year filtering: ${filteredByYear.length} violations`);
+      console.log(`After year filtering: ${filteredByYear.length} violations for ${year}`);
     } else {
-      console.log('No investigation_date field found in results. Skipping year filtering.');
+      console.log('No year filtering applied');
     }
     
     // Create a map to group violations by violation_id

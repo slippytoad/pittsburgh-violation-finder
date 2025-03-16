@@ -31,6 +31,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, selectedYear }: SearchF
       return;
     }
     
+    console.log(`Submitting search for "${address}" with year ${selectedYear}`);
     onSearch(address, selectedYear);
   };
 

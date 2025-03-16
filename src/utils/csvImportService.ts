@@ -28,8 +28,10 @@ export const importViolationsFromCsv = async (file: File): Promise<number> => {
           
           // Transform the data to match the violations table structure
           const transformedData = data.map((row: any) => {
-            const parsedDate = parseDate(row.investigation_date);
-            console.log(`Parsed date for record: ${row.casefile_number || 'unknown'}, original: ${row.investigation_date}, parsed: ${parsedDate}`);
+            const originalDate = row.investigation_date || row.date || row.created_at || new Date().toISOString();
+            const parsedDate = parseDate(originalDate);
+            
+            console.log(`Processed date for record: ${row.casefile_number || 'unknown'}, original: ${originalDate}, parsed: ${parsedDate}, year: ${new Date(parsedDate).getFullYear()}`);
             
             return {
               violation_id: row.casefile_number || `VIO-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -80,17 +82,40 @@ const parseDate = (dateString?: string): string => {
   if (!dateString) return new Date().toISOString();
   
   try {
-    // Try to parse the date
+    // Try different date formats
     const date = new Date(dateString);
     
     // Check if the date is valid
     if (!isNaN(date.getTime())) {
+      console.log(`Successfully parsed date: ${dateString} → ${date.toISOString()}`);
       return date.toISOString();
+    }
+    
+    // Try alternative formats if standard parsing fails
+    // MM/DD/YYYY format
+    const usMatch = dateString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (usMatch) {
+      const [_, month, day, year] = usMatch;
+      const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
+      if (!isNaN(parsedDate.getTime())) {
+        return parsedDate.toISOString();
+      }
+    }
+    
+    // DD/MM/YYYY format
+    const euMatch = dateString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (euMatch) {
+      const [_, day, month, year] = euMatch;
+      const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
+      if (!isNaN(parsedDate.getTime())) {
+        return parsedDate.toISOString();
+      }
     }
   } catch (e) {
     console.error('Error parsing date:', dateString, e);
   }
   
+  console.warn(`Failed to parse date: ${dateString}, using current date instead`);
   // Return current date if parsing failed
   return new Date().toISOString();
 };
@@ -146,4 +171,3 @@ export const validateViolationsCsv = (file: File): Promise<boolean> => {
     });
   });
 };
-
