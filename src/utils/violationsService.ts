@@ -98,9 +98,12 @@ export const searchViolationsByAddress = async (address: string, year: number = 
       console.log('DEBUG MODE: Returning all violations up to 100');
     }
     
-    // Log the exact Supabase query being executed
-    const queryString = query.toSQL ? query.toSQL() : 'Query string not available';
-    console.log('Executing Supabase query:', queryString);
+    // Log query details for debugging - without using toSQL() which doesn't exist
+    console.log('Executing Supabase query with filters:', {
+      table: 'violations',
+      addressFilter: cleanAddress !== '' ? `ilike %${cleanAddress}%` : 'none',
+      yearFilter: year ? `${year}` : 'none'
+    });
     
     // Execute the query
     const { data: matchingRecords, error } = await query;
@@ -110,8 +113,14 @@ export const searchViolationsByAddress = async (address: string, year: number = 
       throw error;
     }
     
-    // Log raw response data for debugging
-    console.log('Raw database response:', JSON.stringify(matchingRecords).substring(0, 200) + '...');
+    // Log raw response data for debugging - limiting the size for readability
+    if (matchingRecords && matchingRecords.length > 0) {
+      console.log('Raw database response (first record):', JSON.stringify(matchingRecords[0]));
+      console.log(`Additional records: ${matchingRecords.length - 1} more`);
+    } else {
+      console.log('Raw database response: no records found');
+    }
+    
     console.log(`Found ${matchingRecords?.length || 0} violations for address "${cleanAddress}" before year filtering`);
     
     // If no data was returned, return an empty array
