@@ -98,6 +98,10 @@ export const searchViolationsByAddress = async (address: string, year: number = 
       console.log('DEBUG MODE: Returning all violations up to 100');
     }
     
+    // Log the exact Supabase query being executed
+    const queryString = query.toSQL ? query.toSQL() : 'Query string not available';
+    console.log('Executing Supabase query:', queryString);
+    
     // Execute the query
     const { data: matchingRecords, error } = await query;
     
@@ -106,6 +110,8 @@ export const searchViolationsByAddress = async (address: string, year: number = 
       throw error;
     }
     
+    // Log raw response data for debugging
+    console.log('Raw database response:', JSON.stringify(matchingRecords).substring(0, 200) + '...');
     console.log(`Found ${matchingRecords?.length || 0} violations for address "${cleanAddress}" before year filtering`);
     
     // If no data was returned, return an empty array
@@ -128,6 +134,7 @@ export const searchViolationsByAddress = async (address: string, year: number = 
     let filteredByYear = matchingRecords;
     
     if (year) {
+      console.log(`Filtering results by year: ${year}`);
       filteredByYear = matchingRecords.filter(record => {
         if (!record.investigation_date) {
           console.log(`Record with id ${record.id} has no investigation_date, excluding from year filter`);
