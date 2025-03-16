@@ -45,9 +45,8 @@ export const searchViolationsByAddress = async (address: string, year: number = 
       .from('violations')
       .select('*');
     
-    // Filter by date - checking both date_issued and created_at fields
-    // This handles the case where the database might use either column
-    query = query.or(`created_at.gte.${startDate},created_at.lte.${endDate}`);
+    // Filter by date - checking for violations_date to filter by year
+    query = query.or(`violations_date.gte.${startDate},violations_date.lte.${endDate}`);
     
     // Only add address filter if an address was provided
     if (cleanAddress !== '') {
@@ -70,10 +69,9 @@ export const searchViolationsByAddress = async (address: string, year: number = 
       return [];
     }
     
-    // Filter the results by year based on created_at date
-    // This is a fallback for databases that might not have the date_issued column
+    // Filter the results by year based on violations_date
     const filteredByYear = data.filter(record => {
-      const recordDate = new Date(record.created_at);
+      const recordDate = new Date(record.violations_date);
       return recordDate.getFullYear() === year;
     });
     
@@ -94,8 +92,8 @@ export const searchViolationsByAddress = async (address: string, year: number = 
     const violations: ViolationType[] = Array.from(violationMap.entries()).map(([id, records]) => {
       // Sort records by date in descending order
       records.sort((a, b) => {
-        const dateA = new Date(a.created_at).getTime();
-        const dateB = new Date(b.created_at).getTime();
+        const dateA = new Date(a.violations_date).getTime();
+        const dateB = new Date(b.violations_date).getTime();
         return dateB - dateA;
       });
       
@@ -106,7 +104,7 @@ export const searchViolationsByAddress = async (address: string, year: number = 
         id: id,
         address: primaryRecord.address || '',
         violationType: primaryRecord.violation_type || 'Unknown',
-        dateIssued: primaryRecord.created_at || '',
+        dateIssued: primaryRecord.violations_date || '',
         status: mapViolationStatus(primaryRecord.status),
         originalStatus: primaryRecord.original_status || primaryRecord.status || '',
         description: primaryRecord.description || '',
@@ -120,7 +118,7 @@ export const searchViolationsByAddress = async (address: string, year: number = 
           id: `${id}-${index + 1}`,
           address: record.address || '',
           violationType: record.violation_type || 'Unknown',
-          dateIssued: record.created_at || '',
+          dateIssued: record.violations_date || '',
           status: mapViolationStatus(record.status),
           originalStatus: record.original_status || record.status || '',
           description: record.description || '',

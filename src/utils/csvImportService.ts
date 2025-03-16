@@ -37,7 +37,8 @@ export const importViolationsFromCsv = async (file: File): Promise<number> => {
             property_owner: row.parcel_id || 'Unknown Owner',
             investigation_outcome: row.investigation_outcome || null,
             investigation_findings: row.investigation_findings || null,
-            created_at: parseDate(row.investigation_date),
+            violations_date: parseDate(row.investigation_date),
+            created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           }));
           
