@@ -25,17 +25,19 @@ export const importViolationsFromCsv = async (file: File): Promise<number> => {
           }
           
           console.log(`Successfully parsed ${data.length} records`);
+          console.log('Sample CSV data:', data[0]);
           
           // Transform the data to match the violations table structure
           const transformedData = data.map((row: any) => {
             const originalDate = row.investigation_date || row.date || row.created_at || new Date().toISOString();
             const parsedDate = parseDate(originalDate);
+            const year = new Date(parsedDate).getFullYear();
             
-            console.log(`Processed date for record: ${row.casefile_number || 'unknown'}, original: ${originalDate}, parsed: ${parsedDate}, year: ${new Date(parsedDate).getFullYear()}`);
+            console.log(`Processed date for record: ${row.casefile_number || 'unknown'}, original: ${originalDate}, parsed: ${parsedDate}, year: ${year}`);
             
             return {
               violation_id: row.casefile_number || `VIO-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-              address: row.address || 'Unknown Address',
+              address: (row.address || 'Unknown Address').toUpperCase(),
               violation_type: row.violation_code_section || 'Unspecified Violation Type',
               status: mapStatus(row.status),
               original_status: row.status || 'Unknown',
@@ -48,6 +50,8 @@ export const importViolationsFromCsv = async (file: File): Promise<number> => {
               updated_at: new Date().toISOString()
             };
           });
+          
+          console.log('Sample transformed data:', transformedData[0]);
           
           // Insert the data into the violations table
           const { data: insertedData, error } = await supabase
@@ -111,6 +115,16 @@ const parseDate = (dateString?: string): string => {
         return parsedDate.toISOString();
       }
     }
+    
+    // Try to extract year if all else fails - use January 1st of that year
+    const yearMatch = dateString.match(/\b(20\d{2})\b/);
+    if (yearMatch) {
+      const year = Number(yearMatch[1]);
+      if (year >= 2000 && year <= 2100) {
+        console.log(`Extracted year ${year} from date: ${dateString}`);
+        return new Date(year, 0, 1).toISOString();
+      }
+    }
   } catch (e) {
     console.error('Error parsing date:', dateString, e);
   }
@@ -128,12 +142,14 @@ const mapStatus = (status?: string): 'Open' | 'Closed' | 'In Progress' => {
   
   const lowerStatus = status.toLowerCase();
   
-  if (lowerStatus.includes('closed') || lowerStatus.includes('resolved')) {
+  if (lowerStatus.includes('closed') || lowerStatus.includes('resolved') || 
+      lowerStatus.includes('complied') || lowerStatus.includes('complete')) {
     return 'Closed';
   }
   
   if (lowerStatus.includes('progress') || lowerStatus.includes('pending') || 
-      lowerStatus.includes('scheduled') || lowerStatus.includes('under')) {
+      lowerStatus.includes('scheduled') || lowerStatus.includes('under') ||
+      lowerStatus.includes('review') || lowerStatus.includes('processing')) {
     return 'In Progress';
   }
   
@@ -157,6 +173,8 @@ export const validateViolationsCsv = (file: File): Promise<boolean> => {
       preview: 1, // Only parse the header row
       complete: (results) => {
         const headers = results.meta.fields || [];
+        console.log('CSV headers:', headers);
+        
         const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
         
         if (missingHeaders.length > 0) {

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Bug } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import AnimatedContainer from './AnimatedContainer';
 import { Spinner } from '@/components/ui/spinner';
@@ -15,7 +15,7 @@ interface SearchFormProps {
   onYearChange: (year: number) => void;
 }
 
-const SearchForm = ({ onSearch, onAddAddress, isLoading, selectedYear }: SearchFormProps) => {
+const SearchForm = ({ onSearch, onAddAddress, isLoading, selectedYear, onYearChange }: SearchFormProps) => {
   const [address, setAddress] = useState('');
   const { toast } = useToast();
 
@@ -50,6 +50,12 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, selectedYear }: SearchF
       title: "Address added",
       description: "Address has been saved to your list",
     });
+  };
+
+  // Debug function for development only
+  const handleDebugSearch = () => {
+    console.log('Triggering debug search');
+    onSearch('DEBUG', selectedYear);
   };
 
   return (
@@ -89,6 +95,20 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, selectedYear }: SearchF
                 <Plus className="h-4 w-4" />
                 <span className="sr-only sm:not-sr-only sm:ml-2">Add</span>
               </Button>
+              
+              {/* Debug button - only visible in development */}
+              {import.meta.env.DEV && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleDebugSearch}
+                  disabled={isLoading}
+                  className="bg-yellow-500/10 hover:bg-yellow-500/20 border-yellow-500/30"
+                >
+                  <Bug className="h-4 w-4" />
+                  <span className="sr-only sm:not-sr-only sm:ml-2">Debug</span>
+                </Button>
+              )}
             </div>
           </div>
           <p className="text-xs text-muted-foreground">

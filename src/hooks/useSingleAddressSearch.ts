@@ -19,6 +19,8 @@ export function useSingleAddressSearch(
     try {
       console.log(`Searching for violations at "${address}" in year ${year}`);
       const results = await searchViolationsByAddress(address, year);
+      
+      console.log(`Search completed, got ${results.length} results`);
       setViolations(results);
       setSearchCount(prev => prev + 1);
       
@@ -26,6 +28,11 @@ export function useSingleAddressSearch(
         toast({
           title: "No violations found",
           description: `No property violations found for this address in ${year}`,
+        });
+      } else {
+        toast({
+          title: "Search complete",
+          description: `Found ${results.length} violation${results.length !== 1 ? 's' : ''} for this address in ${year}`,
         });
       }
     } catch (error) {

@@ -31,77 +31,121 @@ const mapViolationStatus = (status: string | null): 'Open' | 'Closed' | 'In Prog
  */
 export const searchViolationsByAddress = async (address: string, year: number = new Date().getFullYear()): Promise<ViolationType[]> => {
   try {
-    console.log(`Searching for violations at "${address}" in year ${year}`);
+    console.log(`Starting search for violations at "${address}" in year ${year}`);
     
     // Clean up and prepare the address for search
-    const cleanAddress = address.trim();
+    const cleanAddress = address.trim().toUpperCase();
     
-    // Create a year range for filtering
-    const startDate = new Date(year, 0, 1).toISOString(); // January 1st of the year
-    const endDate = new Date(year, 11, 31, 23, 59, 59).toISOString(); // December 31st of the year
+    // Log the database request
+    console.log('Querying Supabase for violations...');
+
+    // First get all violations to check if our database has any data at all
+    const { data: allViolations, error: allError } = await supabase
+      .from('violations')
+      .select('*')
+      .limit(5);
+
+    if (allError) {
+      console.error('Error querying all violations:', allError);
+      throw allError;
+    }
+
+    console.log(`Database has ${allViolations?.length || 0} violations (sample check)`);
     
-    // Build the query - search in the violations table
+    if (allViolations && allViolations.length > 0) {
+      console.log('Sample violation record:', allViolations[0]);
+    } else {
+      console.warn('No violations found in the database at all!');
+    }
+
+    // Now perform the actual search with address
     let query = supabase
       .from('violations')
       .select('*');
     
     // Only add address filter if an address was provided
     if (cleanAddress !== '') {
-      // Use broader matching by splitting the address and searching for partial matches
-      const addressParts = cleanAddress.split(' ');
+      // Try multiple matching approaches for maximum flexibility
       
-      // If we have multiple parts (like a number and street), search more precisely
-      if (addressParts.length > 1) {
-        // Create a more flexible search pattern with just the number and street name
-        // This handles cases where the exact formatting differs
-        query = query.ilike('address', `%${addressParts.slice(0, 2).join(' ')}%`);
-        
-        console.log(`Searching with flexible address pattern: %${addressParts.slice(0, 2).join(' ')}%`);
+      // First, normalize the address format - remove special characters
+      const normalizedAddress = cleanAddress.replace(/[^\w\s]/gi, '');
+      
+      // Extract first part of address (usually the number)
+      const addressParts = normalizedAddress.split(' ');
+      const addressNumber = addressParts.length > 0 ? addressParts[0] : '';
+      
+      // Extract street name if available
+      const streetName = addressParts.length > 1 ? addressParts[1] : '';
+      
+      console.log(`Searching with normalized address: "${normalizedAddress}"`);
+      console.log(`Address number: "${addressNumber}", Street name: "${streetName}"`);
+      
+      if (addressNumber && streetName) {
+        // If we have both number and street name, search for them separately
+        // This is more flexible than searching for the whole address
+        query = query.or(`address.ilike.%${addressNumber}%,address.ilike.%${streetName}%`);
+        console.log(`Using flexible search with number and street separately`);
       } else {
-        // Just use the original search if it's a single word
-        query = query.ilike('address', `%${cleanAddress}%`);
-        console.log(`Searching with simple address pattern: %${cleanAddress}%`);
+        // Just use the full address for search
+        query = query.ilike('address', `%${normalizedAddress}%`);
+        console.log(`Using simple address pattern: %${normalizedAddress}%`);
       }
     }
     
-    // Execute the query without date filtering first
-    const { data, error } = await query;
+    // Debug query to see all data without filtering by address
+    if (cleanAddress === 'DEBUG') {
+      query = supabase.from('violations').select('*').limit(100);
+      console.log('DEBUG MODE: Returning all violations up to 100');
+    }
+    
+    // Execute the query
+    const { data: matchingRecords, error } = await query;
     
     if (error) {
       console.error('Error querying violations:', error);
       throw error;
     }
     
-    console.log(`Found ${data?.length || 0} violations for address "${cleanAddress}" before filtering`);
+    console.log(`Found ${matchingRecords?.length || 0} violations for address "${cleanAddress}" before year filtering`);
     
     // If no data was returned, return an empty array
-    if (!data || data.length === 0) {
+    if (!matchingRecords || matchingRecords.length === 0) {
       console.log(`No violations found for "${cleanAddress}". Query may need adjustment.`);
       return [];
     }
     
     // Log a sample of the returned data to help with debugging
-    if (data.length > 0) {
-      console.log('Sample violation data:', {
-        id: data[0].id,
-        address: data[0].address,
-        investigation_date: data[0].investigation_date
+    if (matchingRecords.length > 0) {
+      console.log('Sample matched violation:', {
+        id: matchingRecords[0].id,
+        address: matchingRecords[0].address,
+        violation_id: matchingRecords[0].violation_id,
+        investigation_date: matchingRecords[0].investigation_date
       });
     }
     
-    // Filter the results by year based on investigation_date
-    let filteredByYear = data;
+    // Filter the results by year based on investigation_date if a year was specified
+    let filteredByYear = matchingRecords;
     
-    // Only apply date filtering if a specific year was requested
     if (year) {
-      filteredByYear = data.filter(record => {
-        if (!record.investigation_date) return false;
+      filteredByYear = matchingRecords.filter(record => {
+        if (!record.investigation_date) {
+          console.log(`Record with id ${record.id} has no investigation_date, excluding from year filter`);
+          return false;
+        }
         
         try {
           const recordDate = new Date(record.investigation_date);
-          return recordDate.getFullYear() === year;
+          const recordYear = recordDate.getFullYear();
+          const matches = recordYear === year;
+          
+          if (!matches) {
+            console.log(`Record with date ${record.investigation_date} (year ${recordYear}) doesn't match filter year ${year}`);
+          }
+          
+          return matches;
         } catch (e) {
-          console.error('Invalid date format for record:', record, e);
+          console.error(`Invalid date format for record id ${record.id}: ${record.investigation_date}`, e);
           return false;
         }
       });
@@ -166,11 +210,14 @@ export const searchViolationsByAddress = async (address: string, year: number = 
     });
     
     // Sort the final list by date (descending)
-    return violations.sort((a, b) => {
+    const sortedViolations = violations.sort((a, b) => {
       const dateA = a.dateIssued ? new Date(a.dateIssued).getTime() : 0;
       const dateB = b.dateIssued ? new Date(b.dateIssued).getTime() : 0;
       return dateB - dateA;
     });
+    
+    console.log(`Returning ${sortedViolations.length} violations after processing`);
+    return sortedViolations;
   } catch (error) {
     console.error('Error fetching violations:', error);
     throw error;
