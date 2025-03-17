@@ -1,3 +1,4 @@
+
 /**
  * API service for the WPRDC Pittsburgh PLI Violations data
  * API Reference: https://data.wprdc.org/dataset/pittsburgh-pli-violations-report/resource/70c06278-92c5-4040-ab28-17671866f81c
@@ -47,7 +48,7 @@ export const searchViolationsByAddress = async (address: string): Promise<Violat
     // Clean up and prepare the address for search
     const cleanAddress = address.trim();
     
-    // Build the URL with the query
+    // Build the URL with the query - using simpler SELECT *
     const url = new URL(WPRDC_API_BASE_URL);
     url.searchParams.append('resource_id', RESOURCE_ID);
     url.searchParams.append('q', cleanAddress);

@@ -41,14 +41,8 @@ const ViolationFinderContent: React.FC = () => {
 
   const onSearchAll = useCallback(() => {
     console.log("onSearchAll called");
-    if (addresses.length > 10) {
-      toast({
-        title: "Processing in batches",
-        description: `Searching ${addresses.length} addresses in smaller batches to avoid timeouts.`,
-      });
-    }
     handleSearchAll(addresses);
-  }, [addresses, handleSearchAll, toast]);
+  }, [addresses, handleSearchAll]);
 
   return (
     <div className="max-w-screen-xl mx-auto">

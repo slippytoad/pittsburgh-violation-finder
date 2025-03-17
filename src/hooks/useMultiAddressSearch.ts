@@ -28,8 +28,8 @@ export function useMultiAddressSearch(
     setSelectedAddress('all');
     
     try {
-      // Process addresses in batches
-      console.log("Starting batch processing");
+      // Process all addresses at once without batching
+      console.log("Starting search for all addresses");
       const allViolations = await processBatch(addresses, 0, setSearchCount);
       
       // Process results (deduplicate and sort)
