@@ -12,7 +12,7 @@ import { useScheduledViolationCheck } from '@/hooks/useScheduledViolationCheck';
 import { useToast } from '@/components/ui/use-toast';
 
 const ViolationFinderContent: React.FC = () => {
-  const { violations, isLoading, selectedAddress, handleSearch, handleSearchAll, searchCount } = useViolations();
+  const { violations, isLoading, selectedAddress, handleSearch, handleSearchAll, cancelSearch, searchCount } = useViolations();
   const { addresses, handleAddAddress, handleRemoveAddress, handleBulkImport } = useAddresses();
   const { 
     isScheduled,
@@ -65,8 +65,8 @@ const ViolationFinderContent: React.FC = () => {
       <div className="grid grid-cols-1 gap-8">
         <SearchForm 
           onSearch={onSearch} 
-          onAddAddress={handleAddAddress}
           isLoading={isLoading}
+          onCancelSearch={cancelSearch}
         />
         
         <ResultsList 

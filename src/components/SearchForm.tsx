@@ -2,18 +2,19 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Bug } from 'lucide-react';
+import { Search, Bug, X } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import AnimatedContainer from './AnimatedContainer';
 import { Spinner } from '@/components/ui/spinner';
 
 interface SearchFormProps {
   onSearch: (address: string) => void;
-  onAddAddress: (address: string) => void;
+  onAddAddress?: (address: string) => void;
   isLoading: boolean;
+  onCancelSearch?: () => void;
 }
 
-const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
+const SearchForm = ({ onSearch, onAddAddress, isLoading, onCancelSearch }: SearchFormProps) => {
   const [address, setAddress] = useState('');
   const { toast } = useToast();
 
@@ -55,18 +56,35 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading }: SearchFormProps) => {
               />
             </div>
             <div className="flex gap-2">
-              <Button 
-                type="submit" 
-                disabled={isLoading} 
-                className="transition-all duration-300"
-              >
-                {isLoading ? (
-                  <Spinner size="sm" className="mr-2" />
-                ) : (
+              {isLoading ? (
+                <>
+                  <Button 
+                    type="button" 
+                    variant="destructive"
+                    onClick={onCancelSearch}
+                    className="transition-all duration-300"
+                  >
+                    <X className="mr-2 h-4 w-4" />
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="button" 
+                    disabled={true} 
+                    className="transition-all duration-300"
+                  >
+                    <Spinner size="sm" className="mr-2" />
+                    Searching...
+                  </Button>
+                </>
+              ) : (
+                <Button 
+                  type="submit" 
+                  className="transition-all duration-300"
+                >
                   <Search className="mr-2 h-4 w-4" />
-                )}
-                Search
-              </Button>
+                  Search
+                </Button>
+              )}
               
               {/* Debug button - only visible in development */}
               {import.meta.env.DEV && (

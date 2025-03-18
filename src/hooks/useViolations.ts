@@ -12,17 +12,25 @@ export function useViolations() {
   const { 
     isLoading: singleAddressLoading,
     selectedAddress,
-    handleSearch
+    handleSearch,
+    cancelSearch: cancelSingleSearch
   } = useSingleAddressSearch(setViolations, setSearchCount);
   
   // Use the multi-address search hook
   const {
     isLoading: multiAddressLoading,
-    handleSearchAll
+    handleSearchAll,
+    cancelSearch: cancelMultiSearch
   } = useMultiAddressSearch(setViolations, address => address ? address : null, setSearchCount);
   
   // Determine overall loading state
   const isLoading = singleAddressLoading || multiAddressLoading;
+
+  // Combined cancel function
+  const cancelSearch = () => {
+    cancelSingleSearch();
+    cancelMultiSearch();
+  };
 
   return {
     violations,
@@ -30,6 +38,7 @@ export function useViolations() {
     selectedAddress,
     searchCount,
     handleSearch,
-    handleSearchAll
+    handleSearchAll,
+    cancelSearch
   };
 }
