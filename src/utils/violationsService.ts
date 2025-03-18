@@ -24,12 +24,17 @@ function transformViolationData(data: any[]): ViolationType[] {
     address: item.address,
     parcelId: item.parcel_id,
     status: item.status,
-    date: item.investigation_date,
+    dateIssued: item.investigation_date,
     description: item.violation_description,
     codeSection: item.violation_code_section,
     instructions: item.violation_spec_instructions,
     outcome: item.investigation_outcome,
-    findings: item.investigation_findings || ''
+    findings: item.investigation_findings || '',
+    // Add the missing required properties from ViolationType
+    violationType: item.violation_code_section || 'Unknown',
+    propertyOwner: item.owner_name || 'Unknown Owner',
+    fineAmount: null,
+    dueDate: null,
   }));
 }
 

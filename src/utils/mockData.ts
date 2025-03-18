@@ -77,3 +77,8 @@ export const getViolationsByAddress = (address: string): ViolationType[] => {
     violation.address.toLowerCase().includes(address.toLowerCase())
   );
 };
+
+// Add the missing getDebugViolations function
+export const getDebugViolations = (): ViolationType[] => {
+  return mockViolations;
+};
