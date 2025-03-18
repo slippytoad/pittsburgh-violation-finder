@@ -1,4 +1,3 @@
-
 /**
  * API service for the WPRDC Pittsburgh PLI Violations data
  * API Reference: https://data.wprdc.org/dataset/pittsburgh-pli-violations-report/resource/70c06278-92c5-4040-ab28-17671866f81c
@@ -13,6 +12,11 @@ const WPRDC_API_BASE_URL = 'https://data.wprdc.org/api/3/action/datastore_search
 const RESOURCE_ID = '70c06278-92c5-4040-ab28-17671866f81c';
 // Max results to return per query
 const LIMIT = 200;
+
+// Simple in-memory cache for search results
+const searchCache: Record<string, { timestamp: number, results: ViolationType[] }> = {};
+// Cache expiration time in milliseconds (30 minutes)
+const CACHE_EXPIRATION_MS = 30 * 60 * 1000;
 
 /**
  * Transform the raw API response into our application's violation type
@@ -51,6 +55,21 @@ export async function searchViolationsByAddress(address: string, signal?: AbortS
     // Clean up and prepare the address for search
     const cleanAddress = address.trim();
     
+    // Check if we have a valid cached result
+    if (searchCache[cleanAddress]) {
+      const cachedData = searchCache[cleanAddress];
+      const now = Date.now();
+      
+      // If the cache hasn't expired, use it
+      if (now - cachedData.timestamp < CACHE_EXPIRATION_MS) {
+        console.log(`Using cached results for address: ${cleanAddress}`);
+        return cachedData.results;
+      }
+      
+      // Otherwise, delete the expired cache entry
+      delete searchCache[cleanAddress];
+    }
+    
     // Build the URL with the query - using simpler SELECT *
     const url = new URL(WPRDC_API_BASE_URL);
     url.searchParams.append('resource_id', RESOURCE_ID);
@@ -59,7 +78,13 @@ export async function searchViolationsByAddress(address: string, signal?: AbortS
     
     // Make the API request
     console.log(`Fetching violations for address: ${cleanAddress}`);
-    const response = await fetch(url.toString(), { signal });
+    const response = await fetch(url.toString(), { 
+      signal,
+      // Add cache control headers for better performance
+      headers: {
+        'Cache-Control': 'max-age=3600' // Tell browsers to cache for 1 hour
+      }
+    });
     
     if (!response.ok) {
       throw new Error(`API request failed with status: ${response.status}`);
@@ -72,14 +97,23 @@ export async function searchViolationsByAddress(address: string, signal?: AbortS
     }
     
     const records = data.result.records || [];
-    console.log(`Found ${records.length} violation records`);
+    console.log(`Found ${records.length} violation records for: ${cleanAddress}`);
     
     // Transform the data into our application's format
-    return transformViolationData(records);
+    const transformedResults = transformViolationData(records);
+    
+    // Store the results in the cache
+    searchCache[cleanAddress] = {
+      timestamp: Date.now(),
+      results: transformedResults
+    };
+    
+    return transformedResults;
     
   } catch (error) {
     // Re-throw AbortError to be handled by the caller
     if (error.name === 'AbortError') {
+      console.log(`Search for ${address} was aborted`);
       throw error;
     }
     
