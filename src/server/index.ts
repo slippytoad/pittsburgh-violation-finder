@@ -1,6 +1,5 @@
-
 import { createServer } from 'http';
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { json } from 'body-parser';
 import { supabase } from '../utils/supabase';
@@ -90,7 +89,11 @@ app.post('/api/addresses', async (req: Request, res: Response) => {
   }
 });
 
-app.delete('/api/addresses/:index', async (req: Request<{ index: string }>, res: Response) => {
+interface DeleteAddressParams {
+  index: string;
+}
+
+app.delete('/api/addresses/:index', async (req: Request<DeleteAddressParams>, res: Response) => {
   try {
     const index = parseInt(req.params.index);
     
