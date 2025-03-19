@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { useState, useEffect } from 'react';
 import { 
-  fetchSettings, 
+  fetchAppSettings, 
   saveSettings,
 } from '@/services/settingsService';
 import { scheduleNextCheck } from '@/services/violationCheckService';
@@ -74,7 +74,7 @@ export const useSettingsInitialization = (
     const initialize = async () => {
       try {
         // Try to fetch settings from Supabase
-        const settings = await fetchSettings();
+        const settings = await fetchAppSettings();
         
         if (settings) {
           console.log('Loaded settings from database:', settings);

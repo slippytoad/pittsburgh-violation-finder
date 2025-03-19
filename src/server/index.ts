@@ -1,6 +1,6 @@
 
 import { createServer } from 'http';
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { json } from 'body-parser';
 import { supabase } from '../utils/supabase';
@@ -16,7 +16,7 @@ app.use(cors());
 app.use(json());
 
 // Address endpoints
-app.get('/api/addresses', async (req, res) => {
+app.get('/api/addresses', async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabase
       .from('addresses')
@@ -34,7 +34,7 @@ app.get('/api/addresses', async (req, res) => {
   }
 });
 
-app.post('/api/addresses', async (req, res) => {
+app.post('/api/addresses', async (req: Request, res: Response) => {
   try {
     const { address } = req.body;
     if (!address) {
@@ -90,7 +90,7 @@ app.post('/api/addresses', async (req, res) => {
   }
 });
 
-app.delete('/api/addresses/:index', async (req, res) => {
+app.delete('/api/addresses/:index', async (req: Request<{ index: string }>, res: Response) => {
   try {
     const index = parseInt(req.params.index);
     
@@ -133,7 +133,7 @@ app.delete('/api/addresses/:index', async (req, res) => {
   }
 });
 
-app.post('/api/addresses/bulk', async (req, res) => {
+app.post('/api/addresses/bulk', async (req: Request, res: Response) => {
   try {
     const { addresses } = req.body;
     if (!addresses || !Array.isArray(addresses)) {
@@ -193,7 +193,7 @@ app.post('/api/addresses/bulk', async (req, res) => {
 });
 
 // Violations endpoints
-app.get('/api/violations/search', async (req, res) => {
+app.get('/api/violations/search', async (req: Request, res: Response) => {
   try {
     const { address } = req.query;
     if (!address || typeof address !== 'string') {
@@ -208,7 +208,7 @@ app.get('/api/violations/search', async (req, res) => {
   }
 });
 
-app.post('/api/violations/search-multiple', async (req, res) => {
+app.post('/api/violations/search-multiple', async (req: Request, res: Response) => {
   try {
     const { addresses } = req.body;
     const year = req.query.year ? parseInt(req.query.year as string) : undefined;
@@ -236,7 +236,7 @@ app.post('/api/violations/search-multiple', async (req, res) => {
 });
 
 // Settings endpoints
-app.get('/api/settings', async (req, res) => {
+app.get('/api/settings', async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabase
       .from('app_settings')
@@ -268,7 +268,7 @@ app.get('/api/settings', async (req, res) => {
   }
 });
 
-app.post('/api/settings', async (req, res) => {
+app.post('/api/settings', async (req: Request, res: Response) => {
   try {
     const settings = req.body;
     

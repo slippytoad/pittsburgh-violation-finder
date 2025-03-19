@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { fetchSettings } from '@/services/settingsService';
+import { fetchAppSettings } from '@/services/settingsService';
 import { initializeEmailService } from '@/services/violationCheckService';
 import { useSettingsInitialization } from '@/hooks/useSettingsInitialization';
 import { useViolationCheck } from '@/hooks/useViolationCheck';
