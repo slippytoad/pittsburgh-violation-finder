@@ -1,3 +1,4 @@
+
 /**
  * API service for the WPRDC Pittsburgh PLI Violations data
  * API Reference: https://data.wprdc.org/dataset/pittsburgh-pli-violations-report/resource/70c06278-92c5-4040-ab28-17671866f81c
@@ -44,6 +45,7 @@ function transformViolationData(data: any[]): ViolationType[] {
 
 /**
  * Search for violations by address
+ * This function is now primarily for server-side use
  */
 export async function searchViolationsByAddress(address: string, signal?: AbortSignal): Promise<ViolationType[]> {
   // For development/testing, return mock data if address is "DEBUG"

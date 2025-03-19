@@ -2,7 +2,7 @@
 import { useState, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { ViolationType } from '@/utils/types';
-import { searchViolationsByAddress } from '@/utils/violationsService';
+import { searchViolations } from '@/utils/api';
 
 export function useSingleAddressSearch(
   setViolations: (violations: ViolationType[]) => void,
@@ -34,7 +34,7 @@ export function useSingleAddressSearch(
     
     try {
       console.log(`Searching for violations at "${address}"`);
-      const results = await searchViolationsByAddress(address, abortControllerRef.current.signal);
+      const results = await searchViolations(address, abortControllerRef.current.signal);
       
       // If the search was aborted, don't process results
       if (abortControllerRef.current === null) {

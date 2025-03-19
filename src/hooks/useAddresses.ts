@@ -1,16 +1,17 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { fetchSavedAddresses, saveAddress, removeAddress, normalizeAddress, bulkImportAddresses } from '@/utils/addressService';
+import { fetchAddresses, saveAddress, removeAddress, bulkImportAddresses } from '@/utils/api';
 
 export function useAddresses() {
   const [addresses, setAddresses] = useState<string[]>([]);
   const { toast } = useToast();
 
-  // Load saved addresses from database on mount
+  // Load saved addresses from API on mount
   useEffect(() => {
     const loadAddresses = async () => {
       try {
-        const savedAddresses = await fetchSavedAddresses();
+        const savedAddresses = await fetchAddresses();
         setAddresses(savedAddresses);
       } catch (error) {
         console.error('Failed to load saved addresses', error);
@@ -27,23 +28,12 @@ export function useAddresses() {
 
   const handleAddAddress = async (address: string) => {
     try {
-      // Check if normalized version of this address already exists
-      const normalizedNewAddress = normalizeAddress(address);
-      const normalizedExisting = addresses.map(addr => normalizeAddress(addr));
-      
-      if (!normalizedExisting.includes(normalizedNewAddress)) {
-        const updatedAddresses = await saveAddress(address);
-        setAddresses(updatedAddresses);
-        toast({
-          title: "Address saved",
-          description: "The address has been added to your saved list",
-        });
-      } else {
-        toast({
-          title: "Address exists",
-          description: "This address (or a variation of it) is already in your saved list",
-        });
-      }
+      const updatedAddresses = await saveAddress(address);
+      setAddresses(updatedAddresses);
+      toast({
+        title: "Address saved",
+        description: "The address has been added to your saved list",
+      });
     } catch (error) {
       console.error('Error saving address:', error);
       toast({
