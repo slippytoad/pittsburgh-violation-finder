@@ -6,11 +6,6 @@ import { processBatch } from '../../utils/batchProcessing';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
 
-// For defining route parameters
-interface AddressRequestParams extends ParamsDictionary {
-  address: string;
-}
-
 // For defining body of batch processing request
 interface BatchRequestBody {
   addresses: string[];
@@ -19,7 +14,7 @@ interface BatchRequestBody {
 /**
  * Process a batch of addresses to search for violations
  */
-export async function processBatchViolations(req: Request<{}, {}, BatchRequestBody>, res: Response, next: NextFunction) {
+export async function processBatchViolations(req: Request, res: Response, next: NextFunction) {
   const { addresses } = req.body;
   
   if (!addresses || !Array.isArray(addresses) || addresses.length === 0) {
