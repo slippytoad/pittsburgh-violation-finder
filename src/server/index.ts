@@ -7,6 +7,8 @@ import { supabase } from '../utils/supabase';
 import { searchViolationsByAddress } from '../utils/violationsService';
 import { ViolationType } from '../utils/types';
 import { processBatch } from '../utils/batchProcessing';
+import { ParamsDictionary } from 'express-serve-static-core';
+import { ParsedQs } from 'qs';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -15,8 +17,20 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(json());
 
+// Type-safe route handlers
+type RequestHandler<
+  P = ParamsDictionary,
+  ResBody = any,
+  ReqBody = any,
+  ReqQuery = ParsedQs
+> = (
+  req: Request<P, ResBody, ReqBody, ReqQuery>,
+  res: Response,
+  next?: NextFunction
+) => void | Promise<void>;
+
 // Address endpoints
-app.get('/api/addresses', async (req: Request, res: Response) => {
+app.get('/api/addresses', (async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('addresses')
@@ -32,9 +46,13 @@ app.get('/api/addresses', async (req: Request, res: Response) => {
     console.error('Error fetching addresses:', error);
     res.status(500).json({ error: 'Failed to fetch addresses' });
   }
-});
+}) as RequestHandler);
 
-app.post('/api/addresses', async (req: Request, res: Response) => {
+interface AddressRequest {
+  address: string;
+}
+
+app.post('/api/addresses', (async (req: Request<{}, any, AddressRequest>, res) => {
   try {
     const { address } = req.body;
     if (!address) {
@@ -88,13 +106,13 @@ app.post('/api/addresses', async (req: Request, res: Response) => {
     console.error('Error saving address:', error);
     res.status(500).json({ error: 'Failed to save address' });
   }
-});
+}) as RequestHandler<{}, any, AddressRequest>);
 
 interface DeleteAddressParams {
   index: string;
 }
 
-app.delete('/api/addresses/:index', async (req: Request<DeleteAddressParams>, res: Response) => {
+app.delete('/api/addresses/:index', (async (req: Request<DeleteAddressParams>, res) => {
   try {
     const index = parseInt(req.params.index);
     
@@ -135,13 +153,13 @@ app.delete('/api/addresses/:index', async (req: Request<DeleteAddressParams>, re
     console.error('Error removing address:', error);
     res.status(500).json({ error: 'Failed to remove address' });
   }
-});
+}) as RequestHandler<DeleteAddressParams>);
 
 interface BulkImportRequest {
   addresses: string[];
 }
 
-app.post('/api/addresses/bulk', async (req: Request<{}, {}, BulkImportRequest>, res: Response) => {
+app.post('/api/addresses/bulk', (async (req: Request<{}, any, BulkImportRequest>, res) => {
   try {
     const { addresses } = req.body;
     if (!addresses || !Array.isArray(addresses)) {
@@ -198,14 +216,14 @@ app.post('/api/addresses/bulk', async (req: Request<{}, {}, BulkImportRequest>, 
     console.error('Error bulk importing addresses:', error);
     res.status(500).json({ error: 'Failed to bulk import addresses' });
   }
-});
+}) as RequestHandler<{}, any, BulkImportRequest>);
 
 interface ViolationSearchQuery {
   address?: string;
 }
 
 // Violations endpoints
-app.get('/api/violations/search', async (req: Request<{}, {}, {}, ViolationSearchQuery>, res: Response) => {
+app.get('/api/violations/search', (async (req: Request<{}, any, any, ViolationSearchQuery>, res) => {
   try {
     const { address } = req.query;
     if (!address || typeof address !== 'string') {
@@ -218,7 +236,7 @@ app.get('/api/violations/search', async (req: Request<{}, {}, {}, ViolationSearc
     console.error('Error searching violations:', error);
     res.status(500).json({ error: 'Failed to search violations' });
   }
-});
+}) as RequestHandler<{}, any, any, ViolationSearchQuery>);
 
 interface MultiAddressSearchRequest {
   addresses: string[];
@@ -228,7 +246,7 @@ interface MultiAddressSearchQuery {
   year?: string;
 }
 
-app.post('/api/violations/search-multiple', async (req: Request<{}, {}, MultiAddressSearchRequest, MultiAddressSearchQuery>, res: Response) => {
+app.post('/api/violations/search-multiple', (async (req: Request<{}, any, MultiAddressSearchRequest, MultiAddressSearchQuery>, res) => {
   try {
     const { addresses } = req.body;
     const year = req.query.year ? parseInt(req.query.year) : undefined;
@@ -253,10 +271,10 @@ app.post('/api/violations/search-multiple', async (req: Request<{}, {}, MultiAdd
     console.error('Error searching multiple addresses:', error);
     res.status(500).json({ error: 'Failed to search multiple addresses' });
   }
-});
+}) as RequestHandler<{}, any, MultiAddressSearchRequest, MultiAddressSearchQuery>);
 
 // Settings endpoints
-app.get('/api/settings', async (req: Request, res: Response) => {
+app.get('/api/settings', (async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('app_settings')
@@ -286,7 +304,7 @@ app.get('/api/settings', async (req: Request, res: Response) => {
     console.error('Error fetching settings:', error);
     res.status(500).json({ error: 'Failed to fetch settings' });
   }
-});
+}) as RequestHandler);
 
 interface AppSettingsUpdate {
   violationChecksEnabled?: boolean;
@@ -295,7 +313,7 @@ interface AppSettingsUpdate {
   nextViolationCheckTime?: string;
 }
 
-app.post('/api/settings', async (req: Request<{}, {}, AppSettingsUpdate>, res: Response) => {
+app.post('/api/settings', (async (req: Request<{}, any, AppSettingsUpdate>, res) => {
   try {
     const settings = req.body;
     
@@ -353,7 +371,7 @@ app.post('/api/settings', async (req: Request<{}, {}, AppSettingsUpdate>, res: R
     console.error('Error saving settings:', error);
     res.status(500).json({ error: 'Failed to save settings' });
   }
-});
+}) as RequestHandler<{}, any, AppSettingsUpdate>);
 
 // Start the server
 const server = createServer(app);
@@ -364,3 +382,4 @@ server.listen(PORT, () => {
 
 // For dev environments, export the express app for middleware usage
 export { app };
+
