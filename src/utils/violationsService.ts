@@ -1,4 +1,3 @@
-
 /**
  * API service for the WPRDC Pittsburgh PLI Violations data
  * API Reference: https://data.wprdc.org/dataset/pittsburgh-pli-violations-report/resource/70c06278-92c5-4040-ab28-17671866f81c
@@ -48,11 +47,9 @@ function transformViolationData(data: any[]): ViolationType[] {
  * This is useful for preview deployments where the backend may not be available
  */
 function shouldUseDirectApi(): boolean {
-  // Check if we're in a preview or production environment without backend
-  // The URL will typically be something like *.lovable.app or a deployed URL
-  const hostname = window.location.hostname;
-  return hostname.includes('lovable.app') || 
-         hostname !== 'localhost';
+  // Always use direct API in browser environments
+  // This will handle preview deployments and any environment where the backend might not be available
+  return true;
 }
 
 /**

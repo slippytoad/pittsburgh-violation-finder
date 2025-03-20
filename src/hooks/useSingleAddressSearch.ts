@@ -2,7 +2,7 @@
 import { useState, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { ViolationType } from '@/utils/types';
-import { searchViolations } from '@/utils/api';
+import { searchViolations } from '@/utils/violationsService';
 
 export function useSingleAddressSearch(
   setViolations: (violations: ViolationType[]) => void,

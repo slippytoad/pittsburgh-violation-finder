@@ -1,83 +1,61 @@
 
-import { ViolationType } from '@/utils/types';
-import { searchViolationsByAddress } from '@/utils/violationsService';
-
-// Configuration for batching
-const BATCH_SIZE = 5; // Number of addresses to process in each batch
-const BATCH_DELAY_MS = 1000; // Delay between batches in milliseconds
+import { ViolationType } from './types';
+import { searchViolations } from './violationsService';
 
 /**
- * Process addresses in smaller batches with delays between batches
- * to avoid overwhelming the server with too many concurrent requests
+ * Process a batch of addresses for violations
+ * @param addresses - List of addresses to search
+ * @param startIndex - Starting index in the addresses array
+ * @param setSearchCount - Function to update the search count
+ * @param existingViolations - Array of violations already found
+ * @param signal - AbortSignal for cancelling the search
+ * @returns Violations found for the batch
  */
-export const processBatch = async (
-  addresses: string[], 
-  startIndex: number, 
-  setSearchCount: (callback: (prev: number) => number) => void,
-  allResults: ViolationType[] = [],
+export async function processBatch(
+  addresses: string[],
+  startIndex: number,
+  setSearchCount: (count: (prev: number) => number) => void,
+  existingViolations: ViolationType[] = [],
   signal?: AbortSignal
-): Promise<ViolationType[]> => {
-  // If the operation has been aborted, stop processing
-  if (signal?.aborted) {
-    throw new DOMException('The operation was aborted', 'AbortError');
-  }
-  
-  // Check if all addresses have been processed
+): Promise<ViolationType[]> {
   if (startIndex >= addresses.length) {
-    return allResults;
+    return existingViolations;
   }
-  
-  // Calculate the end index for the current batch
-  const endIndex = Math.min(startIndex + BATCH_SIZE, addresses.length);
-  const currentBatch = addresses.slice(startIndex, endIndex);
-  
-  console.log(`Processing batch of ${currentBatch.length} addresses (${startIndex + 1}-${endIndex} of ${addresses.length})`);
-  
+
+  let violations = [...existingViolations];
+  let currentIndex = startIndex;
+
   try {
-    // Process the current batch of addresses
-    const batchPromises = currentBatch.map(address => {
-      console.log(`Searching violations for address: ${address}`);
-      return searchViolationsByAddress(address, signal);
-    });
-    
-    const batchResults = await Promise.all(batchPromises);
-    
-    // Update search counter
-    setSearchCount(prev => prev + currentBatch.length);
-    
-    // Combine batch results with previous results
-    const updatedResults = [...allResults, ...batchResults.flat()];
-    
-    // If this is the last batch, return the results
-    if (endIndex >= addresses.length) {
-      return updatedResults;
+    // Process each address sequentially
+    for (let i = startIndex; i < addresses.length; i++) {
+      // Check if the operation has been cancelled
+      if (signal?.aborted) {
+        throw new DOMException('The operation was aborted', 'AbortError');
+      }
+
+      const address = addresses[i];
+      currentIndex = i;
+
+      console.log(`Processing address ${i + 1}/${addresses.length}: ${address}`);
+      const addressViolations = await searchViolations(address, signal);
+      
+      // Add new violations to the results
+      violations = [...violations, ...addressViolations];
+      
+      // Update search count for UI
+      setSearchCount(prev => prev + 1);
     }
-    
-    // If operation was aborted during processing, stop here
-    if (signal?.aborted) {
-      throw new DOMException('The operation was aborted', 'AbortError');
-    }
-    
-    // Add a delay before processing the next batch
-    await new Promise(resolve => setTimeout(resolve, BATCH_DELAY_MS));
-    
-    // Recursively process the next batch
-    return processBatch(addresses, endIndex, setSearchCount, updatedResults, signal);
+
+    return violations;
   } catch (error) {
-    // If this is an abort error, propagate it
+    // If there's an abort error, just return what we have so far
     if (error.name === 'AbortError') {
-      throw error;
+      console.log(`Batch processing aborted at address ${currentIndex + 1}/${addresses.length}`);
+      return violations;
     }
-    
-    console.error('Batch processing error:', error);
-    
-    // For other errors, we can continue with the next batch
-    // This allows partial results even if some addresses fail
-    console.log(`Continuing to next batch after error...`);
-    
-    // Add a delay before processing the next batch
-    await new Promise(resolve => setTimeout(resolve, BATCH_DELAY_MS));
-    
-    return processBatch(addresses, endIndex, setSearchCount, allResults, signal);
+
+    // For other errors, log and rethrow
+    console.error('Error processing batch:', error);
+    throw error;
   }
-};
+}
