@@ -44,6 +44,18 @@ function transformViolationData(data: any[]): ViolationType[] {
 }
 
 /**
+ * Determine if we need to use direct API mode instead of going through our server
+ * This is useful for preview deployments where the backend may not be available
+ */
+function shouldUseDirectApi(): boolean {
+  // Check if we're in a preview or production environment without backend
+  // The URL will typically be something like *.lovable.app or a deployed URL
+  const hostname = window.location.hostname;
+  return hostname.includes('lovable.app') || 
+         hostname !== 'localhost';
+}
+
+/**
  * Search for violations by address
  * This function is now primarily for server-side use
  */
@@ -121,5 +133,43 @@ export async function searchViolationsByAddress(address: string, signal?: AbortS
     
     console.error('Error searching violations by address:', error);
     throw new Error(`Failed to search for violations: ${error.message}`);
+  }
+}
+
+/**
+ * Client-side search function that will use the backend API or direct API as needed
+ */
+export async function searchViolations(address: string, signal?: AbortSignal): Promise<ViolationType[]> {
+  // Check if we need to bypass the backend API
+  if (shouldUseDirectApi()) {
+    console.log("Using direct WPRDC API instead of backend API");
+    return searchViolationsByAddress(address, signal);
+  }
+  
+  try {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+    const params = new URLSearchParams({ address });
+    const response = await fetch(`${API_BASE_URL}/violations/search?${params}`, { signal });
+    
+    if (!response.ok) {
+      throw new Error(`API request failed with status: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    // If we get a network error using the backend API, fall back to direct API access
+    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+      console.warn("Backend API request failed, falling back to direct API access");
+      return searchViolationsByAddress(address, signal);
+    }
+    
+    // Re-throw AbortError to be handled by the caller
+    if (error.name === 'AbortError') {
+      console.log(`Search for ${address} was aborted`);
+      throw error;
+    }
+    
+    console.error('Error searching violations:', error);
+    throw error;
   }
 }
