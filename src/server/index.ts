@@ -1,3 +1,4 @@
+
 import { createServer } from 'http';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
@@ -136,7 +137,11 @@ app.delete('/api/addresses/:index', async (req: Request<DeleteAddressParams>, re
   }
 });
 
-app.post('/api/addresses/bulk', async (req: Request, res: Response) => {
+interface BulkImportRequest {
+  addresses: string[];
+}
+
+app.post('/api/addresses/bulk', async (req: Request<{}, {}, BulkImportRequest>, res: Response) => {
   try {
     const { addresses } = req.body;
     if (!addresses || !Array.isArray(addresses)) {
@@ -195,8 +200,12 @@ app.post('/api/addresses/bulk', async (req: Request, res: Response) => {
   }
 });
 
+interface ViolationSearchQuery {
+  address?: string;
+}
+
 // Violations endpoints
-app.get('/api/violations/search', async (req: Request, res: Response) => {
+app.get('/api/violations/search', async (req: Request<{}, {}, {}, ViolationSearchQuery>, res: Response) => {
   try {
     const { address } = req.query;
     if (!address || typeof address !== 'string') {
@@ -211,10 +220,18 @@ app.get('/api/violations/search', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/violations/search-multiple', async (req: Request, res: Response) => {
+interface MultiAddressSearchRequest {
+  addresses: string[];
+}
+
+interface MultiAddressSearchQuery {
+  year?: string;
+}
+
+app.post('/api/violations/search-multiple', async (req: Request<{}, {}, MultiAddressSearchRequest, MultiAddressSearchQuery>, res: Response) => {
   try {
     const { addresses } = req.body;
-    const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+    const year = req.query.year ? parseInt(req.query.year) : undefined;
     
     if (!addresses || !Array.isArray(addresses)) {
       return res.status(400).json({ error: 'Valid address array is required' });
@@ -271,7 +288,14 @@ app.get('/api/settings', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/settings', async (req: Request, res: Response) => {
+interface AppSettingsUpdate {
+  violationChecksEnabled?: boolean;
+  emailReportsEnabled?: boolean;
+  emailReportAddress?: string;
+  nextViolationCheckTime?: string;
+}
+
+app.post('/api/settings', async (req: Request<{}, {}, AppSettingsUpdate>, res: Response) => {
   try {
     const settings = req.body;
     
@@ -286,8 +310,8 @@ app.post('/api/settings', async (req: Request, res: Response) => {
 
     // Remove any undefined values
     Object.keys(formattedSettings).forEach(key => {
-      if (formattedSettings[key] === undefined) {
-        delete formattedSettings[key];
+      if (formattedSettings[key as keyof typeof formattedSettings] === undefined) {
+        delete formattedSettings[key as keyof typeof formattedSettings];
       }
     });
 
