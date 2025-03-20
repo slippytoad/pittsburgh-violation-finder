@@ -1,6 +1,20 @@
 
-import { Request, Response, RequestHandler } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { supabase } from '../../utils/supabase';
+import { ParamsDictionary } from 'express-serve-static-core';
+import { ParsedQs } from 'qs';
+
+// Define a custom RequestHandler type
+type CustomRequestHandler<
+  P = ParamsDictionary,
+  ResBody = any,
+  ReqBody = any,
+  ReqQuery = ParsedQs
+> = (
+  req: Request<P, ResBody, ReqBody, ReqQuery>,
+  res: Response<ResBody>,
+  next?: NextFunction
+) => Promise<any> | void;
 
 interface AppSettingsUpdate {
   violationChecksEnabled?: boolean;
@@ -10,7 +24,7 @@ interface AppSettingsUpdate {
 }
 
 // Get app settings
-export const getSettings: RequestHandler = async (req: Request, res: Response) => {
+export const getSettings: CustomRequestHandler = async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabase
       .from('app_settings')
@@ -43,7 +57,7 @@ export const getSettings: RequestHandler = async (req: Request, res: Response) =
 };
 
 // Update app settings
-export const updateSettings: RequestHandler<{}, any, AppSettingsUpdate> = async (
+export const updateSettings: CustomRequestHandler<{}, any, AppSettingsUpdate> = async (
   req: Request<{}, any, AppSettingsUpdate>, 
   res: Response
 ) => {

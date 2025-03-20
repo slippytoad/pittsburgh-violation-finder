@@ -1,8 +1,22 @@
 
-import { Request, Response, RequestHandler } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { searchViolationsByAddress } from '../../utils/violationsService';
 import { ViolationType } from '../../utils/types';
 import { processBatch } from '../../utils/batchProcessing';
+import { ParamsDictionary } from 'express-serve-static-core';
+import { ParsedQs } from 'qs';
+
+// Define a custom RequestHandler type
+type CustomRequestHandler<
+  P = ParamsDictionary,
+  ResBody = any,
+  ReqBody = any,
+  ReqQuery = ParsedQs
+> = (
+  req: Request<P, ResBody, ReqBody, ReqQuery>,
+  res: Response<ResBody>,
+  next?: NextFunction
+) => Promise<any> | void;
 
 // Type interfaces
 interface ViolationSearchQuery {
@@ -18,7 +32,7 @@ interface MultiAddressSearchQuery {
 }
 
 // Search violations by address
-export const searchViolations: RequestHandler<{}, any, any, ViolationSearchQuery> = async (
+export const searchViolations: CustomRequestHandler<{}, any, any, ViolationSearchQuery> = async (
   req: Request<{}, any, any, ViolationSearchQuery>, 
   res: Response
 ) => {
@@ -37,7 +51,7 @@ export const searchViolations: RequestHandler<{}, any, any, ViolationSearchQuery
 };
 
 // Search violations for multiple addresses
-export const searchMultipleAddresses: RequestHandler<{}, any, MultiAddressSearchRequest, MultiAddressSearchQuery> = async (
+export const searchMultipleAddresses: CustomRequestHandler<{}, any, MultiAddressSearchRequest, MultiAddressSearchQuery> = async (
   req: Request<{}, any, MultiAddressSearchRequest, MultiAddressSearchQuery>, 
   res: Response
 ) => {
