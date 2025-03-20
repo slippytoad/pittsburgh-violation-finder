@@ -1,21 +1,10 @@
 
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { supabase } from '../../utils/supabase';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
 
-// Type-safe route handlers
-export type RequestHandler<
-  P = ParamsDictionary,
-  ResBody = any,
-  ReqBody = any,
-  ReqQuery = ParsedQs
-> = (
-  req: Request<P, ResBody, ReqBody, ReqQuery>,
-  res: Response<ResBody>,
-  next?: NextFunction
-) => void | Promise<void>;
-
+// Define interfaces for request types
 interface AddressRequest {
   address: string;
 }
@@ -29,7 +18,7 @@ interface BulkImportRequest {
 }
 
 // Get all addresses
-export const getAddresses = async (req: Request, res: Response) => {
+export const getAddresses: RequestHandler = async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabase
       .from('addresses')
@@ -48,7 +37,7 @@ export const getAddresses = async (req: Request, res: Response) => {
 };
 
 // Add a new address
-export const addAddress = async (req: Request<{}, any, AddressRequest>, res: Response) => {
+export const addAddress: RequestHandler<{}, any, AddressRequest> = async (req: Request<{}, any, AddressRequest>, res: Response) => {
   try {
     const { address } = req.body;
     if (!address) {
@@ -105,7 +94,7 @@ export const addAddress = async (req: Request<{}, any, AddressRequest>, res: Res
 };
 
 // Delete an address
-export const deleteAddress = async (req: Request<DeleteAddressParams>, res: Response) => {
+export const deleteAddress: RequestHandler<DeleteAddressParams> = async (req: Request<DeleteAddressParams>, res: Response) => {
   try {
     const index = parseInt(req.params.index);
     
@@ -149,7 +138,7 @@ export const deleteAddress = async (req: Request<DeleteAddressParams>, res: Resp
 };
 
 // Bulk import addresses
-export const bulkImportAddresses = async (req: Request<{}, any, BulkImportRequest>, res: Response) => {
+export const bulkImportAddresses: RequestHandler<{}, any, BulkImportRequest> = async (req: Request<{}, any, BulkImportRequest>, res: Response) => {
   try {
     const { addresses } = req.body;
     if (!addresses || !Array.isArray(addresses)) {

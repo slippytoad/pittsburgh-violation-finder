@@ -1,5 +1,5 @@
 
-import { Request, Response } from 'express';
+import { Request, Response, RequestHandler } from 'express';
 import { supabase } from '../../utils/supabase';
 
 interface AppSettingsUpdate {
@@ -10,7 +10,7 @@ interface AppSettingsUpdate {
 }
 
 // Get app settings
-export const getSettings = async (req: Request, res: Response) => {
+export const getSettings: RequestHandler = async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabase
       .from('app_settings')
@@ -43,7 +43,10 @@ export const getSettings = async (req: Request, res: Response) => {
 };
 
 // Update app settings
-export const updateSettings = async (req: Request<{}, any, AppSettingsUpdate>, res: Response) => {
+export const updateSettings: RequestHandler<{}, any, AppSettingsUpdate> = async (
+  req: Request<{}, any, AppSettingsUpdate>, 
+  res: Response
+) => {
   try {
     const settings = req.body;
     

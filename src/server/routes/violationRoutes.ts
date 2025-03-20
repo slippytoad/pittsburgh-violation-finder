@@ -1,5 +1,5 @@
 
-import { Request, Response } from 'express';
+import { Request, Response, RequestHandler } from 'express';
 import { searchViolationsByAddress } from '../../utils/violationsService';
 import { ViolationType } from '../../utils/types';
 import { processBatch } from '../../utils/batchProcessing';
@@ -18,7 +18,10 @@ interface MultiAddressSearchQuery {
 }
 
 // Search violations by address
-export const searchViolations = async (req: Request<{}, any, any, ViolationSearchQuery>, res: Response) => {
+export const searchViolations: RequestHandler<{}, any, any, ViolationSearchQuery> = async (
+  req: Request<{}, any, any, ViolationSearchQuery>, 
+  res: Response
+) => {
   try {
     const { address } = req.query;
     if (!address || typeof address !== 'string') {
@@ -34,7 +37,7 @@ export const searchViolations = async (req: Request<{}, any, any, ViolationSearc
 };
 
 // Search violations for multiple addresses
-export const searchMultipleAddresses = async (
+export const searchMultipleAddresses: RequestHandler<{}, any, MultiAddressSearchRequest, MultiAddressSearchQuery> = async (
   req: Request<{}, any, MultiAddressSearchRequest, MultiAddressSearchQuery>, 
   res: Response
 ) => {
