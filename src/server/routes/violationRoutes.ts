@@ -3,8 +3,6 @@ import { Request, Response, NextFunction } from 'express';
 import { searchViolations as searchViolationsService } from '../../utils/violationsService';
 import { ViolationType } from '../../utils/types';
 import { processBatch } from '../../utils/batchProcessing';
-import { ParamsDictionary } from 'express-serve-static-core';
-import { ParsedQs } from 'qs';
 
 // For defining body of batch processing request
 interface BatchRequestBody {
@@ -14,7 +12,7 @@ interface BatchRequestBody {
 /**
  * Process a batch of addresses to search for violations
  */
-export async function processBatchViolations(req: Request, res: Response, next: NextFunction) {
+export const processBatchViolations = async (req: Request, res: Response, next: NextFunction) => {
   const { addresses } = req.body;
   
   if (!addresses || !Array.isArray(addresses) || addresses.length === 0) {
@@ -35,12 +33,12 @@ export async function processBatchViolations(req: Request, res: Response, next: 
   } catch (error) {
     next(error);
   }
-}
+};
 
 /**
  * Search for violations by address
  */
-export async function searchViolations(req: Request, res: Response, next: NextFunction) {
+export const searchViolations = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const address = req.query.address as string;
     
@@ -54,12 +52,12 @@ export async function searchViolations(req: Request, res: Response, next: NextFu
     console.error('Error searching violations:', error);
     next(error);
   }
-}
+};
 
 /**
  * Search violations for multiple addresses
  */
-export async function searchMultipleAddresses(req: Request, res: Response, next: NextFunction) {
+export const searchMultipleAddresses = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { addresses } = req.body;
     
@@ -81,4 +79,4 @@ export async function searchMultipleAddresses(req: Request, res: Response, next:
     console.error('Error searching multiple addresses:', error);
     next(error);
   }
-}
+};
