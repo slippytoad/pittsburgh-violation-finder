@@ -37,13 +37,25 @@ export async function processBatch(
       currentIndex = i;
 
       console.log(`Processing address ${i + 1}/${addresses.length}: ${address}`);
-      const addressViolations = await searchViolations(address, signal);
       
-      // Add new violations to the results
-      violations = [...violations, ...addressViolations];
-      
-      // Update search count for UI
-      setSearchCount(prev => prev + 1);
+      try {
+        const addressViolations = await searchViolations(address, signal);
+        
+        // Add new violations to the results
+        violations = [...violations, ...addressViolations];
+        
+        // Update search count for UI
+        setSearchCount(prev => prev + 1);
+      } catch (addressError) {
+        // Only abort the entire process if it's an abort error
+        if (addressError.name === 'AbortError') {
+          throw addressError;
+        }
+        
+        // For other errors, log and continue with the next address
+        console.error(`Error processing address ${address}:`, addressError);
+        setSearchCount(prev => prev + 1);
+      }
     }
 
     return violations;
@@ -54,8 +66,8 @@ export async function processBatch(
       return violations;
     }
 
-    // For other errors, log and rethrow
+    // For other errors, log and return what we have so far
     console.error('Error processing batch:', error);
-    throw error;
+    return violations;
   }
 }
