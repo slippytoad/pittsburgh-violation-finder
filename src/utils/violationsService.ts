@@ -1,18 +1,11 @@
-
 /**
- * API service for the WPRDC Pittsburgh PLI Violations data
- * API Reference: https://data.wprdc.org/dataset/pittsburgh-pli-violations-report/resource/70c06278-92c5-4040-ab28-17671866f81c
+ * Violations service for the Property Violations Finder app
+ * This service handles searching for violations using Supabase
  */
 
+import { supabase } from '@/utils/supabase';
 import { ViolationType } from '@/utils/types';
 import { getDebugViolations } from '@/utils/mockData';
-
-// API endpoint for the WPRDC data
-const WPRDC_API_BASE_URL = 'https://data.wprdc.org/api/3/action/datastore_search';
-// Resource ID for the PLI Violations dataset
-const RESOURCE_ID = '70c06278-92c5-4040-ab28-17671866f81c';
-// Max results to return per query
-const LIMIT = 200;
 
 // Simple in-memory cache for search results
 const searchCache: Record<string, { timestamp: number, results: ViolationType[] }> = {};
@@ -20,41 +13,31 @@ const searchCache: Record<string, { timestamp: number, results: ViolationType[] 
 const CACHE_EXPIRATION_MS = 30 * 60 * 1000;
 
 /**
- * Transform the raw API response into our application's violation type
+ * Transform Supabase data into our application's violation type
  */
 function transformViolationData(data: any[]): ViolationType[] {
   return data.map(item => ({
-    id: item._id.toString(),
-    caseNumber: item.casefile_number,
+    id: item.id,
+    caseNumber: item.violation_id || 'N/A',
     address: item.address,
-    parcelId: item.parcel_id,
+    parcelId: 'N/A',
     status: item.status,
-    dateIssued: item.investigation_date,
-    description: item.violation_description,
-    codeSection: item.violation_code_section,
-    instructions: item.violation_spec_instructions,
-    outcome: item.investigation_outcome,
+    dateIssued: item.date_issued,
+    description: item.description,
+    codeSection: 'N/A',
+    instructions: 'N/A',
+    outcome: item.investigation_outcome || 'N/A',
     findings: item.investigation_findings || '',
-    // Add the missing required properties from ViolationType
-    violationType: item.violation_code_section || 'Unknown',
-    propertyOwner: item.owner_name || 'Unknown Owner',
-    fineAmount: null,
-    dueDate: null,
+    violationType: item.violation_type || 'Unknown',
+    propertyOwner: item.property_owner || 'Unknown Owner',
+    fineAmount: item.fine_amount,
+    dueDate: item.due_date,
   }));
 }
 
 /**
- * Determine if we need to use direct API mode instead of going through our server
- * This is useful for preview deployments where the backend may not be available
- */
-function shouldUseDirectApi(): boolean {
-  // Always use direct API in browser environments
-  return true;
-}
-
-/**
- * Provides mock data when we can't access the real API
- * This helps the app continue to function even when the API is inaccessible
+ * Provides mock data when we can't access the real database
+ * This helps the app continue to function even when Supabase is inaccessible
  */
 function getMockViolationsData(address: string): ViolationType[] {
   console.log(`Using mock data for address: ${address}`);
@@ -65,10 +48,9 @@ function getMockViolationsData(address: string): ViolationType[] {
 }
 
 /**
- * Search for violations by address
- * This function is now primarily for server-side use
+ * Search for violations by address using Supabase
  */
-export async function searchViolationsByAddress(address: string, signal?: AbortSignal): Promise<ViolationType[]> {
+export async function searchViolations(address: string, signal?: AbortSignal): Promise<ViolationType[]> {
   // For development/testing, return mock data if address is "DEBUG"
   if (address === 'DEBUG') {
     return getDebugViolations();
@@ -93,70 +75,42 @@ export async function searchViolationsByAddress(address: string, signal?: AbortS
       delete searchCache[cleanAddress];
     }
     
-    // Build the URL with the query - using simpler SELECT *
-    const url = new URL(WPRDC_API_BASE_URL);
-    url.searchParams.append('resource_id', RESOURCE_ID);
-    url.searchParams.append('q', cleanAddress);
-    url.searchParams.append('limit', LIMIT.toString());
+    console.log(`Searching for violations at address: ${cleanAddress}`);
     
-    // Make the API request
-    console.log(`Fetching violations for address: ${cleanAddress}`);
+    // Setup an AbortController for the Supabase request if needed
+    const controller = signal ? { signal } : undefined;
     
-    // Handle CORS issues with a proxy approach when in a browser environment
-    // This is a temporary solution; in a production environment, we would use our backend API
-    const controller = new AbortController();
-    const fetchSignal = signal || controller.signal;
+    // Query the Supabase violations table
+    const { data, error } = await supabase
+      .from('violations')
+      .select('*')
+      .ilike('address', `%${cleanAddress}%`)
+      .abortSignal(signal);
     
-    // Set a timeout for the fetch request to prevent hanging
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
-    
-    try {
-      const response = await fetch(url.toString(), { 
-        signal: fetchSignal,
-        mode: 'cors', // Explicitly request CORS
-        // Add cache control headers for better performance
-        headers: {
-          'Cache-Control': 'max-age=3600' // Tell browsers to cache for 1 hour
-        }
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        console.warn(`API request failed with status: ${response.status}`);
-        // Return mock data if the API request fails
-        return getMockViolationsData(cleanAddress);
+    // If there's an error or the search was aborted, handle it
+    if (error) {
+      // Check if it's an AbortError
+      if (signal?.aborted) {
+        console.log(`Search for ${cleanAddress} was aborted`);
+        throw new DOMException('The operation was aborted', 'AbortError');
       }
       
-      const data = await response.json();
-      
-      if (!data.success) {
-        console.warn('API reported an unsuccessful request');
-        // Return mock data if the API request fails
-        return getMockViolationsData(cleanAddress);
-      }
-      
-      const records = data.result.records || [];
-      console.log(`Found ${records.length} violation records for: ${cleanAddress}`);
-      
-      // Transform the data into our application's format
-      const transformedResults = transformViolationData(records);
-      
-      // Store the results in the cache
-      searchCache[cleanAddress] = {
-        timestamp: Date.now(),
-        results: transformedResults
-      };
-      
-      return transformedResults;
-    } catch (fetchError) {
-      clearTimeout(timeoutId);
-      console.warn(`Fetch error: ${fetchError.message}`);
-      
-      // Return mock data for CORS or network errors
+      console.warn('Error searching violations:', error);
       return getMockViolationsData(cleanAddress);
     }
     
+    console.log(`Found ${data?.length || 0} violation records for: ${cleanAddress}`);
+    
+    // Transform the data into our application's format
+    const transformedResults = transformViolationData(data || []);
+    
+    // Store the results in the cache
+    searchCache[cleanAddress] = {
+      timestamp: Date.now(),
+      results: transformedResults
+    };
+    
+    return transformedResults;
   } catch (error) {
     // Re-throw AbortError to be handled by the caller
     if (error.name === 'AbortError') {
@@ -166,51 +120,6 @@ export async function searchViolationsByAddress(address: string, signal?: AbortS
     
     console.error('Error searching violations by address:', error);
     // Return mock data instead of throwing an error
-    return getMockViolationsData(address);
-  }
-}
-
-/**
- * Client-side search function that will use the backend API or direct API as needed
- */
-export async function searchViolations(address: string, signal?: AbortSignal): Promise<ViolationType[]> {
-  try {
-    // Check if we need to bypass the backend API
-    if (shouldUseDirectApi()) {
-      console.log("Using direct WPRDC API instead of backend API");
-      return searchViolationsByAddress(address, signal);
-    }
-    
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
-    const params = new URLSearchParams({ address });
-    const response = await fetch(`${API_BASE_URL}/violations/search?${params}`, { signal });
-    
-    if (!response.ok) {
-      throw new Error(`API request failed with status: ${response.status}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    // If we get a network error using the backend API, fall back to direct API access
-    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-      console.warn("Backend API request failed, falling back to direct API access");
-      return searchViolationsByAddress(address, signal);
-    }
-    
-    // If it's a CORS error or any other fetch error, use mock data
-    if (error instanceof TypeError || error.name === 'TypeError') {
-      console.warn("Network error, using mock violation data");
-      return getMockViolationsData(address);
-    }
-    
-    // Re-throw AbortError to be handled by the caller
-    if (error.name === 'AbortError') {
-      console.log(`Search for ${address} was aborted`);
-      throw error;
-    }
-    
-    console.error('Error searching violations:', error);
-    // Return mock data for any other error
     return getMockViolationsData(address);
   }
 }

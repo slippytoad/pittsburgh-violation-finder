@@ -46,28 +46,6 @@ export async function bulkImportAddresses(addresses: string[]): Promise<string[]
   return handleResponse<string[]>(response);
 }
 
-// Violations API
-export async function searchViolations(address: string, signal?: AbortSignal): Promise<any[]> {
-  const params = new URLSearchParams({ address });
-  const response = await fetch(`${API_BASE_URL}/violations/search?${params}`, {
-    signal
-  });
-  return handleResponse<any[]>(response);
-}
-
-export async function searchMultipleAddresses(addresses: string[], year?: number): Promise<any[]> {
-  const params = new URLSearchParams();
-  if (year) params.append('year', year.toString());
-  
-  const response = await fetch(`${API_BASE_URL}/violations/search-multiple`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ addresses }),
-    signal: undefined // This could be modified to support abortion
-  });
-  return handleResponse<any[]>(response);
-}
-
 // Settings API
 export async function fetchSettings(): Promise<any> {
   const response = await fetch(`${API_BASE_URL}/settings`);

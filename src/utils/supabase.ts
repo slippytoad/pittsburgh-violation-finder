@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import type { AppSettings, Address } from './types';
 
@@ -89,7 +88,34 @@ export const initSupabaseTables = async () => {
       
     console.log('Violations table check:', { violationsData, violationsError });
     
-    // Initialize violations table if needed in future updates
+    // If violations table doesn't exist, attempt to create it
+    if (violationsError && violationsError.code === '42P01') {
+      console.log('Violations table does not exist, attempting to create...');
+      try {
+        // Try to create the violations table via RPC or direct SQL as done with app_settings
+        const { error: createViolationsError } = await supabase.rpc('create_violations_table');
+        
+        if (createViolationsError) {
+          console.error('Failed to create violations table:', createViolationsError);
+          
+          // Load the SQL from the file and execute it
+          const response = await fetch('/src/utils/database/violations_table.sql');
+          if (response.ok) {
+            const sqlScript = await response.text();
+            const { error: sqlError } = await supabase.rpc('run_sql', { sql: sqlScript });
+            if (sqlError) {
+              console.error('Failed to create violations table via SQL:', sqlError);
+            } else {
+              console.log('Successfully created violations table via SQL script');
+            }
+          }
+        } else {
+          console.log('Successfully created violations table');
+        }
+      } catch (err) {
+        console.error('Error creating violations table:', err);
+      }
+    }
     
     console.log('Database initialization complete');
     return true;
