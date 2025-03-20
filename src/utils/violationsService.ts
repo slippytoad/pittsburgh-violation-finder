@@ -32,6 +32,8 @@ function transformViolationData(data: any[]): ViolationType[] {
     propertyOwner: item.property_owner || 'Unknown Owner',
     fineAmount: item.fine_amount,
     dueDate: item.due_date,
+    investigationOutcome: item.investigation_outcome,
+    investigationFindings: item.investigation_findings,
   }));
 }
 
@@ -76,9 +78,6 @@ export async function searchViolations(address: string, signal?: AbortSignal): P
     }
     
     console.log(`Searching for violations at address: ${cleanAddress}`);
-    
-    // Setup an AbortController for the Supabase request if needed
-    const controller = signal ? { signal } : undefined;
     
     // Query the Supabase violations table
     const { data, error } = await supabase
