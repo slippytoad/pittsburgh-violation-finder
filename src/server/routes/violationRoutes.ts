@@ -1,6 +1,6 @@
 
 import { Request, Response, NextFunction } from 'express';
-import { searchViolationsByAddress } from '../../utils/violationsService';
+import { searchViolations } from '../../utils/violationsService';
 import { ViolationType } from '../../utils/types';
 import { processBatch } from '../../utils/batchProcessing';
 import { ParamsDictionary } from 'express-serve-static-core';
@@ -42,7 +42,7 @@ export const searchViolations: CustomRequestHandler<{}, any, any, ViolationSearc
       return res.status(400).json({ error: 'Valid address is required' });
     }
     
-    const violations = await searchViolationsByAddress(address);
+    const violations = await searchViolations(address);
     res.json(violations);
   } catch (error) {
     console.error('Error searching violations:', error);
