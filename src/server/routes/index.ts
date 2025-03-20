@@ -12,7 +12,7 @@ router.post('/addresses', addressController.addAddress);
 router.delete('/addresses/:index', addressController.deleteAddress);
 router.post('/addresses/bulk', addressController.bulkImportAddresses);
 
-// Violations routes
+// Violations routes - fixed to use query parameters instead of route params
 router.get('/violations/search', violationController.searchViolations);
 router.post('/violations/search-multiple', violationController.searchMultipleAddresses);
 

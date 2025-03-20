@@ -27,7 +27,15 @@ export async function processBatchViolations(req: Request<{}, {}, BatchRequestBo
   }
   
   try {
-    const results = await processBatch(addresses);
+    // Call processBatch with all required parameters
+    const results = await processBatch(
+      addresses,
+      0,
+      (count) => console.log(`Processed ${count} addresses`),
+      [],
+      undefined // AbortSignal is optional
+    );
+    
     res.json(results);
   } catch (error) {
     next(error);
@@ -37,9 +45,9 @@ export async function processBatchViolations(req: Request<{}, {}, BatchRequestBo
 /**
  * Search for violations by address
  */
-export async function searchViolations(req: Request<AddressRequestParams, {}, {}, ParsedQs>, res: Response, next: NextFunction) {
+export async function searchViolations(req: Request, res: Response, next: NextFunction) {
   try {
-    const { address } = req.params;
+    const address = req.query.address as string;
     
     if (!address) {
       return res.status(400).json({ error: 'Valid address is required' });
@@ -49,6 +57,33 @@ export async function searchViolations(req: Request<AddressRequestParams, {}, {}
     res.json(violations);
   } catch (error) {
     console.error('Error searching violations:', error);
+    next(error);
+  }
+}
+
+/**
+ * Search violations for multiple addresses
+ */
+export async function searchMultipleAddresses(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { addresses } = req.body;
+    
+    if (!addresses || !Array.isArray(addresses)) {
+      return res.status(400).json({ error: 'Valid address array is required' });
+    }
+    
+    // Call processBatch with all required parameters
+    const results = await processBatch(
+      addresses,
+      0,
+      (count) => console.log(`Processed ${count} addresses`),
+      [],
+      undefined // AbortSignal is optional
+    );
+    
+    res.json(results);
+  } catch (error) {
+    console.error('Error searching multiple addresses:', error);
     next(error);
   }
 }
