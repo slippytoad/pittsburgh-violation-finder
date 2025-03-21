@@ -4,6 +4,7 @@ import { ViolationType } from './types';
 export const mockViolations: ViolationType[] = [
   {
     id: "v1",
+    caseNumber: "CASE-2025-001", // Added caseNumber property
     address: "123 Forbes Ave, Pittsburgh, PA 15213",
     violationType: "Building Code",
     dateIssued: "2025-01-15",
@@ -12,11 +13,12 @@ export const mockViolations: ViolationType[] = [
     fineAmount: 350,
     dueDate: "2025-03-15",
     propertyOwner: "Oakland Properties LLC",
-    investigationOutcome: "Failed Inspection", // Adding mock values
+    investigationOutcome: "Failed Inspection",
     investigationFindings: "Significant structural issues found"
   },
   {
     id: "v2",
+    caseNumber: "CASE-2025-002", // Added caseNumber property
     address: "456 Murray Ave, Pittsburgh, PA 15217",
     violationType: "Sanitation",
     dateIssued: "2025-01-23",
@@ -30,6 +32,7 @@ export const mockViolations: ViolationType[] = [
   },
   {
     id: "v3",
+    caseNumber: "CASE-2025-003", // Added caseNumber property
     address: "789 Butler St, Pittsburgh, PA 15201",
     violationType: "Zoning",
     dateIssued: "2025-02-05",
@@ -43,6 +46,7 @@ export const mockViolations: ViolationType[] = [
   },
   {
     id: "v4",
+    caseNumber: "CASE-2025-001", // Same caseNumber to demonstrate grouping
     address: "123 Forbes Ave, Pittsburgh, PA 15213",
     violationType: "Fire Safety",
     dateIssued: "2025-02-10",
@@ -56,6 +60,7 @@ export const mockViolations: ViolationType[] = [
   },
   {
     id: "v5",
+    caseNumber: "CASE-2025-004", // Added caseNumber property
     address: "101 Wood St, Pittsburgh, PA 15222",
     violationType: "Property Maintenance",
     dateIssued: "2025-02-12",

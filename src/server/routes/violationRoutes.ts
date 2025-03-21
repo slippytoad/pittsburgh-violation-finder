@@ -83,7 +83,7 @@ function searchMultipleAddresses(req: Request, res: Response, next: NextFunction
     });
 }
 
-// Define routes
+// Define routes - Fix: Use router.get/post with the route handler functions directly
 router.get('/search', searchViolations);
 router.post('/search-multiple', searchMultipleAddresses);
 router.post('/batch', processBatchViolations);
