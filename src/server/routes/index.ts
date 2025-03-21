@@ -1,6 +1,6 @@
 
 import express from 'express';
-import * as addressController from './addressRoutes';
+import * as addressController from '../controllers/addressController';
 import * as violationController from './violationRoutes';
 import * as settingsController from './settingsRoutes';
 
