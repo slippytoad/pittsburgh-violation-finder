@@ -84,10 +84,10 @@ const searchMultipleAddresses = async (req: Request, res: Response, next: NextFu
   }
 };
 
-// Define routes correctly by passing the handler functions directly
-router.get('/search', searchViolations);
-router.post('/search-multiple', searchMultipleAddresses);
-router.post('/batch', processBatchViolations);
+// Define routes using the router's methods
+router.get('/search', (req, res, next) => searchViolations(req, res, next));
+router.post('/search-multiple', (req, res, next) => searchMultipleAddresses(req, res, next));
+router.post('/batch', (req, res, next) => processBatchViolations(req, res, next));
 
 // Export the router
 export default router;
