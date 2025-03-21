@@ -15,7 +15,7 @@ interface BatchRequestBody {
 /**
  * Process a batch of addresses to search for violations
  */
-const processBatchViolations = async (req: Request, res: Response, next: NextFunction) => {
+async function processBatchViolations(req: Request, res: Response, next: NextFunction) {
   const { addresses } = req.body;
   
   if (!addresses || !Array.isArray(addresses) || addresses.length === 0) {
@@ -36,12 +36,12 @@ const processBatchViolations = async (req: Request, res: Response, next: NextFun
   } catch (error) {
     next(error);
   }
-};
+}
 
 /**
  * Search for violations by address
  */
-const searchViolations = async (req: Request, res: Response, next: NextFunction) => {
+async function searchViolations(req: Request, res: Response, next: NextFunction) {
   try {
     const address = req.query.address as string;
     
@@ -55,12 +55,12 @@ const searchViolations = async (req: Request, res: Response, next: NextFunction)
     console.error('Error searching violations:', error);
     next(error);
   }
-};
+}
 
 /**
  * Search violations for multiple addresses
  */
-const searchMultipleAddresses = async (req: Request, res: Response, next: NextFunction) => {
+async function searchMultipleAddresses(req: Request, res: Response, next: NextFunction) {
   try {
     const { addresses } = req.body;
     
@@ -82,12 +82,12 @@ const searchMultipleAddresses = async (req: Request, res: Response, next: NextFu
     console.error('Error searching multiple addresses:', error);
     next(error);
   }
-};
+}
 
-// Define routes using the router's methods
-router.get('/search', (req, res, next) => searchViolations(req, res, next));
-router.post('/search-multiple', (req, res, next) => searchMultipleAddresses(req, res, next));
-router.post('/batch', (req, res, next) => processBatchViolations(req, res, next));
+// Define routes directly with middleware functions
+router.get('/search', searchViolations);
+router.post('/search-multiple', searchMultipleAddresses);
+router.post('/batch', processBatchViolations);
 
 // Export the router
 export default router;
