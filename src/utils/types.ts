@@ -15,6 +15,7 @@ export interface InvestigationDetails {
 // Base violation types
 export interface ViolationBase {
   id: string;
+  caseNumber: string;  // Changed from id to caseNumber for clarity
   address: string;
   violationType: string;
   dateIssued: string;
@@ -22,6 +23,9 @@ export interface ViolationBase {
   originalStatus?: string;
   description: string;
   propertyOwner: string;
+  parcelId?: string;
+  codeSection?: string;
+  instructions?: string;
 }
 
 // Payment information
@@ -36,6 +40,8 @@ export interface ViolationType extends ViolationBase, PaymentDetails, Investigat
   relatedViolations?: ViolationType[];
   previousStatesCount?: number | null;
   previousStates?: ViolationType[];
+  outcome?: string;
+  findings?: string;
 }
 
 export interface Address {

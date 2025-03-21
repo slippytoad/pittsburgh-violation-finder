@@ -27,7 +27,10 @@ const RelatedViolationCard = ({ violation, formatDate, variant = 'compact' }: Re
     <Card className={variant === 'compact' ? "overflow-hidden border border-border" : "border border-border"}>
       <CardHeader className="p-3 pb-2">
         <div className="flex flex-row items-start justify-between">
-          <h4 className="font-medium text-sm">{violation.violationType}</h4>
+          <h4 className="font-medium text-sm">
+            {violation.violationType} 
+            {violation.caseNumber && ` (Case: ${violation.caseNumber})`}
+          </h4>
           <StatusBadge status={violation.status} size="sm" />
         </div>
         <div className="flex flex-col space-y-1 mt-1">

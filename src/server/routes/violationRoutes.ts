@@ -16,7 +16,7 @@ interface BatchRequestBody {
  * Process a batch of addresses to search for violations
  */
 function processBatchViolations(req: Request, res: Response, next: NextFunction) {
-  const { addresses } = req.body;
+  const { addresses } = req.body as BatchRequestBody;
   
   if (!addresses || !Array.isArray(addresses) || addresses.length === 0) {
     return res.status(400).json({ error: 'Valid addresses array is required' });
@@ -61,7 +61,7 @@ function searchViolations(req: Request, res: Response, next: NextFunction) {
  * Search violations for multiple addresses
  */
 function searchMultipleAddresses(req: Request, res: Response, next: NextFunction) {
-  const { addresses } = req.body;
+  const { addresses } = req.body as BatchRequestBody;
   
   if (!addresses || !Array.isArray(addresses)) {
     return res.status(400).json({ error: 'Valid address array is required' });

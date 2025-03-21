@@ -31,6 +31,12 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
     });
   };
 
+  const hasRelatedViolations = 
+    violation.relatedViolationsCount && 
+    violation.relatedViolationsCount > 0 && 
+    violation.relatedViolations && 
+    violation.relatedViolations.length > 0;
+
   const hasPreviousStates =
     violation.previousStatesCount &&
     violation.previousStatesCount > 0 &&
@@ -60,7 +66,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
         >
           <CardHeader className="p-4 pb-2 flex flex-row items-start justify-between space-y-0">
             <div className="flex flex-col space-y-1.5">
-              <h3 className="font-medium text-base">Case #: {violation.id}</h3>
+              <h3 className="font-medium text-base">Case #: {violation.caseNumber}</h3>
               <div className="flex flex-col space-y-1">
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <MapPin className="h-3.5 w-3.5" />
@@ -74,7 +80,18 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                   <Hash className="h-3.5 w-3.5" />
                   <span>Section: {violation.violationType}</span>
                 </div>
-                {violation.previousStatesCount && violation.previousStatesCount > 0 && (
+                {hasRelatedViolations && (
+                  <div 
+                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                    onClick={handleRelatedRecordsClick}
+                  >
+                    <Layers className="h-4 w-4" />
+                    <span className="cursor-pointer underline">
+                      {violation.relatedViolationsCount} related violation{violation.relatedViolationsCount !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                )}
+                {hasPreviousStates && (
                   <div 
                     className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
                     onClick={handleRelatedRecordsClick}
