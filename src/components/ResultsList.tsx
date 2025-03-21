@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ViolationType } from '@/utils/types';
 import ViolationCard from './violations/ViolationCard';
