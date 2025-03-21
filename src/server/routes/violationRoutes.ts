@@ -1,8 +1,11 @@
 
+import express from 'express';
 import { Request, Response, NextFunction } from 'express';
 import { searchViolations as searchViolationsService } from '../../utils/violationsService';
 import { ViolationType } from '../../utils/types';
 import { processBatch } from '../../utils/batchProcessing';
+
+const router = express.Router();
 
 // For defining body of batch processing request
 interface BatchRequestBody {
@@ -12,7 +15,7 @@ interface BatchRequestBody {
 /**
  * Process a batch of addresses to search for violations
  */
-export const processBatchViolations = async (req: Request, res: Response, next: NextFunction) => {
+const processBatchViolations = async (req: Request, res: Response, next: NextFunction) => {
   const { addresses } = req.body;
   
   if (!addresses || !Array.isArray(addresses) || addresses.length === 0) {
@@ -38,7 +41,7 @@ export const processBatchViolations = async (req: Request, res: Response, next: 
 /**
  * Search for violations by address
  */
-export const searchViolations = async (req: Request, res: Response, next: NextFunction) => {
+const searchViolations = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const address = req.query.address as string;
     
@@ -57,7 +60,7 @@ export const searchViolations = async (req: Request, res: Response, next: NextFu
 /**
  * Search violations for multiple addresses
  */
-export const searchMultipleAddresses = async (req: Request, res: Response, next: NextFunction) => {
+const searchMultipleAddresses = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { addresses } = req.body;
     
@@ -80,3 +83,11 @@ export const searchMultipleAddresses = async (req: Request, res: Response, next:
     next(error);
   }
 };
+
+// Define routes
+router.get('/search', searchViolations);
+router.post('/search-multiple', searchMultipleAddresses);
+router.post('/batch', processBatchViolations);
+
+// Export the router
+export default router;

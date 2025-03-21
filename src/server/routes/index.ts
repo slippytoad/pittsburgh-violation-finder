@@ -1,8 +1,8 @@
 
 import express from 'express';
 import * as addressController from '../controllers/addressController';
-import * as violationController from './violationRoutes';
-import * as settingsController from './settingsRoutes';
+import violationRoutes from './violationRoutes';
+import settingsRoutes from './settingsRoutes';
 
 const router = express.Router();
 
@@ -12,12 +12,10 @@ router.post('/addresses', addressController.addAddress);
 router.delete('/addresses/:index', addressController.deleteAddress);
 router.post('/addresses/bulk', addressController.bulkImportAddresses);
 
-// Violations routes - using proper route configuration
-router.get('/violations/search', violationController.searchViolations);
-router.post('/violations/search-multiple', violationController.searchMultipleAddresses);
+// Violations routes - using the router from violationRoutes.ts
+router.use('/violations', violationRoutes);
 
-// Settings routes
-router.get('/settings', settingsController.getSettings);
-router.post('/settings', settingsController.updateSettings);
+// Settings routes - using the router from settingsRoutes.ts
+router.use('/settings', settingsRoutes);
 
 export default router;

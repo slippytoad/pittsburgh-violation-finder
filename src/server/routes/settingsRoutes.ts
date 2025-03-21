@@ -1,8 +1,11 @@
 
+import express from 'express';
 import { Request, Response, NextFunction } from 'express';
 import { supabase } from '../../utils/supabase';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
+
+const router = express.Router();
 
 // Define a custom RequestHandler type
 type CustomRequestHandler<
@@ -24,7 +27,7 @@ interface AppSettingsUpdate {
 }
 
 // Get app settings
-export const getSettings: CustomRequestHandler = async (req: Request, res: Response) => {
+const getSettings: CustomRequestHandler = async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabase
       .from('app_settings')
@@ -57,7 +60,7 @@ export const getSettings: CustomRequestHandler = async (req: Request, res: Respo
 };
 
 // Update app settings
-export const updateSettings: CustomRequestHandler<{}, any, AppSettingsUpdate> = async (
+const updateSettings: CustomRequestHandler<{}, any, AppSettingsUpdate> = async (
   req: Request<{}, any, AppSettingsUpdate>, 
   res: Response
 ) => {
@@ -119,3 +122,10 @@ export const updateSettings: CustomRequestHandler<{}, any, AppSettingsUpdate> = 
     res.status(500).json({ error: 'Failed to save settings' });
   }
 };
+
+// Define routes
+router.get('/', getSettings);
+router.post('/', updateSettings);
+
+// Export the router
+export default router;
