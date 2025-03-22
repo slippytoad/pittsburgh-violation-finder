@@ -15,72 +15,69 @@ interface BatchRequestBody {
 /**
  * Process a batch of addresses to search for violations
  */
-router.post('/batch', function(req, res, next) {
+router.post('/batch', async (req: Request, res: Response, next: NextFunction) => {
   const { addresses } = req.body as BatchRequestBody;
   
   if (!addresses || !Array.isArray(addresses) || addresses.length === 0) {
     return res.status(400).json({ error: 'Valid addresses array is required' });
   }
   
-  processBatch(
-    addresses,
-    0,
-    (count) => console.log(`Processed ${count} addresses`),
-    [],
-    undefined // AbortSignal is optional
-  )
-    .then(results => {
-      res.json(results);
-    })
-    .catch(error => {
-      next(error);
-    });
+  try {
+    const results = await processBatch(
+      addresses,
+      0,
+      (count) => console.log(`Processed ${count} addresses`),
+      [],
+      undefined // AbortSignal is optional
+    );
+    res.json(results);
+  } catch (error) {
+    next(error);
+  }
 });
 
 /**
  * Search for violations by address
  */
-router.get('/search', function(req, res, next) {
+router.get('/search', async (req: Request, res: Response, next: NextFunction) => {
   const address = req.query.address as string;
   
   if (!address) {
     return res.status(400).json({ error: 'Valid address is required' });
   }
   
-  searchViolationsService(address)
-    .then(violations => {
-      res.json(violations);
-    })
-    .catch(error => {
-      console.error('Error searching violations:', error);
-      next(error);
-    });
+  try {
+    const violations = await searchViolationsService(address);
+    res.json(violations);
+  } catch (error) {
+    console.error('Error searching violations:', error);
+    next(error);
+  }
 });
 
 /**
  * Search violations for multiple addresses
  */
-router.post('/search-multiple', function(req, res, next) {
+router.post('/search-multiple', async (req: Request, res: Response, next: NextFunction) => {
   const { addresses } = req.body as BatchRequestBody;
   
   if (!addresses || !Array.isArray(addresses)) {
     return res.status(400).json({ error: 'Valid address array is required' });
   }
   
-  processBatch(
-    addresses,
-    0,
-    (count) => console.log(`Processed ${count} addresses`),
-    [],
-    undefined // AbortSignal is optional
-  )
-    .then(results => {
-      res.json(results);
-    })
-    .catch(error => {
-      console.error('Error searching multiple addresses:', error);
-      next(error);
-    });
+  try {
+    const results = await processBatch(
+      addresses,
+      0,
+      (count) => console.log(`Processed ${count} addresses`),
+      [],
+      undefined // AbortSignal is optional
+    );
+    res.json(results);
+  } catch (error) {
+    console.error('Error searching multiple addresses:', error);
+    next(error);
+  }
 });
 
 // Export the router
