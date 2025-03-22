@@ -12,9 +12,10 @@ interface SearchFormProps {
   onAddAddress?: (address: string) => void;
   isLoading: boolean;
   onCancelSearch?: () => void;
+  onSearchAll?: () => void;
 }
 
-const SearchForm = ({ onSearch, onAddAddress, isLoading, onCancelSearch }: SearchFormProps) => {
+const SearchForm = ({ onSearch, onAddAddress, isLoading, onCancelSearch, onSearchAll }: SearchFormProps) => {
   const [address, setAddress] = useState('');
   const { toast } = useToast();
 
@@ -22,11 +23,17 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, onCancelSearch }: Searc
     e.preventDefault();
     
     if (!address.trim()) {
-      toast({
-        title: "Address required",
-        description: "Please enter an address to search",
-        variant: "destructive",
-      });
+      // If no address is provided, search all saved addresses
+      if (onSearchAll) {
+        console.log('No address provided, searching all saved addresses');
+        onSearchAll();
+      } else {
+        toast({
+          title: "Address required",
+          description: "Please enter an address to search",
+          variant: "destructive",
+        });
+      }
       return;
     }
     
@@ -102,7 +109,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, onCancelSearch }: Searc
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            Enter a Pittsburgh address to search for property violations.
+            Enter a Pittsburgh address to search for property violations, or leave empty to search all saved addresses.
           </p>
         </form>
       </div>

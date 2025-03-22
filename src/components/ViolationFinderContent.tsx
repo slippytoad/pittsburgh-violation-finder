@@ -40,7 +40,7 @@ const ViolationFinderContent: React.FC = () => {
   };
 
   const onSearchAll = useCallback(() => {
-    console.log("onSearchAll called");
+    console.log("onSearchAll called from ViolationFinderContent");
     handleSearchAll(addresses);
   }, [addresses, handleSearchAll]);
 
@@ -67,6 +67,7 @@ const ViolationFinderContent: React.FC = () => {
           onSearch={onSearch} 
           isLoading={isLoading}
           onCancelSearch={cancelSearch}
+          onSearchAll={onSearchAll}
         />
         
         <ResultsList 

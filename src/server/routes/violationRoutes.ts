@@ -15,7 +15,7 @@ interface BatchRequestBody {
 /**
  * Process a batch of addresses to search for violations
  */
-router.post('/batch', (req: Request, res: Response, next: NextFunction) => {
+router.post('/batch', function(req, res, next) {
   const { addresses } = req.body as BatchRequestBody;
   
   if (!addresses || !Array.isArray(addresses) || addresses.length === 0) {
@@ -40,7 +40,7 @@ router.post('/batch', (req: Request, res: Response, next: NextFunction) => {
 /**
  * Search for violations by address
  */
-router.get('/search', (req: Request, res: Response, next: NextFunction) => {
+router.get('/search', function(req, res, next) {
   const address = req.query.address as string;
   
   if (!address) {
@@ -60,7 +60,7 @@ router.get('/search', (req: Request, res: Response, next: NextFunction) => {
 /**
  * Search violations for multiple addresses
  */
-router.post('/search-multiple', (req: Request, res: Response, next: NextFunction) => {
+router.post('/search-multiple', function(req, res, next) {
   const { addresses } = req.body as BatchRequestBody;
   
   if (!addresses || !Array.isArray(addresses)) {
