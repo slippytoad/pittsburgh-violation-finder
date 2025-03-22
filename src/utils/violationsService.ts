@@ -7,6 +7,7 @@
 import { supabase } from '@/utils/supabase';
 import { ViolationType } from '@/utils/types';
 import { getDebugViolations } from '@/utils/mockData';
+import { processBatch } from '@/utils/batchProcessing';
 
 // Simple in-memory cache for search results
 const searchCache: Record<string, { timestamp: number, results: ViolationType[] }> = {};
@@ -170,5 +171,28 @@ export async function searchViolations(address: string, signal?: AbortSignal): P
     console.error('Error searching violations by address:', error);
     // Return mock data instead of throwing an error
     return getMockViolationsData(address);
+  }
+}
+
+/**
+ * Search violations for multiple addresses
+ */
+export async function searchMultipleAddresses(addresses: string[], onProgress?: (count: number) => void, signal?: AbortSignal): Promise<ViolationType[]> {
+  try {
+    // Use the existing batch processing utility but with direct database calls
+    return await processBatch(
+      addresses,
+      0,
+      onProgress || ((count) => console.log(`Processed ${count} addresses`)),
+      [],
+      signal
+    );
+  } catch (error) {
+    console.error('Error searching multiple addresses:', error);
+    if (error.name === 'AbortError') {
+      throw error;
+    }
+    // Return empty array if there's an error
+    return [];
   }
 }
