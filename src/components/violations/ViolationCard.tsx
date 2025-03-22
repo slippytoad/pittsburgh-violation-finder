@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MapPin, Calendar, Hash, Layers, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
+import { MapPin, Calendar, Hash, Layers, ChevronDown, ChevronUp, ChevronRight, History } from 'lucide-react';
 import { ViolationType } from '@/utils/types';
 import AnimatedContainer from '../AnimatedContainer';
 import StatusBadge from './StatusBadge';
@@ -10,7 +10,6 @@ import InvestigationInfo from './InvestigationInfo';
 import ViolationDetailsDialog from './ViolationDetailsDialog';
 import RelatedViolationCard from './RelatedViolationCard';
 import { cn } from '@/lib/utils';
-import { History } from 'lucide-react';
 import ViolationDetails from './ViolationDetails';
 
 interface ViolationCardProps {
@@ -19,16 +18,22 @@ interface ViolationCardProps {
 }
 
 const ViolationCard = ({ violation, index }: ViolationCardProps) => {
+  const [expanded, setExpanded] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-  const [initialExpandState, setInitialExpandState] = useState(false);
+  const [expandRelatedInDialog, setExpandRelatedInDialog] = useState(false);
   
   const formatDate = (dateString: string) => {
     if (!dateString) return 'No date';
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
-      month: 'long',
+      month: 'short',
       day: 'numeric'
     });
+  };
+
+  const toggleExpanded = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent the card click from being triggered
+    setExpanded(!expanded);
   };
 
   const hasRelatedViolations = 
@@ -44,13 +49,13 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
     violation.previousStates.length > 0;
 
   const handleCardClick = () => {
-    setInitialExpandState(false);
+    setExpandRelatedInDialog(false);
     setShowDetails(true);
   };
 
   const handleRelatedRecordsClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setInitialExpandState(true);
+    setExpandRelatedInDialog(true);
     setShowDetails(true);
   };
 
@@ -124,7 +129,42 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
               )}
             </div>
           </CardContent>
+          
+          {hasRelatedViolations && (
+            <CardFooter className="p-4 pt-0">
+              <Button 
+                variant="outline" 
+                className="w-full text-sm flex items-center justify-center gap-1"
+                onClick={toggleExpanded}
+              >
+                {expanded ? (
+                  <>
+                    <ChevronUp className="h-4 w-4" />
+                    Hide related violations
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4" />
+                    View {violation.relatedViolationsCount} related violation{violation.relatedViolationsCount !== 1 ? 's' : ''}
+                  </>
+                )}
+              </Button>
+            </CardFooter>
+          )}
         </Card>
+        
+        {expanded && hasRelatedViolations && (
+          <div className="pl-6 border-l-2 border-dashed border-gray-300 ml-4 mt-2 space-y-3">
+            {violation.relatedViolations?.map((relatedViolation, relatedIndex) => (
+              <RelatedViolationCard
+                key={`${relatedViolation.id}-${relatedIndex}`}
+                violation={relatedViolation}
+                formatDate={formatDate}
+                variant="compact"
+              />
+            ))}
+          </div>
+        )}
       </AnimatedContainer>
 
       <ViolationDetailsDialog 
@@ -132,7 +172,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
         open={showDetails}
         onOpenChange={setShowDetails}
         formatDate={formatDate}
-        initialExpanded={initialExpandState}
+        initialExpanded={expandRelatedInDialog}
       />
     </>
   );

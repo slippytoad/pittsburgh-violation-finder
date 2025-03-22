@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { MapPin, Calendar, Hash, Info, ChevronRight } from 'lucide-react';
+import { MapPin, Calendar, Hash, Info, ChevronRight, Layers, History } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ViolationType } from '@/utils/types';
@@ -25,15 +25,22 @@ const ViolationDetailsDialog = ({
   formatDate,
   initialExpanded = false
 }: ViolationDetailsDialogProps) => {
-  const [expanded, setExpanded] = useState(initialExpanded);
+  const [expandedHistory, setExpandedHistory] = useState(false);
+  const [expandedRelated, setExpandedRelated] = useState(initialExpanded);
   
   // When the dialog opens, set the expanded state based on initialExpanded
   useEffect(() => {
     if (open) {
-      setExpanded(initialExpanded);
+      setExpandedRelated(initialExpanded);
     }
   }, [open, initialExpanded]);
   
+  const hasRelatedViolations = 
+    violation.relatedViolationsCount && 
+    violation.relatedViolationsCount > 0 && 
+    violation.relatedViolations && 
+    violation.relatedViolations.length > 0;
+
   const hasPreviousStates =
     violation.previousStatesCount &&
     violation.previousStatesCount > 0 &&
@@ -54,7 +61,7 @@ const ViolationDetailsDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
         <DialogHeader>
-          <DialogTitle>Case #: {violation.id}</DialogTitle>
+          <DialogTitle>Case #: {violation.caseNumber}</DialogTitle>
           <div className="mt-2">
             <StatusBadge status={violation.status} />
           </div>
@@ -109,27 +116,62 @@ const ViolationDetailsDialog = ({
             </div>
           </div>
           
+          {/* Related Violations Section */}
+          {hasRelatedViolations && (
+            <div className="mt-6">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-sm mb-3 flex items-center gap-2"
+                onClick={() => setExpandedRelated(!expandedRelated)}
+              >
+                <ChevronRight
+                  className={cn("h-4 w-4 transition-transform", {
+                    "rotate-90": expandedRelated,
+                  })}
+                />
+                <Layers className="h-4 w-4" />
+                {expandedRelated ? "Hide" : "View"} {violation.relatedViolationsCount} related violation{violation.relatedViolationsCount !== 1 ? 's' : ''}
+              </Button>
+              
+              {expandedRelated && (
+                <div className="space-y-4 mt-2">
+                  {violation.relatedViolations?.map((relatedViolation, idx) => (
+                    <RelatedViolationCard
+                      key={`${relatedViolation.id}-${idx}`}
+                      violation={relatedViolation}
+                      formatDate={formatDateLong}
+                      variant="detailed"
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Previous States Section */}
           {hasPreviousStates && (
             <div className="mt-6">
               <Button
                 variant="outline"
                 size="sm"
-                className="text-sm mb-3"
-                onClick={() => setExpanded(!expanded)}
+                className="text-sm mb-3 flex items-center gap-2"
+                onClick={() => setExpandedHistory(!expandedHistory)}
               >
                 <ChevronRight
-                  className={cn("h-4 w-4 transition-transform mr-1", {
-                    "rotate-90": expanded,
+                  className={cn("h-4 w-4 transition-transform", {
+                    "rotate-90": expandedHistory,
                   })}
                 />
-                {expanded ? "Hide" : "View"} {violation.previousStatesCount} related record{violation.previousStatesCount !== 1 ? 's' : ''}
+                <History className="h-4 w-4" />
+                {expandedHistory ? "Hide" : "View"} {violation.previousStatesCount} historical record{violation.previousStatesCount !== 1 ? 's' : ''}
               </Button>
               
-              {expanded && (
+              {expandedHistory && (
                 <div className="space-y-4 mt-2">
                   {violation.previousStates?.map((previousState, idx) => (
                     <div
-                      key={previousState.id}
+                      key={`${previousState.id}-${idx}`}
                       className="rounded-lg border p-4 text-sm"
                     >
                       <div className="mb-2 font-medium">
