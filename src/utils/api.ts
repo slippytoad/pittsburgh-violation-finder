@@ -4,6 +4,8 @@
  * This file exports functions to interact with the backend API
  */
 
+import { fetchAppSettings, saveSettings as saveAppSettings } from '@/services/settingsService';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 // Helper function to handle API responses
@@ -46,17 +48,11 @@ export async function bulkImportAddresses(addresses: string[]): Promise<string[]
   return handleResponse<string[]>(response);
 }
 
-// Settings API
+// Settings API - now using Supabase directly
 export async function fetchSettings(): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/settings`);
-  return handleResponse<any>(response);
+  return fetchAppSettings();
 }
 
 export async function saveSettings(settings: any): Promise<boolean> {
-  const response = await fetch(`${API_BASE_URL}/settings`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(settings)
-  });
-  return handleResponse<boolean>(response);
+  return saveAppSettings(settings);
 }

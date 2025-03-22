@@ -1,3 +1,4 @@
+
 import type { Dispatch, SetStateAction } from 'react';
 import { useState, useEffect } from 'react';
 import { 
@@ -44,8 +45,8 @@ export const useSettingsInitialization = (
     } = settings;
 
     // Update state
-    setIsScheduled(!!violationChecksEnabled);
-    setEmailEnabled(!!emailReportsEnabled);
+    if (violationChecksEnabled !== undefined) setIsScheduled(violationChecksEnabled);
+    if (emailReportsEnabled !== undefined) setEmailEnabled(emailReportsEnabled);
     if (emailReportAddress) setEmailAddress(emailReportAddress);
     
     // Update next check time if provided
@@ -66,6 +67,8 @@ export const useSettingsInitialization = (
         emailReportAddress: emailReportAddress || ''
       }, checkForViolations);
     }
+    
+    return undefined;
   };
 
   useEffect(() => {
@@ -73,6 +76,8 @@ export const useSettingsInitialization = (
     
     const initialize = async () => {
       try {
+        console.log('Initializing settings from Supabase...');
+        
         // Try to fetch settings from Supabase
         const settings = await fetchAppSettings();
         

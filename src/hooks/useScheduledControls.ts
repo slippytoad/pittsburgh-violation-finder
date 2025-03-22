@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { saveSettings } from '@/services/settingsService';
 import { scheduleNextCheck } from '@/services/violationCheckService';
@@ -20,11 +21,15 @@ export const useScheduledControls = (
     setIsLoading(true);
     try {
       // Save new settings to database
-      await saveSettings({
+      const success = await saveSettings({
         violationChecksEnabled: !isScheduled,
         emailReportsEnabled: emailEnabled,
         emailReportAddress: emailAddress
       });
+
+      if (!success) {
+        throw new Error('Failed to save settings to database');
+      }
 
       // Update UI state
       setIsScheduled(!isScheduled);
@@ -68,11 +73,15 @@ export const useScheduledControls = (
     setIsLoading(true);
     try {
       // Save new settings to database
-      await saveSettings({
+      const success = await saveSettings({
         violationChecksEnabled: isScheduled,
         emailReportsEnabled: !emailEnabled,
         emailReportAddress: emailAddress
       });
+
+      if (!success) {
+        throw new Error('Failed to save settings to database');
+      }
 
       // Update UI state
       setEmailEnabled(!emailEnabled);
@@ -100,11 +109,15 @@ export const useScheduledControls = (
     setIsLoading(true);
     try {
       // Save new settings to database
-      await saveSettings({
+      const success = await saveSettings({
         violationChecksEnabled: isScheduled,
         emailReportsEnabled: emailEnabled,
         emailReportAddress: newAddress
       });
+
+      if (!success) {
+        throw new Error('Failed to save settings to database');
+      }
 
       // Update UI state
       setEmailAddress(newAddress);
