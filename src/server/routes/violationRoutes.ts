@@ -15,7 +15,7 @@ interface BatchRequestBody {
 /**
  * Process a batch of addresses to search for violations
  */
-function processBatchViolations(req: Request, res: Response, next: NextFunction) {
+router.post('/batch', (req: Request, res: Response, next: NextFunction) => {
   const { addresses } = req.body as BatchRequestBody;
   
   if (!addresses || !Array.isArray(addresses) || addresses.length === 0) {
@@ -35,12 +35,12 @@ function processBatchViolations(req: Request, res: Response, next: NextFunction)
     .catch(error => {
       next(error);
     });
-}
+});
 
 /**
  * Search for violations by address
  */
-function searchViolations(req: Request, res: Response, next: NextFunction) {
+router.get('/search', (req: Request, res: Response, next: NextFunction) => {
   const address = req.query.address as string;
   
   if (!address) {
@@ -55,12 +55,12 @@ function searchViolations(req: Request, res: Response, next: NextFunction) {
       console.error('Error searching violations:', error);
       next(error);
     });
-}
+});
 
 /**
  * Search violations for multiple addresses
  */
-function searchMultipleAddresses(req: Request, res: Response, next: NextFunction) {
+router.post('/search-multiple', (req: Request, res: Response, next: NextFunction) => {
   const { addresses } = req.body as BatchRequestBody;
   
   if (!addresses || !Array.isArray(addresses)) {
@@ -81,12 +81,7 @@ function searchMultipleAddresses(req: Request, res: Response, next: NextFunction
       console.error('Error searching multiple addresses:', error);
       next(error);
     });
-}
-
-// Define routes
-router.get('/search', searchViolations);
-router.post('/search-multiple', searchMultipleAddresses);
-router.post('/batch', processBatchViolations);
+});
 
 // Export the router
 export default router;

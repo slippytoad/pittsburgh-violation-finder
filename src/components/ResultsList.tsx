@@ -22,7 +22,10 @@ const ResultsList = ({ violations, isLoading }: ResultsListProps) => {
     if (activeFilter === 'All') {
       setFilteredViolations(violations);
     } else {
-      setFilteredViolations(violations.filter(v => v.status === activeFilter));
+      setFilteredViolations(violations.filter(v => {
+        // Ensure we're doing a strict string comparison
+        return v.status === activeFilter;
+      }));
     }
   }, [violations, activeFilter]);
 
@@ -126,3 +129,4 @@ const ResultsList = ({ violations, isLoading }: ResultsListProps) => {
 };
 
 export default ResultsList;
+
