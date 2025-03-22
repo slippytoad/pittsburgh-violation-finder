@@ -83,7 +83,7 @@ function searchMultipleAddresses(req: Request, res: Response, next: NextFunction
     });
 }
 
-// Define routes using the correct Express route handler pattern
+// Define routes
 router.get('/search', searchViolations);
 router.post('/search-multiple', searchMultipleAddresses);
 router.post('/batch', processBatchViolations);

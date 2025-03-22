@@ -33,10 +33,6 @@ const ViolationCardHeader: React.FC<ViolationCardHeaderProps> = ({
             <Calendar className="h-3.5 w-3.5" />
             <span>Investigation Date: {formatDate(violation.dateIssued)}</span>
           </div>
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Hash className="h-3.5 w-3.5" />
-            <span>Section: {violation.violationType}</span>
-          </div>
           {hasRelatedViolations && (
             <div 
               className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
