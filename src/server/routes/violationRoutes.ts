@@ -83,10 +83,10 @@ function searchMultipleAddresses(req: Request, res: Response, next: NextFunction
     });
 }
 
-// Define routes - Fix: Use router.get/post with the route handler functions directly
-router.get('/search', searchViolations);
-router.post('/search-multiple', searchMultipleAddresses);
-router.post('/batch', processBatchViolations);
+// Define routes - Use the correct method pattern for Express routers
+router.get('/search', (req, res, next) => searchViolations(req, res, next));
+router.post('/search-multiple', (req, res, next) => searchMultipleAddresses(req, res, next));
+router.post('/batch', (req, res, next) => processBatchViolations(req, res, next));
 
 // Export the router
 export default router;
