@@ -1,4 +1,3 @@
-
 /**
  * Violations service for the Property Violations Finder app
  * This service handles searching for violations using Supabase
@@ -179,11 +178,20 @@ export async function searchViolations(address: string, signal?: AbortSignal): P
  */
 export async function searchMultipleAddresses(addresses: string[], onProgress?: (count: number) => void, signal?: AbortSignal): Promise<ViolationType[]> {
   try {
+    // Fix the type issue by creating a wrapper function that matches the expected signature
+    const progressCallback = (count: (prev: number) => number): void => {
+      if (onProgress) {
+        onProgress(typeof count === 'function' ? count(0) : count);
+      } else {
+        console.log(`Processed ${typeof count === 'function' ? count(0) : count} addresses`);
+      }
+    };
+    
     // Use the existing batch processing utility but with direct database calls
     return await processBatch(
       addresses,
       0,
-      onProgress || ((count) => console.log(`Processed ${count} addresses`)),
+      progressCallback,
       [],
       signal
     );
