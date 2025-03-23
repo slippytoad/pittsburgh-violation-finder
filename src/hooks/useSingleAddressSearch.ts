@@ -1,8 +1,7 @@
-
 import { useState, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { ViolationType } from '@/utils/types';
-import { searchViolations } from '@/utils/violationsService';
+import { searchViolations, searchAllViolations } from '@/utils/violationsService';
 
 export function useSingleAddressSearch(
   setViolations: (violations: ViolationType[]) => void,
@@ -30,11 +29,20 @@ export function useSingleAddressSearch(
     abortControllerRef.current = new AbortController();
     
     setIsLoading(true);
-    setSelectedAddress(address);
+    setSelectedAddress(address ? address : 'all');
     
     try {
-      console.log(`Searching for violations at "${address}"`);
-      const results = await searchViolations(address, abortControllerRef.current.signal);
+      let results: ViolationType[];
+      
+      if (!address.trim()) {
+        // If address is empty, search all violations
+        console.log('Searching all violations without address filter');
+        results = await searchAllViolations(abortControllerRef.current.signal);
+      } else {
+        // Otherwise, search by address
+        console.log(`Searching for violations at "${address}"`);
+        results = await searchViolations(address, abortControllerRef.current.signal);
+      }
       
       // If the search was aborted, don't process results
       if (abortControllerRef.current === null) {
@@ -48,12 +56,16 @@ export function useSingleAddressSearch(
       if (results.length === 0) {
         toast({
           title: "No violations found",
-          description: "No property violations found for this address",
+          description: address.trim() 
+            ? "No property violations found for this address" 
+            : "No violations found in the database",
         });
       } else {
         toast({
           title: "Search complete",
-          description: `Found ${results.length} violation${results.length !== 1 ? 's' : ''} for this address`,
+          description: address.trim()
+            ? `Found ${results.length} violation${results.length !== 1 ? 's' : ''} for this address`
+            : `Found ${results.length} violation${results.length !== 1 ? 's' : ''} in the database`,
         });
       }
     } catch (error) {

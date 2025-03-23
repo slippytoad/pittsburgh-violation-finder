@@ -23,22 +23,13 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, onCancelSearch, onSearc
     e.preventDefault();
     
     if (!address.trim()) {
-      // If no address is provided, search all saved addresses
-      if (onSearchAll) {
-        console.log('No address provided, searching all saved addresses');
-        onSearchAll();
-      } else {
-        toast({
-          title: "Address required",
-          description: "Please enter an address to search",
-          variant: "destructive",
-        });
-      }
-      return;
+      // If no address is provided, search all violations
+      console.log('No address provided, searching all violations');
+      onSearch(''); // Pass empty string to trigger search all violations
+    } else {
+      console.log(`Submitting search for "${address}"`);
+      onSearch(address);
     }
-    
-    console.log(`Submitting search for "${address}"`);
-    onSearch(address);
   };
 
   // Debug function for development only
@@ -109,7 +100,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, onCancelSearch, onSearc
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            Enter a Pittsburgh address to search for property violations, or leave empty to search all saved addresses.
+            Enter a Pittsburgh address to search for property violations, or leave empty to search all violations in the database.
           </p>
         </form>
       </div>

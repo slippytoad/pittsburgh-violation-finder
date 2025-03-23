@@ -174,6 +174,75 @@ export async function searchViolations(address: string, signal?: AbortSignal): P
 }
 
 /**
+ * Search all violations without filtering by address
+ * This is used when the search field is left empty
+ */
+export async function searchAllViolations(signal?: AbortSignal): Promise<ViolationType[]> {
+  try {
+    console.log('Searching all violations without address filter');
+    
+    // Check if we have a valid cached result for all violations
+    const cacheKey = '_all_violations_';
+    if (searchCache[cacheKey]) {
+      const cachedData = searchCache[cacheKey];
+      const now = Date.now();
+      
+      // If the cache hasn't expired, use it
+      if (now - cachedData.timestamp < CACHE_EXPIRATION_MS) {
+        console.log('Using cached results for all violations');
+        return cachedData.results;
+      }
+      
+      // Otherwise, delete the expired cache entry
+      delete searchCache[cacheKey];
+    }
+    
+    // Query the Supabase violations table directly
+    const { data, error } = await supabase
+      .from('violations')
+      .select('*')
+      .order('date_issued', { ascending: false })
+      .limit(100) // Limit to prevent too much data
+      .abortSignal(signal);
+    
+    // If there's an error or the search was aborted, handle it
+    if (error) {
+      // Check if it's an AbortError
+      if (signal?.aborted) {
+        console.log('Search for all violations was aborted');
+        throw new DOMException('The operation was aborted', 'AbortError');
+      }
+      
+      console.warn('Error searching all violations:', error);
+      return getDebugViolations(); // Use debug data as fallback
+    }
+    
+    console.log(`Found ${data?.length || 0} violation records`);
+    
+    // Transform and group the data into our application's format
+    const transformedResults = transformViolationData(data || []);
+    
+    // Store the results in the cache
+    searchCache[cacheKey] = {
+      timestamp: Date.now(),
+      results: transformedResults
+    };
+    
+    return transformedResults;
+  } catch (error) {
+    // Re-throw AbortError to be handled by the caller
+    if (error.name === 'AbortError') {
+      console.log('Search for all violations was aborted');
+      throw error;
+    }
+    
+    console.error('Error searching all violations:', error);
+    // Return mock data instead of throwing an error
+    return getDebugViolations();
+  }
+}
+
+/**
  * Search violations for multiple addresses
  */
 export async function searchMultipleAddresses(addresses: string[], onProgress?: (count: number) => void, signal?: AbortSignal): Promise<ViolationType[]> {
