@@ -24,7 +24,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, onCancelSearch, onSearc
     
     if (!address.trim()) {
       // If no address is provided, search all violations
-      console.log('No address provided, searching all violations');
+      console.log('No address provided, searching all violations in database');
       onSearch(''); // Pass empty string to trigger search all violations
     } else {
       console.log(`Submitting search for "${address}"`);
@@ -40,7 +40,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, onCancelSearch, onSearc
 
   return (
     <AnimatedContainer className="w-full">
-      <div className="glass rounded-xl p-6 subtle-shadow">
+      <div className="nextdns-card p-6">
         <h2 className="text-lg font-medium mb-4">Search Property Violations</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-3">
@@ -49,7 +49,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, onCancelSearch, onSearc
                 placeholder="Enter Pittsburgh address (e.g. 3208 DAWSON ST)..."
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="w-full bg-background/70"
+                className="w-full bg-background/70 h-11 text-base"
                 disabled={isLoading}
               />
             </div>
@@ -60,7 +60,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, onCancelSearch, onSearc
                     type="button" 
                     variant="destructive"
                     onClick={onCancelSearch}
-                    className="transition-all duration-300"
+                    className="transition-all duration-300 h-11"
                   >
                     <X className="mr-2 h-4 w-4" />
                     Cancel
@@ -68,7 +68,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, onCancelSearch, onSearc
                   <Button 
                     type="button" 
                     disabled={true} 
-                    className="transition-all duration-300"
+                    className="transition-all duration-300 h-11"
                   >
                     <Spinner size="sm" className="mr-2" />
                     Searching...
@@ -77,7 +77,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, onCancelSearch, onSearc
               ) : (
                 <Button 
                   type="submit" 
-                  className="transition-all duration-300"
+                  className="transition-all duration-300 h-11 px-6"
                 >
                   <Search className="mr-2 h-4 w-4" />
                   Search
@@ -91,7 +91,7 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, onCancelSearch, onSearc
                   variant="outline"
                   onClick={handleDebugSearch}
                   disabled={isLoading}
-                  className="bg-yellow-500/10 hover:bg-yellow-500/20 border-yellow-500/30"
+                  className="bg-yellow-500/10 hover:bg-yellow-500/20 border-yellow-500/30 h-11"
                 >
                   <Bug className="h-4 w-4" />
                   <span className="sr-only sm:not-sr-only sm:ml-2">Debug</span>
@@ -99,8 +99,8 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, onCancelSearch, onSearc
               )}
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Enter a Pittsburgh address to search for property violations, or leave empty to search all violations in the database.
+          <p className="text-sm text-muted-foreground">
+            Enter a Pittsburgh address to search for specific property violations, or leave empty to view all violations in the database.
           </p>
         </form>
       </div>

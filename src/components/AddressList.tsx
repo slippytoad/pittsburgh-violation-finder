@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { X, Search, Import, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Search, Import, ChevronDown, ChevronUp, BookmarkIcon } from 'lucide-react';
 import AnimatedContainer from './AnimatedContainer';
 import { Spinner } from '@/components/ui/spinner';
 
@@ -42,9 +42,10 @@ const AddressList = ({
   };
 
   return (
-    <AnimatedContainer className="w-full mt-6">
-      <div className="flex justify-between items-center mb-3">
+    <AnimatedContainer className="w-full mt-8">
+      <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
+          <BookmarkIcon className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-medium">Saved Addresses</h2>
           <Button 
             onClick={() => setIsCollapsed(!isCollapsed)} 
@@ -85,22 +86,22 @@ const AddressList = ({
       </div>
       
       {!isCollapsed && (
-        <Card>
-          <CardContent className="p-3">
-            <ul className="divide-y">
+        <Card className="nextdns-card overflow-hidden">
+          <CardContent className="p-0">
+            <ul className="divide-y divide-border">
               {addresses.map((address, index) => (
                 <li 
                   key={index} 
-                  className={`py-3 px-2 flex justify-between items-center rounded-md ${
-                    selectedAddress === address ? 'bg-accent' : ''
+                  className={`py-3 px-4 flex justify-between items-center ${
+                    selectedAddress === address ? 'bg-primary/5 dark:bg-primary/10' : ''
                   } hover:bg-accent/50 transition-colors`}
                 >
-                  <span className="text-sm truncate mr-2">{address}</span>
+                  <span className="text-sm truncate mr-2 font-medium">{address}</span>
                   <div className="flex items-center space-x-2">
                     <Button 
                       size="icon" 
                       variant="ghost" 
-                      className="h-8 w-8"
+                      className="h-8 w-8 text-primary"
                       onClick={() => onSearch(address)}
                     >
                       <Search className="h-4 w-4" />

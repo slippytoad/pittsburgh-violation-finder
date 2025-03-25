@@ -45,7 +45,7 @@ const ViolationFinderContent: React.FC = () => {
   }, [addresses, handleSearchAll]);
 
   return (
-    <div className="max-w-screen-xl mx-auto">
+    <div className="nextdns-container py-4">
       <div className="mb-4">
         <ViolationFinderHeader
           searchCount={searchCount}
