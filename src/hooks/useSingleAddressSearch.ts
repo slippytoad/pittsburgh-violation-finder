@@ -1,7 +1,8 @@
-import { useState, useRef } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { useState } from 'react';
 import { ViolationType } from '@/utils/types';
 import { searchViolations, searchAllViolations } from '@/utils/violationsService';
+import { useSearchAbortController } from './useSearchAbortController';
+import { useSearchErrorHandler } from './useSearchErrorHandler';
 
 export function useSingleAddressSearch(
   setViolations: (violations: ViolationType[]) => void,
@@ -9,24 +10,12 @@ export function useSingleAddressSearch(
 ) {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
-  const { toast } = useToast();
-  const abortControllerRef = useRef<AbortController | null>(null);
-
-  const cancelSearch = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-      setIsLoading(false);
-      toast({
-        title: "Search cancelled",
-        description: "The search operation has been cancelled",
-      });
-    }
-  };
+  const { cancelSearch, getAbortController } = useSearchAbortController();
+  const { handleSearchError, handleSearchSuccess } = useSearchErrorHandler();
 
   const handleSearch = async (address: string) => {
-    // Create a new AbortController for this search
-    abortControllerRef.current = new AbortController();
+    // Get a new AbortController for this search
+    const abortController = getAbortController();
     
     setIsLoading(true);
     setSelectedAddress(address ? address : 'all');
@@ -37,15 +26,15 @@ export function useSingleAddressSearch(
       if (!address.trim()) {
         // If address is empty, search all violations
         console.log('Searching all violations without address filter');
-        results = await searchAllViolations(abortControllerRef.current.signal);
+        results = await searchAllViolations(abortController.signal);
       } else {
         // Otherwise, search by address
         console.log(`Searching for violations at "${address}"`);
-        results = await searchViolations(address, abortControllerRef.current.signal);
+        results = await searchViolations(address, abortController.signal);
       }
       
       // If the search was aborted, don't process results
-      if (abortControllerRef.current === null) {
+      if (abortController.signal.aborted) {
         return;
       }
       
@@ -53,35 +42,14 @@ export function useSingleAddressSearch(
       setViolations(results);
       setSearchCount(prev => prev + 1);
       
-      if (results.length === 0) {
-        toast({
-          title: "No violations found",
-          description: address.trim() 
-            ? "No property violations found for this address" 
-            : "No violations found in the database",
-        });
-      } else {
-        toast({
-          title: "Search complete",
-          description: address.trim()
-            ? `Found ${results.length} violation${results.length !== 1 ? 's' : ''} for this address`
-            : `Found ${results.length} violation${results.length !== 1 ? 's' : ''} in the database`,
-        });
-      }
+      handleSearchSuccess(results, address);
     } catch (error) {
-      // Only show error if it's not an abort error
-      if (error.name !== 'AbortError') {
-        console.error('Search error:', error);
-        toast({
-          title: "Search failed",
-          description: "An error occurred while searching for violations",
-          variant: "destructive",
-        });
-        setViolations([]);
+      const errorResults = handleSearchError(error, 'Search');
+      if (errorResults !== null) {
+        setViolations(errorResults);
       }
     } finally {
-      if (abortControllerRef.current !== null) {
-        abortControllerRef.current = null;
+      if (!abortController.signal.aborted) {
         setIsLoading(false);
       }
     }

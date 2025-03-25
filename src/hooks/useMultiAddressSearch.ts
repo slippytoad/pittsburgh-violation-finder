@@ -1,9 +1,10 @@
 
-import { useState, useRef } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { useState } from 'react';
 import { ViolationType } from '@/utils/types';
 import { processBatch } from '@/utils/batchProcessing';
 import { processViolationResults, updateViolationsDataElement } from '@/utils/violationResults';
+import { useSearchAbortController } from './useSearchAbortController';
+import { useSearchErrorHandler } from './useSearchErrorHandler';
 
 export function useMultiAddressSearch(
   setViolations: (violations: ViolationType[]) => void,
@@ -11,34 +12,19 @@ export function useMultiAddressSearch(
   setSearchCount: (callback: (prev: number) => number) => void
 ) {
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-  const abortControllerRef = useRef<AbortController | null>(null);
-
-  const cancelSearch = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-      setIsLoading(false);
-      toast({
-        title: "Search cancelled",
-        description: "The search operation has been cancelled",
-      });
-    }
-  };
+  const { cancelSearch, getAbortController } = useSearchAbortController();
+  const { handleSearchError, handleSearchSuccess } = useSearchErrorHandler();
 
   const handleSearchAll = async (addresses: string[]) => {
     console.log("handleSearchAll called");
     
     if (addresses.length === 0) {
-      toast({
-        title: "No saved addresses",
-        description: "You don't have any saved addresses to search",
-      });
+      handleNoAddresses();
       return;
     }
 
-    // Create a new AbortController for this search
-    abortControllerRef.current = new AbortController();
+    // Get a new AbortController for this search
+    const abortController = getAbortController();
     
     setIsLoading(true);
     setSelectedAddress('all');
@@ -51,11 +37,11 @@ export function useMultiAddressSearch(
         0, 
         setSearchCount, 
         [], 
-        abortControllerRef.current.signal
+        abortController.signal
       );
       
       // If the search was aborted, don't process results
-      if (abortControllerRef.current === null) {
+      if (abortController.signal.aborted) {
         return;
       }
       
@@ -67,34 +53,26 @@ export function useMultiAddressSearch(
       // Update the hidden element for scheduled checks
       updateViolationsDataElement(uniqueViolations);
       
-      if (uniqueViolations.length === 0) {
-        toast({
-          title: "No violations found",
-          description: "No property violations found for any of your saved addresses",
-        });
-      } else {
-        toast({
-          title: "Search complete",
-          description: `Found ${uniqueViolations.length} violations across ${addresses.length} addresses`,
-        });
-      }
+      handleSearchSuccess(uniqueViolations);
     } catch (error) {
-      // Only show error if it's not an abort error
-      if (error.name !== 'AbortError') {
-        console.error('Search all error:', error);
-        toast({
-          title: "Search failed",
-          description: "An error occurred while searching across all addresses",
-          variant: "destructive",
-        });
-        setViolations([]);
+      const errorResults = handleSearchError(error, 'Searching all addresses');
+      if (errorResults !== null) {
+        setViolations(errorResults);
       }
     } finally {
-      if (abortControllerRef.current !== null) {
-        abortControllerRef.current = null;
+      if (!abortController.signal.aborted) {
         setIsLoading(false);
       }
     }
+  };
+
+  const handleNoAddresses = () => {
+    // Use the error handler hook's toast functionality
+    const { toast } = useSearchErrorHandler();
+    toast({
+      title: "No saved addresses",
+      description: "You don't have any saved addresses to search",
+    });
   };
 
   return {
