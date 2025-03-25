@@ -1,6 +1,6 @@
 
 import { ViolationType } from './types';
-import { searchViolations } from './violationsService';
+import { searchViolations } from './addressSearchService';
 
 /**
  * Process a batch of addresses for violations
