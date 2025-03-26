@@ -6,7 +6,7 @@ import { supabase } from '@/utils/supabase';
 import { ViolationType } from '@/utils/types';
 import { transformViolationData } from '@/utils/violationTransformer';
 import { getCachedResults, setCachedResults } from '@/utils/searchCache';
-import { getMockViolationsData } from '@/utils/mockViolationsService';
+import { getMockViolationsData, getDebugViolations } from '@/utils/mockViolationsService';
 
 /**
  * Search for violations by address using Supabase
@@ -14,7 +14,7 @@ import { getMockViolationsData } from '@/utils/mockViolationsService';
 export async function searchViolations(address: string, signal?: AbortSignal): Promise<ViolationType[]> {
   // For development/testing, return mock data if address is "DEBUG"
   if (address === 'DEBUG') {
-    return transformViolationData(getDebugViolations());
+    return getDebugViolations();
   }
   
   try {

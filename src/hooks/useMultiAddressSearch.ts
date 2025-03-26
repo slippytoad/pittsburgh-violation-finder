@@ -5,6 +5,7 @@ import { processBatch } from '@/utils/batchProcessing';
 import { processViolationResults, updateViolationsDataElement } from '@/utils/violationResults';
 import { useSearchAbortController } from './useSearchAbortController';
 import { useSearchErrorHandler } from './useSearchErrorHandler';
+import { useToast } from '@/components/ui/use-toast';
 
 export function useMultiAddressSearch(
   setViolations: (violations: ViolationType[]) => void,
@@ -14,6 +15,7 @@ export function useMultiAddressSearch(
   const [isLoading, setIsLoading] = useState(false);
   const { cancelSearch, getAbortController } = useSearchAbortController();
   const { handleSearchError, handleSearchSuccess } = useSearchErrorHandler();
+  const { toast } = useToast(); // Get the toast directly
 
   const handleSearchAll = async (addresses: string[]) => {
     console.log("handleSearchAll called");
@@ -67,8 +69,6 @@ export function useMultiAddressSearch(
   };
 
   const handleNoAddresses = () => {
-    // Use the error handler hook's toast functionality
-    const { toast } = useSearchErrorHandler();
     toast({
       title: "No saved addresses",
       description: "You don't have any saved addresses to search",

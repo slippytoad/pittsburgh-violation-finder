@@ -3,14 +3,14 @@
  * Provides mock violation data for testing and fallback
  */
 import { ViolationType } from '@/utils/types';
-import { getDebugViolations } from '@/utils/mockData';
+import { getDebugViolations as getMockData } from '@/utils/mockData';
 import { transformViolationData } from '@/utils/violationTransformer';
 
 /**
  * Get debug violations data (for testing)
  */
 export function getDebugViolations(): ViolationType[] {
-  return transformViolationData(getDebugViolations());
+  return transformViolationData(getMockData());
 }
 
 /**
@@ -19,7 +19,7 @@ export function getDebugViolations(): ViolationType[] {
  */
 export function getMockViolationsData(address: string): ViolationType[] {
   console.log(`Using mock data for address: ${address}`);
-  const mockData = getDebugViolations().slice(0, 3).map(violation => ({
+  const mockData = getMockData().slice(0, 3).map(violation => ({
     ...violation,
     address: address
   }));
