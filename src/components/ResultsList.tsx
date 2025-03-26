@@ -34,7 +34,7 @@ const ResultsList = ({ violations, isLoading }: ResultsListProps) => {
       <AnimatedContainer className="w-full flex justify-center items-center py-12">
         <div className="text-center">
           <Spinner size="lg" className="mx-auto mb-4" />
-          <p className="text-muted-foreground">Searching for violations...</p>
+          <p className="text-muted-foreground">Searching for cases...</p>
         </div>
       </AnimatedContainer>
     );
@@ -53,7 +53,7 @@ const ResultsList = ({ violations, isLoading }: ResultsListProps) => {
     <div className="w-full space-y-4 mt-4">
       <AnimatedContainer>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-          <h2 className="text-xl font-medium">{violations.length} Violation{violations.length !== 1 ? 's' : ''} Found</h2>
+          <h2 className="text-xl font-medium">{violations.length} Case{violations.length !== 1 ? 's' : ''} Found</h2>
           
           <div className="flex flex-wrap gap-2">
             <Button 
@@ -107,7 +107,7 @@ const ResultsList = ({ violations, isLoading }: ResultsListProps) => {
         <AnimatedContainer>
           <div className="flex flex-col items-center justify-center p-8 bg-muted/30 rounded-lg border border-border">
             <X className="h-8 w-8 text-muted-foreground mb-2" />
-            <p className="text-muted-foreground">No violations match the selected filter</p>
+            <p className="text-muted-foreground">No cases match the selected filter</p>
             <Button 
               variant="link" 
               onClick={() => setActiveFilter('All')}
@@ -129,4 +129,3 @@ const ResultsList = ({ violations, isLoading }: ResultsListProps) => {
 };
 
 export default ResultsList;
-

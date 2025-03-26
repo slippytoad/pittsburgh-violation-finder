@@ -25,17 +25,17 @@ export function useSearchErrorHandler() {
   const handleSearchSuccess = (results: ViolationType[], address?: string) => {
     if (results.length === 0) {
       toast({
-        title: "No violations found",
+        title: "No cases found",
         description: address?.trim() 
-          ? "No property violations found for this address" 
-          : "No violations found in the database",
+          ? "No property cases found for this address" 
+          : "No cases found in the database",
       });
     } else {
       toast({
         title: "Search complete",
         description: address?.trim()
-          ? `Found ${results.length} violation${results.length !== 1 ? 's' : ''} for this address`
-          : `Found ${results.length} violation${results.length !== 1 ? 's' : ''} in the database`,
+          ? `Found ${results.length} case${results.length !== 1 ? 's' : ''} for this address`
+          : `Found ${results.length} case${results.length !== 1 ? 's' : ''} in the database`,
       });
     }
     
