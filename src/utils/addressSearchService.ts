@@ -126,3 +126,65 @@ export async function searchAllViolations(signal?: AbortSignal): Promise<Violati
     return getDebugViolations();
   }
 }
+
+/**
+ * Fetch the most recent violations (last 30 days)
+ */
+export async function fetchRecentViolations(signal?: AbortSignal): Promise<ViolationType[]> {
+  try {
+    console.log('Fetching recent violations');
+    
+    // Check if we have a valid cached result for recent violations
+    const cacheKey = '_recent_violations_';
+    const cachedResults = getCachedResults(cacheKey);
+    if (cachedResults) {
+      return cachedResults;
+    }
+    
+    // Calculate date 30 days ago
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const thirtyDaysAgoStr = thirtyDaysAgo.toISOString();
+    
+    // Query the Supabase violations table for recent entries
+    const { data, error } = await supabase
+      .from('violations')
+      .select('*')
+      .gte('date_issued', thirtyDaysAgoStr)
+      .order('date_issued', { ascending: false })
+      .limit(50) // Limit to recent violations
+      .abortSignal(signal);
+    
+    // If there's an error or the search was aborted, handle it
+    if (error) {
+      // Check if it's an AbortError
+      if (signal?.aborted) {
+        console.log('Fetch for recent violations was aborted');
+        throw new DOMException('The operation was aborted', 'AbortError');
+      }
+      
+      console.warn('Error fetching recent violations:', error);
+      return getDebugViolations(); // Use debug data as fallback
+    }
+    
+    console.log(`Found ${data?.length || 0} recent violation records`);
+    
+    // Transform and group the data into our application's format
+    const transformedResults = transformViolationData(data || []);
+    
+    // Store the results in the cache with a shorter expiration (6 hours)
+    setCachedResults(cacheKey, transformedResults, 6 * 60 * 60 * 1000);
+    
+    return transformedResults;
+  } catch (error) {
+    // Re-throw AbortError to be handled by the caller
+    if (error.name === 'AbortError') {
+      console.log('Fetch for recent violations was aborted');
+      throw error;
+    }
+    
+    console.error('Error fetching recent violations:', error);
+    // Return mock data instead of throwing an error
+    return getDebugViolations();
+  }
+}

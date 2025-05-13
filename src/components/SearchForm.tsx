@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Bug, X } from 'lucide-react';
+import { Search, Bug, X, Clock } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import AnimatedContainer from './AnimatedContainer';
 import { Spinner } from '@/components/ui/spinner';
@@ -13,9 +13,17 @@ interface SearchFormProps {
   isLoading: boolean;
   onCancelSearch?: () => void;
   onSearchAll?: () => void;
+  onFetchRecent?: () => void;
 }
 
-const SearchForm = ({ onSearch, onAddAddress, isLoading, onCancelSearch, onSearchAll }: SearchFormProps) => {
+const SearchForm = ({ 
+  onSearch, 
+  onAddAddress, 
+  isLoading, 
+  onCancelSearch, 
+  onSearchAll,
+  onFetchRecent 
+}: SearchFormProps) => {
   const [address, setAddress] = useState('');
   const { toast } = useToast();
 
@@ -36,6 +44,13 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, onCancelSearch, onSearc
   const handleDebugSearch = () => {
     console.log('Triggering debug search');
     onSearch('DEBUG');
+  };
+
+  const handleFetchRecent = () => {
+    if (onFetchRecent) {
+      console.log('Fetching recent violations');
+      onFetchRecent();
+    }
   };
 
   return (
@@ -75,13 +90,25 @@ const SearchForm = ({ onSearch, onAddAddress, isLoading, onCancelSearch, onSearc
                   </Button>
                 </>
               ) : (
-                <Button 
-                  type="submit" 
-                  className="transition-all duration-300 h-11 px-6"
-                >
-                  <Search className="mr-2 h-4 w-4" />
-                  Search
-                </Button>
+                <>
+                  <Button 
+                    type="submit" 
+                    className="transition-all duration-300 h-11 px-6"
+                  >
+                    <Search className="mr-2 h-4 w-4" />
+                    Search
+                  </Button>
+                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleFetchRecent}
+                    className="transition-all duration-300 h-11"
+                  >
+                    <Clock className="mr-2 h-4 w-4" />
+                    Recent
+                  </Button>
+                </>
               )}
               
               {/* Debug button - only visible in development */}

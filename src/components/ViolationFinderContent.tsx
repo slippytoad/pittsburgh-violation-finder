@@ -13,7 +13,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { initDatabaseSync } from '@/services/databaseSyncService';
 
 const ViolationFinderContent: React.FC = () => {
-  const { violations, isLoading, selectedAddress, handleSearch, handleSearchAll, cancelSearch, searchCount } = useViolations();
+  const { violations, isLoading, selectedAddress, handleSearch, handleSearchAll, handleFetchRecent, cancelSearch, searchCount } = useViolations();
   const { addresses, handleAddAddress, handleRemoveAddress, handleBulkImport } = useAddresses();
   const { 
     isScheduled,
@@ -60,6 +60,11 @@ const ViolationFinderContent: React.FC = () => {
     handleSearchAll(addresses);
   }, [addresses, handleSearchAll]);
 
+  const onFetchRecent = useCallback(() => {
+    console.log("onFetchRecent called from ViolationFinderContent");
+    handleFetchRecent();
+  }, [handleFetchRecent]);
+
   return (
     <div className="nextdns-container py-4">
       <div className="mb-4">
@@ -84,6 +89,7 @@ const ViolationFinderContent: React.FC = () => {
           isLoading={isLoading}
           onCancelSearch={cancelSearch}
           onSearchAll={onSearchAll}
+          onFetchRecent={onFetchRecent}
         />
         
         <ResultsList 

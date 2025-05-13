@@ -5,7 +5,7 @@
  */
 
 import { ViolationType } from '@/utils/types';
-import { searchViolations, searchAllViolations } from '@/utils/addressSearchService';
+import { searchViolations, searchAllViolations, fetchRecentViolations } from '@/utils/addressSearchService';
 import { processBatch } from '@/utils/batchProcessing';
 
 /**
@@ -41,4 +41,4 @@ export async function searchMultipleAddresses(addresses: string[], onProgress?: 
 }
 
 // Re-export functions from other services for backwards compatibility
-export { searchViolations, searchAllViolations };
+export { searchViolations, searchAllViolations, fetchRecentViolations };
