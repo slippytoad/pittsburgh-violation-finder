@@ -5,7 +5,6 @@ import ResultsList from '@/components/ResultsList';
 import AddressList from '@/components/AddressList';
 import BulkImportSection from '@/components/BulkImportSection';
 import ViolationFinderHeader from '@/components/ViolationFinderHeader';
-import ViolationFinderContent from '@/components/ViolationFinderContent';
 import { useAddresses } from '@/hooks/useAddresses';
 import { useViolations } from '@/hooks/useViolations';
 import { useScheduledViolationCheck } from '@/hooks/useScheduledViolationCheck';
@@ -17,6 +16,7 @@ const ViolationFinder = () => {
   // Use the address hook for managing saved addresses
   const { 
     addresses, 
+    isLoading: addressesLoading,
     handleAddAddress, 
     handleRemoveAddress, 
     handleBulkImport 
@@ -25,7 +25,7 @@ const ViolationFinder = () => {
   // Use the violations hook for search functionality
   const { 
     violations, 
-    isLoading, 
+    isLoading: searchLoading, 
     selectedAddress, 
     searchCount,
     handleSearch, 
@@ -44,6 +44,9 @@ const ViolationFinder = () => {
     updateEmailSettings
   } = useScheduledViolationCheck();
 
+  // Determine if any loading is happening
+  const isLoading = addressesLoading || searchLoading;
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <ViolationFinderHeader 
@@ -53,7 +56,7 @@ const ViolationFinder = () => {
         nextCheckTime={nextCheckTime}
         emailAddress={emailAddress}
         onToggleSchedule={toggleScheduledChecks}
-        onOpenEmailSettings={() => setShowBulkImport(true)}
+        onOpenEmailSettings={() => {}}
       />
       
       <div className="flex flex-col md:flex-row gap-8">
@@ -61,7 +64,7 @@ const ViolationFinder = () => {
           <SearchForm 
             onSearch={handleSearch}
             onFetchRecent={handleFetchRecent}
-            isLoading={isLoading}
+            isLoading={searchLoading}
             onCancelSearch={cancelSearch}
             onSearchAll={() => handleSearchAll(addresses)}
           />
@@ -74,7 +77,7 @@ const ViolationFinder = () => {
             selectedAddress={selectedAddress}
             onToggleBulkImport={() => setShowBulkImport(!showBulkImport)}
             showBulkImport={showBulkImport}
-            isLoading={isLoading}
+            isLoading={addressesLoading}
           />
           
           <BulkImportSection
@@ -90,7 +93,7 @@ const ViolationFinder = () => {
         <div className="w-full md:w-2/3">
           <ResultsList 
             violations={violations}
-            isLoading={isLoading}
+            isLoading={searchLoading}
           />
         </div>
       </div>
@@ -99,4 +102,3 @@ const ViolationFinder = () => {
 };
 
 export default ViolationFinder;
-

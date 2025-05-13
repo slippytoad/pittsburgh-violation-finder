@@ -61,7 +61,12 @@ const AddressList = ({
             </div>
           </div>
           
-          {addresses.length === 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <Spinner className="h-8 w-8" />
+              <span className="ml-3 text-muted-foreground">Loading addresses...</span>
+            </div>
+          ) : addresses.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">No saved addresses</p>
               <p className="text-sm text-muted-foreground mt-1">

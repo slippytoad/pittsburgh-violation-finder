@@ -1,25 +1,29 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { fetchAddresses, saveAddress, removeAddress, bulkImportAddresses } from '@/utils/api';
+import { fetchSavedAddresses, saveAddress, removeAddress, bulkImportAddresses } from '@/utils/addressService';
 
 export function useAddresses() {
   const [addresses, setAddresses] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const { toast } = useToast();
 
-  // Load saved addresses from API on mount
+  // Load saved addresses from database on mount
   useEffect(() => {
     const loadAddresses = async () => {
       try {
-        const savedAddresses = await fetchAddresses();
+        setIsLoading(true);
+        const savedAddresses = await fetchSavedAddresses();
         setAddresses(savedAddresses);
       } catch (error) {
         console.error('Failed to load saved addresses', error);
         toast({
           title: "Failed to load addresses",
-          description: "Could not load your saved addresses",
+          description: "Could not load your saved addresses from the database",
           variant: "destructive"
         });
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -100,6 +104,7 @@ export function useAddresses() {
 
   return {
     addresses,
+    isLoading,
     handleAddAddress,
     handleRemoveAddress,
     handleBulkImport
