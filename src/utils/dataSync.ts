@@ -39,6 +39,86 @@ export async function fetchLatestViolationsData(limit: number = 1000): Promise<W
 }
 
 /**
+ * Fetch violations from WPRDC API for specific addresses
+ * @param addresses List of addresses to fetch violations for
+ * @returns Object containing count of imported violations
+ */
+export async function fetchWPRDCViolationsForAddresses(addresses: string[]): Promise<{ count: number }> {
+  try {
+    if (!addresses || addresses.length === 0) {
+      throw new Error('No addresses provided');
+    }
+    
+    console.log(`Fetching violations for ${addresses.length} addresses from WPRDC...`);
+    
+    // Prepare list of normalized addresses for more flexible matching
+    const normalizedAddresses = addresses.map(address => 
+      address.toLowerCase().replace(/\s+/g, ' ').trim()
+    );
+    
+    // Construct query parts for each address to build a SQL-like filter
+    // This is simplified; in practice, we might need more complex address matching
+    const addressQueries = normalizedAddresses.map(address => {
+      // Extract the street number and name for more flexible matching
+      const streetMatch = address.match(/^(\d+)\s+(.+?)(?:,|$)/i);
+      if (streetMatch) {
+        const [_, streetNumber, streetName] = streetMatch;
+        return `(address ilike '%${streetNumber} ${streetName}%')`;
+      }
+      return `(address ilike '%${address}%')`;
+    });
+    
+    // Join all address conditions with OR
+    const addressFilter = addressQueries.join(' OR ');
+    
+    // Build the query URL with filter
+    const queryUrl = `${WPRDC_API_URL}?resource_id=${VIOLATION_RESOURCE_ID}&limit=1000&q=${encodeURIComponent(addressFilter)}`;
+    
+    console.log('WPRDC Query URL:', queryUrl);
+    
+    const response = await fetch(queryUrl);
+    
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} - ${response.statusText}`);
+    }
+    
+    const data = await response.json() as WPRDCResponse;
+    
+    if (!data.success) {
+      throw new Error('API returned unsuccessful response');
+    }
+    
+    const violations = data.result.records;
+    console.log(`Retrieved ${violations.length} violations from WPRDC API for the specified addresses`);
+    
+    // Now filter more precisely by checking each violation against our addresses
+    const filteredViolations = violations.filter(violation => {
+      if (!violation.address) return false;
+      
+      // Normalize the violation address
+      const normalizedViolationAddress = violation.address.toLowerCase().replace(/\s+/g, ' ').trim();
+      
+      // Check if any of our normalized addresses is included in this violation address
+      return normalizedAddresses.some(addr => {
+        // Get the base street part (e.g. "123 Main St" from "123 Main St, Pittsburgh, PA")
+        const streetPart = addr.split(',')[0].trim();
+        return normalizedViolationAddress.includes(streetPart);
+      });
+    });
+    
+    console.log(`Filtered to ${filteredViolations.length} relevant violations`);
+    
+    // Import the filtered violations to the database
+    const importedCount = await updateViolationsDatabase(filteredViolations);
+    
+    return { count: importedCount };
+  } catch (error) {
+    console.error('Error fetching violations for addresses:', error);
+    throw error;
+  }
+}
+
+/**
  * Update the violations database with the latest data
  */
 export async function updateViolationsDatabase(violations: WPRDCViolation[]): Promise<number> {
@@ -100,3 +180,4 @@ export async function syncViolationsDatabase(): Promise<{ added: number }> {
     throw error;
   }
 }
+
