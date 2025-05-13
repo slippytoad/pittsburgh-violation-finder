@@ -6,17 +6,20 @@ import { X, FileUp, Check, AlertTriangle } from 'lucide-react';
 import { importViolationsFromCsv, validateViolationsCsv } from '@/utils/csvImportService';
 import { useToast } from '@/components/ui/use-toast';
 import { Spinner } from '@/components/ui/spinner';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface CsvImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onImportSuccess?: (count: number) => void;
+  filterAddresses?: string[];
 }
 
-const CsvImportDialog = ({ open, onOpenChange, onImportSuccess }: CsvImportDialogProps) => {
+const CsvImportDialog = ({ open, onOpenChange, onImportSuccess, filterAddresses = [] }: CsvImportDialogProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [onlyIncludeSavedAddresses, setOnlyIncludeSavedAddresses] = useState<boolean>(true);
   const { toast } = useToast();
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,7 +50,8 @@ const CsvImportDialog = ({ open, onOpenChange, onImportSuccess }: CsvImportDialo
       await validateViolationsCsv(file);
       
       // Import the CSV file
-      const count = await importViolationsFromCsv(file);
+      const addressFilter = onlyIncludeSavedAddresses ? filterAddresses : undefined;
+      const count = await importViolationsFromCsv(file, addressFilter);
       
       toast({
         title: "Import successful",
@@ -119,6 +123,22 @@ const CsvImportDialog = ({ open, onOpenChange, onImportSuccess }: CsvImportDialo
               </>
             )}
           </div>
+          
+          {filterAddresses && filterAddresses.length > 0 && (
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="filter-addresses" 
+                checked={onlyIncludeSavedAddresses}
+                onCheckedChange={(checked) => setOnlyIncludeSavedAddresses(!!checked)}
+              />
+              <label
+                htmlFor="filter-addresses"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Only import violations for saved addresses ({filterAddresses.length})
+              </label>
+            </div>
+          )}
           
           {uploadError && (
             <div className="bg-red-50 p-3 rounded-md text-red-700 text-sm flex items-start">

@@ -1,13 +1,15 @@
 
 import { supabase } from './supabase';
 import { parse } from 'papaparse';
+import { normalizeAddress } from './addressService';
 
 /**
  * Imports violation data from a CSV file into the Supabase violations table
  * @param file - The CSV file to import
+ * @param filterAddresses - Optional array of addresses to filter the import by
  * @returns A promise that resolves to the number of records imported
  */
-export const importViolationsFromCsv = async (file: File): Promise<number> => {
+export const importViolationsFromCsv = async (file: File, filterAddresses?: string[]): Promise<number> => {
   try {
     console.log('Starting CSV import process...');
     
@@ -27,8 +29,30 @@ export const importViolationsFromCsv = async (file: File): Promise<number> => {
           console.log(`Successfully parsed ${data.length} records`);
           console.log('Sample CSV data:', data[0]);
           
+          // Filter by addresses if provided
+          let filteredData = data;
+          if (filterAddresses && filterAddresses.length > 0) {
+            const normalizedFilterAddresses = filterAddresses.map(addr => normalizeAddress(addr));
+            
+            filteredData = data.filter((row: any) => {
+              const rowAddress = row.address || '';
+              const normalizedRowAddress = normalizeAddress(rowAddress);
+              
+              return normalizedFilterAddresses.some(filterAddr => 
+                normalizedRowAddress.includes(filterAddr) || filterAddr.includes(normalizedRowAddress)
+              );
+            });
+            
+            console.log(`Filtered from ${data.length} to ${filteredData.length} records based on ${filterAddresses.length} saved addresses`);
+          }
+          
+          if (filteredData.length === 0) {
+            reject(new Error('No records to import after filtering'));
+            return;
+          }
+          
           // Transform the data to match the violations table structure
-          const transformedData = data.map((row: any) => {
+          const transformedData = filteredData.map((row: any) => {
             const originalDate = row.investigation_date || row.date || row.created_at || new Date().toISOString();
             const parsedDate = parseDate(originalDate);
             const year = new Date(parsedDate).getFullYear();
