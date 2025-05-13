@@ -19,24 +19,23 @@ const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation }) => {
 
   return (
     <div className="space-y-3">
+      {/* Always show case number and investigation date first */}
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <Hash className="h-4 w-4 text-muted-foreground" />
+        <span>Case Number: {violation.caseNumber}</span>
+      </div>
+      
+      {violation.dateIssued && (
+        <div className="flex items-center gap-2 text-sm font-medium">
+          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <span>Investigation Date: {formatDate(violation.dateIssued)}</span>
+        </div>
+      )}
+      
       <div className="flex items-center gap-2 text-sm">
         <MapPin className="h-4 w-4 text-muted-foreground" />
         <span>Address: {violation.address}</span>
       </div>
-      
-      {violation.dateIssued && (
-        <div className="flex items-center gap-2 text-sm">
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span>Date Issued: {formatDate(violation.dateIssued)}</span>
-        </div>
-      )}
-      
-      {violation.caseNumber && (
-        <div className="flex items-center gap-2 text-sm">
-          <Hash className="h-4 w-4 text-muted-foreground" />
-          <span>Case Number: {violation.caseNumber}</span>
-        </div>
-      )}
       
       {violation.parcelId && violation.parcelId !== 'N/A' && (
         <div className="flex items-center gap-2 text-sm">

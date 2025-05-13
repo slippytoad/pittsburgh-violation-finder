@@ -23,15 +23,21 @@ const ViolationCardHeader: React.FC<ViolationCardHeaderProps> = ({
   return (
     <CardHeader className="p-4 pb-2 flex flex-row items-start justify-between space-y-0">
       <div className="flex flex-col space-y-1.5">
-        <h3 className="font-medium text-base">Case #: {violation.caseNumber}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="font-medium text-base">Case #: {violation.caseNumber}</h3>
+        </div>
         <div className="flex flex-col space-y-1">
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <MapPin className="h-3.5 w-3.5" />
             <span>{violation.address}</span>
           </div>
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground font-medium">
             <Calendar className="h-3.5 w-3.5" />
             <span>Investigation Date: {formatDate(violation.dateIssued)}</span>
+          </div>
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Hash className="h-3.5 w-3.5" />
+            <span>Violation Type: {violation.violationType}</span>
           </div>
           {hasRelatedViolations && (
             <div 

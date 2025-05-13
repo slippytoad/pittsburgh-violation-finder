@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Calendar, Info } from 'lucide-react';
+import { Calendar, Info, Hash } from 'lucide-react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { ViolationType } from '@/utils/types';
 import StatusBadge from './StatusBadge';
@@ -28,13 +28,16 @@ const RelatedViolationCard = ({ violation, formatDate, variant = 'compact' }: Re
       <CardHeader className="p-3 pb-2">
         <div className="flex flex-row items-start justify-between">
           <h4 className="font-medium text-sm">
-            {violation.violationType} 
-            {violation.caseNumber && ` (Case: ${violation.caseNumber})`}
+            {violation.violationType}
           </h4>
           <StatusBadge status={violation.status} size="sm" />
         </div>
         <div className="flex flex-col space-y-1 mt-1">
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Hash className="h-3 w-3" />
+            <span>Case #: {violation.caseNumber}</span>
+          </div>
+          <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium">
             <Calendar className="h-3 w-3" />
             <span>Investigation Date: {formatDateLong(violation.dateIssued)}</span>
           </div>
