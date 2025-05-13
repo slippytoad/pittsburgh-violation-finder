@@ -10,6 +10,7 @@ import { useViolations } from '@/hooks/useViolations';
 import { useAddresses } from '@/hooks/useAddresses';
 import { useScheduledViolationCheck } from '@/hooks/useScheduledViolationCheck';
 import { useToast } from '@/components/ui/use-toast';
+import { initDatabaseSync } from '@/services/databaseSyncService';
 
 const ViolationFinderContent: React.FC = () => {
   const { violations, isLoading, selectedAddress, handleSearch, handleSearchAll, cancelSearch, searchCount } = useViolations();
@@ -29,6 +30,21 @@ const ViolationFinderContent: React.FC = () => {
   const [tempEmailEnabled, setTempEmailEnabled] = useState<boolean>(emailEnabled);
   const [tempEmailAddress, setTempEmailAddress] = useState<string>(emailAddress);
   const { toast } = useToast();
+
+  // Initialize database sync when the component mounts
+  useEffect(() => {
+    const cleanup = initDatabaseSync(result => {
+      if (result.added > 0) {
+        toast({
+          title: "Database Updated",
+          description: `${result.added} new cases found in the daily update.`,
+          duration: 5000,
+        });
+      }
+    });
+    
+    return cleanup;
+  }, [toast]);
 
   useEffect(() => {
     setTempEmailEnabled(emailEnabled);

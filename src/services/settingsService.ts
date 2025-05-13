@@ -31,6 +31,8 @@ export const fetchAppSettings = async (): Promise<AppSettings | null> => {
       emailReportsEnabled: data.email_reports_enabled,
       emailReportAddress: data.email_report_address,
       nextViolationCheckTime: data.next_violation_check_time,
+      lastDatabaseSyncTime: data.last_database_sync_time,
+      nextDatabaseSyncTime: data.next_database_sync_time,
       created_at: data.created_at,
       updated_at: data.updated_at
     };
@@ -67,6 +69,14 @@ export const saveSettings = async (settings: Partial<AppSettings>): Promise<bool
     
     if (settings.nextViolationCheckTime !== undefined) {
       dbSettings.next_violation_check_time = settings.nextViolationCheckTime;
+    }
+    
+    if (settings.lastDatabaseSyncTime !== undefined) {
+      dbSettings.last_database_sync_time = settings.lastDatabaseSyncTime;
+    }
+    
+    if (settings.nextDatabaseSyncTime !== undefined) {
+      dbSettings.next_database_sync_time = settings.nextDatabaseSyncTime;
     }
     
     const { error } = await supabase

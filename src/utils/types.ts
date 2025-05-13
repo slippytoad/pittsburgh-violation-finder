@@ -56,6 +56,8 @@ export interface AppSettings {
   emailReportsEnabled: boolean;
   emailReportAddress: string;
   nextViolationCheckTime?: string;
+  lastDatabaseSyncTime?: string;
+  nextDatabaseSyncTime?: string;
   created_at?: string;
   updated_at?: string;
 }
