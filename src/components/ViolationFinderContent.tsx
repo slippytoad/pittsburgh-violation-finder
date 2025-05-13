@@ -12,7 +12,11 @@ import { useScheduledViolationCheck } from '@/hooks/useScheduledViolationCheck';
 import { useToast } from '@/components/ui/use-toast';
 import { initDatabaseSync } from '@/services/databaseSyncService';
 
-const ViolationFinderContent: React.FC = () => {
+interface ViolationFinderContentProps {
+  children?: React.ReactNode;
+}
+
+const ViolationFinderContent: React.FC<ViolationFinderContentProps> = ({ children }) => {
   const { violations, isLoading, selectedAddress, handleSearch, handleSearchAll, handleFetchRecent, cancelSearch, searchCount } = useViolations();
   const { addresses, handleAddAddress, handleRemoveAddress, handleBulkImport } = useAddresses();
   const { 
@@ -83,40 +87,44 @@ const ViolationFinderContent: React.FC = () => {
         {JSON.stringify(violations)}
       </div>
       
-      <div className="grid grid-cols-1 gap-8">
-        <SearchForm 
-          onSearch={onSearch} 
-          isLoading={isLoading}
-          onCancelSearch={cancelSearch}
-          onSearchAll={onSearchAll}
-          onFetchRecent={onFetchRecent}
-        />
-        
-        <ResultsList 
-          violations={violations}
-          isLoading={isLoading}
-        />
-        
-        <AddressList 
-          addresses={addresses} 
-          onRemove={handleRemoveAddress}
-          onSearch={onSearch}
-          onSearchAll={onSearchAll}
-          selectedAddress={selectedAddress}
-          onToggleBulkImport={() => setShowBulkImport(!showBulkImport)}
-          showBulkImport={showBulkImport}
-          isLoading={isLoading}
-        />
-        
-        <BulkImportSection 
-          bulkImportText={bulkImportText}
-          setBulkImportText={setBulkImportText}
-          showBulkImport={showBulkImport}
-          setShowBulkImport={setShowBulkImport}
-          handleBulkImport={handleBulkImport}
-          addresses={addresses}
-        />
-      </div>
+      {children ? (
+        children
+      ) : (
+        <div className="grid grid-cols-1 gap-8">
+          <SearchForm 
+            onSearch={onSearch} 
+            isLoading={isLoading}
+            onCancelSearch={cancelSearch}
+            onSearchAll={onSearchAll}
+            onFetchRecent={onFetchRecent}
+          />
+          
+          <ResultsList 
+            violations={violations}
+            isLoading={isLoading}
+          />
+          
+          <AddressList 
+            addresses={addresses} 
+            onRemove={handleRemoveAddress}
+            onSearch={onSearch}
+            onSearchAll={onSearchAll}
+            selectedAddress={selectedAddress}
+            onToggleBulkImport={() => setShowBulkImport(!showBulkImport)}
+            showBulkImport={showBulkImport}
+            isLoading={isLoading}
+          />
+          
+          <BulkImportSection 
+            bulkImportText={bulkImportText}
+            setBulkImportText={setBulkImportText}
+            showBulkImport={showBulkImport}
+            setShowBulkImport={setShowBulkImport}
+            handleBulkImport={handleBulkImport}
+            addresses={addresses}
+          />
+        </div>
+      )}
       
       <EmailSettingsSection 
         showEmailSettings={showEmailSettings}
@@ -132,3 +140,4 @@ const ViolationFinderContent: React.FC = () => {
 };
 
 export default ViolationFinderContent;
+

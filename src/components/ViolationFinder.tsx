@@ -56,48 +56,47 @@ const ViolationFinder = () => {
         onOpenEmailSettings={() => setShowBulkImport(true)}
       />
       
-      <ViolationFinderContent>
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="w-full md:w-1/3 space-y-6">
-            <SearchForm 
-              onSearch={handleSearch}
-              onFetchRecent={handleFetchRecent}
-              isLoading={isLoading}
-              onCancelSearch={cancelSearch}
-              onSearchAll={() => handleSearchAll(addresses)}
-            />
-            
-            <AddressList 
-              addresses={addresses}
-              onRemove={handleRemoveAddress}
-              onSearch={handleSearch}
-              onSearchAll={() => handleSearchAll(addresses)}
-              selectedAddress={selectedAddress}
-              onToggleBulkImport={() => setShowBulkImport(!showBulkImport)}
-              showBulkImport={showBulkImport}
-              isLoading={isLoading}
-            />
-            
-            <BulkImportSection
-              bulkImportText={bulkImportText}
-              setBulkImportText={setBulkImportText}
-              showBulkImport={showBulkImport}
-              setShowBulkImport={setShowBulkImport}
-              handleBulkImport={handleBulkImport}
-              addresses={addresses}
-            />
-          </div>
+      <div className="flex flex-col md:flex-row gap-8">
+        <div className="w-full md:w-1/3 space-y-6">
+          <SearchForm 
+            onSearch={handleSearch}
+            onFetchRecent={handleFetchRecent}
+            isLoading={isLoading}
+            onCancelSearch={cancelSearch}
+            onSearchAll={() => handleSearchAll(addresses)}
+          />
           
-          <div className="w-full md:w-2/3">
-            <ResultsList 
-              violations={violations}
-              isLoading={isLoading}
-            />
-          </div>
+          <AddressList 
+            addresses={addresses}
+            onRemove={handleRemoveAddress}
+            onSearch={handleSearch}
+            onSearchAll={() => handleSearchAll(addresses)}
+            selectedAddress={selectedAddress}
+            onToggleBulkImport={() => setShowBulkImport(!showBulkImport)}
+            showBulkImport={showBulkImport}
+            isLoading={isLoading}
+          />
+          
+          <BulkImportSection
+            bulkImportText={bulkImportText}
+            setBulkImportText={setBulkImportText}
+            showBulkImport={showBulkImport}
+            setShowBulkImport={setShowBulkImport}
+            handleBulkImport={handleBulkImport}
+            addresses={addresses}
+          />
         </div>
-      </ViolationFinderContent>
+        
+        <div className="w-full md:w-2/3">
+          <ResultsList 
+            violations={violations}
+            isLoading={isLoading}
+          />
+        </div>
+      </div>
     </div>
   );
 };
 
 export default ViolationFinder;
+
