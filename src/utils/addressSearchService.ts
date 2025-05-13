@@ -172,8 +172,8 @@ export async function fetchRecentViolations(signal?: AbortSignal): Promise<Viola
     // Transform and group the data into our application's format
     const transformedResults = transformViolationData(data || []);
     
-    // Store the results in the cache with a shorter expiration (6 hours)
-    setCachedResults(cacheKey, transformedResults, 6 * 60 * 60 * 1000);
+    // Store the results in the cache with a shorter expiration
+    setCachedResults(cacheKey, transformedResults);
     
     return transformedResults;
   } catch (error) {
