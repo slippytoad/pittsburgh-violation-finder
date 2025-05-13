@@ -114,6 +114,7 @@ const ViolationFinderContent: React.FC = () => {
           showBulkImport={showBulkImport}
           setShowBulkImport={setShowBulkImport}
           handleBulkImport={handleBulkImport}
+          addresses={addresses}
         />
       </div>
       
