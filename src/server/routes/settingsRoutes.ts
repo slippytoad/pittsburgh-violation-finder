@@ -1,21 +1,13 @@
-
 import express from 'express';
 import { Request, Response, NextFunction } from 'express';
 import { supabase } from '../../utils/supabase';
-import { ParamsDictionary } from 'express-serve-static-core';
-import { ParsedQs } from 'qs';
 
 const router = express.Router();
 
-// Define a custom RequestHandler type
-type CustomRequestHandler<
-  P = ParamsDictionary,
-  ResBody = any,
-  ReqBody = any,
-  ReqQuery = ParsedQs
-> = (
-  req: Request<P, ResBody, ReqBody, ReqQuery>,
-  res: Response<ResBody>,
+// Define a simpler request handler type without the complex generics
+type CustomRequestHandler = (
+  req: Request,
+  res: Response,
   next?: NextFunction
 ) => Promise<any> | void;
 
@@ -60,12 +52,9 @@ const getSettings: CustomRequestHandler = async (req: Request, res: Response) =>
 };
 
 // Update app settings
-const updateSettings: CustomRequestHandler<{}, any, AppSettingsUpdate> = async (
-  req: Request<{}, any, AppSettingsUpdate>, 
-  res: Response
-) => {
+const updateSettings: CustomRequestHandler = async (req: Request, res: Response) => {
   try {
-    const settings = req.body;
+    const settings = req.body as AppSettingsUpdate;
     
     // Convert camelCase to snake_case and format the data
     const formattedSettings = {
