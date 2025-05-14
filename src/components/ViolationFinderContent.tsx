@@ -70,7 +70,7 @@ const ViolationFinderContent: React.FC<ViolationFinderContentProps> = ({ childre
   }, [handleFetchRecent]);
 
   return (
-    <div className="nextdns-container py-4">
+    <div className="w-full py-4">
       <div className="mb-4">
         <ViolationFinderHeader
           searchCount={searchCount}
@@ -90,39 +90,43 @@ const ViolationFinderContent: React.FC<ViolationFinderContentProps> = ({ childre
       {children ? (
         children
       ) : (
-        <div className="grid grid-cols-1 gap-8">
-          <SearchForm 
-            onSearch={onSearch} 
-            isLoading={isLoading}
-            onCancelSearch={cancelSearch}
-            onSearchAll={onSearchAll}
-            onFetchRecent={onFetchRecent}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="md:col-span-1 space-y-8">
+            <SearchForm 
+              onSearch={onSearch} 
+              isLoading={isLoading}
+              onCancelSearch={cancelSearch}
+              onSearchAll={onSearchAll}
+              onFetchRecent={onFetchRecent}
+            />
+            
+            <AddressList 
+              addresses={addresses} 
+              onRemove={handleRemoveAddress}
+              onSearch={onSearch}
+              onSearchAll={onSearchAll}
+              selectedAddress={selectedAddress}
+              onToggleBulkImport={() => setShowBulkImport(!showBulkImport)}
+              showBulkImport={showBulkImport}
+              isLoading={isLoading}
+            />
+            
+            <BulkImportSection 
+              bulkImportText={bulkImportText}
+              setBulkImportText={setBulkImportText}
+              showBulkImport={showBulkImport}
+              setShowBulkImport={setShowBulkImport}
+              handleBulkImport={handleBulkImport}
+              addresses={addresses}
+            />
+          </div>
           
-          <ResultsList 
-            violations={violations}
-            isLoading={isLoading}
-          />
-          
-          <AddressList 
-            addresses={addresses} 
-            onRemove={handleRemoveAddress}
-            onSearch={onSearch}
-            onSearchAll={onSearchAll}
-            selectedAddress={selectedAddress}
-            onToggleBulkImport={() => setShowBulkImport(!showBulkImport)}
-            showBulkImport={showBulkImport}
-            isLoading={isLoading}
-          />
-          
-          <BulkImportSection 
-            bulkImportText={bulkImportText}
-            setBulkImportText={setBulkImportText}
-            showBulkImport={showBulkImport}
-            setShowBulkImport={setShowBulkImport}
-            handleBulkImport={handleBulkImport}
-            addresses={addresses}
-          />
+          <div className="md:col-span-3">
+            <ResultsList 
+              violations={violations}
+              isLoading={isLoading}
+            />
+          </div>
         </div>
       )}
       
@@ -140,4 +144,3 @@ const ViolationFinderContent: React.FC<ViolationFinderContentProps> = ({ childre
 };
 
 export default ViolationFinderContent;
-

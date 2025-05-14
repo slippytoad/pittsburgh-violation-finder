@@ -50,7 +50,7 @@ const ResultsList = ({ violations, isLoading }: ResultsListProps) => {
   const inProgressCount = violations.filter(v => v.status === 'In Progress').length;
 
   return (
-    <div className="w-full space-y-4 mt-4">
+    <div className="w-full space-y-4">
       <AnimatedContainer>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
           <h2 className="text-xl font-medium">{violations.length} Case{violations.length !== 1 ? 's' : ''} Found</h2>
@@ -118,7 +118,7 @@ const ResultsList = ({ violations, isLoading }: ResultsListProps) => {
           </div>
         </AnimatedContainer>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
           {filteredViolations.map((violation, index) => (
             <ViolationCard key={`${violation.id}-${index}`} violation={violation} index={index} />
           ))}
