@@ -8,6 +8,8 @@ import { WPRDCResponse, WPRDCViolation } from '@/utils/types';
 const WPRDC_API_URL = 'https://data.wprdc.org/api/3/action/datastore_search';
 const WPRDC_SQL_API_URL = 'https://data.wprdc.org/api/3/action/datastore_search_sql';
 const VIOLATION_RESOURCE_ID = '76fda9d0-69be-4dd5-8108-0de7907fc5a4';
+// Add the correct table ID for SQL queries
+const PLI_VIOLATIONS_TABLE_ID = '70c06278-92c5-4040-ab28-17671866f81c';
 
 /**
  * Fetch violations data from the WPRDC API
@@ -58,9 +60,9 @@ export async function fetchViolationsForAddresses(addresses: string[]): Promise<
       return `address LIKE '%${streetPart}%'`;
     }).join(' OR ');
     
-    // Build the SQL query
+    // Build the SQL query using the correct table ID
     // Note: We're using template string to construct the SQL query with proper escaping
-    const sqlQuery = `SELECT * FROM "${VIOLATION_RESOURCE_ID}" WHERE ${addressConditions} LIMIT 1000`;
+    const sqlQuery = `SELECT * FROM "${PLI_VIOLATIONS_TABLE_ID}" WHERE ${addressConditions} LIMIT 1000`;
     
     console.log('SQL Query:', sqlQuery);
     
