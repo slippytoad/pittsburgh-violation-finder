@@ -1,3 +1,4 @@
+
 /**
  * Utilities for synchronizing violation data from external APIs to our database
  */
@@ -67,6 +68,7 @@ export async function fetchWPRDCViolationsForAddresses(addresses: string[]): Pro
     });
     
     // Join all address conditions with OR and ensure proper parentheses
+    // Make sure to properly close the entire filter expression
     const addressFilter = `(${addressQueries.join(' OR ')})`;
     
     // Build the query URL with filter
