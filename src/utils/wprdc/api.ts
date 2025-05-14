@@ -6,6 +6,7 @@ import { WPRDCResponse, WPRDCViolation } from '@/utils/types';
 
 // URL for the WPRDC API data source
 const WPRDC_API_URL = 'https://data.wprdc.org/api/3/action/datastore_search';
+const WPRDC_SQL_API_URL = 'https://data.wprdc.org/api/3/action/datastore_search_sql';
 const VIOLATION_RESOURCE_ID = '76fda9d0-69be-4dd5-8108-0de7907fc5a4';
 
 /**
@@ -47,11 +48,27 @@ export async function fetchViolationsForAddresses(addresses: string[]): Promise<
       throw new Error('No addresses provided');
     }
     
-    console.log(`Fetching violations for ${addresses.length} addresses from WPRDC...`);
+    console.log(`Fetching violations for ${addresses.length} addresses from WPRDC using SQL API...`);
     
-    // Instead of using complex filtering, we'll fetch a larger dataset
-    // and filter it on our side
-    const response = await fetch(`${WPRDC_API_URL}?resource_id=${VIOLATION_RESOURCE_ID}&limit=5000`);
+    // Prepare the address conditions for the SQL WHERE clause
+    // We'll create a condition like: address LIKE '%123 Main%' OR address LIKE '%456 Elm%'
+    const addressConditions = addresses.map(address => {
+      // Extract just the street part and clean it
+      const streetPart = address.split(',')[0].trim().replace(/'/g, "''"); // Escape single quotes for SQL
+      return `address LIKE '%${streetPart}%'`;
+    }).join(' OR ');
+    
+    // Build the SQL query
+    // Note: We're using template string to construct the SQL query with proper escaping
+    const sqlQuery = `SELECT * FROM "${VIOLATION_RESOURCE_ID}" WHERE ${addressConditions} LIMIT 1000`;
+    
+    console.log('SQL Query:', sqlQuery);
+    
+    // Encode the SQL query for the URL
+    const encodedSql = encodeURIComponent(sqlQuery);
+    const queryUrl = `${WPRDC_SQL_API_URL}?sql=${encodedSql}`;
+    
+    const response = await fetch(queryUrl);
     
     if (!response.ok) {
       throw new Error(`API Error: ${response.status} - ${response.statusText}`);
@@ -63,31 +80,9 @@ export async function fetchViolationsForAddresses(addresses: string[]): Promise<
       throw new Error('API returned unsuccessful response');
     }
     
-    const allViolations = data.result.records;
-    console.log(`Retrieved ${allViolations.length} total violations from WPRDC API`);
+    console.log(`Retrieved ${data.result.records.length} violations from WPRDC SQL API`);
     
-    // Normalize addresses for more flexible matching
-    const normalizedAddresses = addresses.map(address => 
-      address.toLowerCase().replace(/\s+/g, ' ').trim()
-    );
-    
-    // Filter violations that match any of our addresses
-    const filteredViolations = allViolations.filter(violation => {
-      if (!violation.address) return false;
-      
-      // Normalize the violation address for comparison
-      const violationAddress = violation.address.toLowerCase().replace(/\s+/g, ' ').trim();
-      
-      // Check if any of our normalized addresses is included in this violation address
-      return normalizedAddresses.some(addr => {
-        const streetPart = addr.split(',')[0].trim();
-        return violationAddress.includes(streetPart);
-      });
-    });
-    
-    console.log(`Filtered to ${filteredViolations.length} relevant violations for the provided addresses`);
-    
-    return filteredViolations;
+    return data.result.records;
   } catch (error) {
     console.error('Error fetching violations for addresses:', error);
     throw error;
