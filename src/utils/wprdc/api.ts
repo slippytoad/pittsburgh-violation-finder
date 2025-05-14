@@ -54,16 +54,17 @@ export async function fetchViolationsForAddresses(addresses: string[]): Promise<
       address.toLowerCase().replace(/\s+/g, ' ').trim()
     );
     
-    // We need to use simple filter syntax without parentheses for the API
-    // The WPRDC API expects a JSON object for filters, not a SQL-like string
-    const filterObject = {};
-    
-    // Create a simple filter object with an "or" condition for all addresses
-    // Each key in the filter object will be treated as a field name to filter on
-    filterObject["address||ilike"] = normalizedAddresses.map(addr => `%${addr}%`);
+    // Create a filter string using the format expected by the WPRDC API
+    // The API expects filters in {"field_name": "value"} format
+    const filters = {
+      "address": {
+        // Use $ilike for case-insensitive partial matches
+        "$ilike": normalizedAddresses.map(addr => `%${addr}%`)
+      }
+    };
     
     // Convert the filter object to a JSON string
-    const filterJson = JSON.stringify(filterObject);
+    const filterJson = JSON.stringify(filters);
     
     // Build the query URL with the JSON filter
     const queryUrl = `${WPRDC_API_URL}?resource_id=${VIOLATION_RESOURCE_ID}&limit=1000&filters=${encodeURIComponent(filterJson)}`;
