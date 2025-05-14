@@ -68,11 +68,12 @@ export async function fetchWPRDCViolationsForAddresses(addresses: string[]): Pro
     });
     
     // Join all address conditions with OR and ensure proper parentheses
-    // Make sure to properly close the entire filter expression
-    const addressFilter = `(${addressQueries.join(' OR ')})`;
+    // Make sure the filter is properly formatted with parentheses
+    const addressFilter = addressQueries.join(' OR ');
+    const fullFilter = addressFilter ? `(${addressFilter})` : '';
     
-    // Build the query URL with filter
-    const queryUrl = `${WPRDC_API_URL}?resource_id=${VIOLATION_RESOURCE_ID}&limit=1000&q=${encodeURIComponent(addressFilter)}`;
+    // Build the query URL with filter - ensure the filter is property formatted
+    const queryUrl = `${WPRDC_API_URL}?resource_id=${VIOLATION_RESOURCE_ID}&limit=1000&filters=${encodeURIComponent(fullFilter)}`;
     
     console.log('WPRDC Query URL:', queryUrl);
     
