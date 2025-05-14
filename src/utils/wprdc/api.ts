@@ -54,23 +54,19 @@ export async function fetchViolationsForAddresses(addresses: string[]): Promise<
       address.toLowerCase().replace(/\s+/g, ' ').trim()
     );
     
-    // Construct query parts for each address to build a SQL-like filter
-    const addressQueries = normalizedAddresses.map(address => {
-      // Extract the street number and name for more flexible matching
-      const streetMatch = address.match(/^(\d+)\s+(.+?)(?:,|$)/i);
-      if (streetMatch) {
-        const [_, streetNumber, streetName] = streetMatch;
-        return `(address ilike '%${streetNumber} ${streetName}%')`;
-      }
-      return `(address ilike '%${address}%')`;
-    });
+    // We need to use simple filter syntax without parentheses for the API
+    // The WPRDC API expects a JSON object for filters, not a SQL-like string
+    const filterObject = {};
     
-    // Join all address conditions with OR and ensure proper parentheses
-    const addressFilter = addressQueries.join(' OR ');
-    const fullFilter = addressFilter ? `(${addressFilter})` : '';
+    // Create a simple filter object with an "or" condition for all addresses
+    // Each key in the filter object will be treated as a field name to filter on
+    filterObject["address||ilike"] = normalizedAddresses.map(addr => `%${addr}%`);
     
-    // Build the query URL with filter - ensure the filter is properly formatted
-    const queryUrl = `${WPRDC_API_URL}?resource_id=${VIOLATION_RESOURCE_ID}&limit=1000&filters=${encodeURIComponent(fullFilter)}`;
+    // Convert the filter object to a JSON string
+    const filterJson = JSON.stringify(filterObject);
+    
+    // Build the query URL with the JSON filter
+    const queryUrl = `${WPRDC_API_URL}?resource_id=${VIOLATION_RESOURCE_ID}&limit=1000&filters=${encodeURIComponent(filterJson)}`;
     
     console.log('WPRDC Query URL:', queryUrl);
     
