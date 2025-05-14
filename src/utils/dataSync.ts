@@ -127,7 +127,8 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
     
     // Transform the violations to match our database schema
     const transformedViolations = violations.map(violation => ({
-      violation_id: violation.violation_id || violation.casefile_number,
+      // Using casefile_number instead of violation_id as it appears to be the correct field name in our database
+      casefile_number: violation.violation_id || violation.casefile_number,
       address: violation.address,
       violation_type: violation.agency_name || 'Unknown Type',
       date_issued: violation.inspection_date || violation.investigation_date || new Date().toISOString(),
@@ -146,7 +147,7 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
     const { data, error } = await supabase
       .from('violations')
       .upsert(transformedViolations, { 
-        onConflict: 'violation_id',
+        onConflict: 'casefile_number',
         ignoreDuplicates: false // Update existing records
       });
       
@@ -180,4 +181,3 @@ export async function syncViolationsDatabase(): Promise<{ added: number }> {
     throw error;
   }
 }
-
