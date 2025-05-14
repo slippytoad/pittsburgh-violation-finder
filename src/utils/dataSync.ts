@@ -1,4 +1,3 @@
-
 /**
  * Utilities for synchronizing violation data from external APIs to our database
  */
@@ -57,7 +56,6 @@ export async function fetchWPRDCViolationsForAddresses(addresses: string[]): Pro
     );
     
     // Construct query parts for each address to build a SQL-like filter
-    // This is simplified; in practice, we might need more complex address matching
     const addressQueries = normalizedAddresses.map(address => {
       // Extract the street number and name for more flexible matching
       const streetMatch = address.match(/^(\d+)\s+(.+?)(?:,|$)/i);
@@ -68,8 +66,8 @@ export async function fetchWPRDCViolationsForAddresses(addresses: string[]): Pro
       return `(address ilike '%${address}%')`;
     });
     
-    // Join all address conditions with OR
-    const addressFilter = addressQueries.join(' OR ');
+    // Join all address conditions with OR and ensure proper parentheses
+    const addressFilter = `(${addressQueries.join(' OR ')})`;
     
     // Build the query URL with filter
     const queryUrl = `${WPRDC_API_URL}?resource_id=${VIOLATION_RESOURCE_ID}&limit=1000&q=${encodeURIComponent(addressFilter)}`;
