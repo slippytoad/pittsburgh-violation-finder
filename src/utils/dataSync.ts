@@ -1,209 +1,26 @@
 
 /**
- * Utilities for synchronizing violation data from external APIs to our database
+ * Main synchronization utilities that combine API fetching and database operations
  */
-import { supabase } from '@/utils/supabase';
-import { transformViolationData } from '@/utils/violationTransformer';
-import { ViolationType, WPRDCResponse, WPRDCViolation } from '@/utils/types';
-
-// URL for the WPRDC API data source
-const WPRDC_API_URL = 'https://data.wprdc.org/api/3/action/datastore_search';
-const VIOLATION_RESOURCE_ID = '76fda9d0-69be-4dd5-8108-0de7907fc5a4';
+import { fetchLatestViolationsData, fetchViolationsForAddresses } from '@/utils/wprdc/api';
+import { updateViolationsDatabase } from '@/utils/database/violationsDb';
 
 /**
- * Fetch violations data from the WPRDC API
- * This can be run on a scheduled basis to keep our database updated
- */
-export async function fetchLatestViolationsData(limit: number = 1000): Promise<WPRDCViolation[]> {
-  try {
-    console.log(`Fetching latest violations data (limit: ${limit})...`);
-    
-    const response = await fetch(`${WPRDC_API_URL}?resource_id=${VIOLATION_RESOURCE_ID}&limit=${limit}`);
-    
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} - ${response.statusText}`);
-    }
-    
-    const data = await response.json() as WPRDCResponse;
-    
-    if (!data.success) {
-      throw new Error('API returned unsuccessful response');
-    }
-    
-    console.log(`Retrieved ${data.result.records.length} violations from WPRDC API`);
-    return data.result.records;
-  } catch (error) {
-    console.error('Error fetching violations data:', error);
-    throw error;
-  }
-}
-
-/**
- * Fetch violations from WPRDC API for specific addresses
+ * Fetch violations from WPRDC API for specific addresses and import them to the database
  * @param addresses List of addresses to fetch violations for
  * @returns Object containing count of imported violations
  */
 export async function fetchWPRDCViolationsForAddresses(addresses: string[]): Promise<{ count: number }> {
   try {
-    if (!addresses || addresses.length === 0) {
-      throw new Error('No addresses provided');
-    }
-    
-    console.log(`Fetching violations for ${addresses.length} addresses from WPRDC...`);
-    
-    // Prepare list of normalized addresses for more flexible matching
-    const normalizedAddresses = addresses.map(address => 
-      address.toLowerCase().replace(/\s+/g, ' ').trim()
-    );
-    
-    // Construct query parts for each address to build a SQL-like filter
-    const addressQueries = normalizedAddresses.map(address => {
-      // Extract the street number and name for more flexible matching
-      const streetMatch = address.match(/^(\d+)\s+(.+?)(?:,|$)/i);
-      if (streetMatch) {
-        const [_, streetNumber, streetName] = streetMatch;
-        return `(address ilike '%${streetNumber} ${streetName}%')`;
-      }
-      return `(address ilike '%${address}%')`;
-    });
-    
-    // Join all address conditions with OR and ensure proper parentheses
-    // Make sure the filter is properly formatted with parentheses
-    const addressFilter = addressQueries.join(' OR ');
-    const fullFilter = addressFilter ? `(${addressFilter})` : '';
-    
-    // Build the query URL with filter - ensure the filter is property formatted
-    const queryUrl = `${WPRDC_API_URL}?resource_id=${VIOLATION_RESOURCE_ID}&limit=1000&filters=${encodeURIComponent(fullFilter)}`;
-    
-    console.log('WPRDC Query URL:', queryUrl);
-    
-    const response = await fetch(queryUrl);
-    
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} - ${response.statusText}`);
-    }
-    
-    const data = await response.json() as WPRDCResponse;
-    
-    if (!data.success) {
-      throw new Error('API returned unsuccessful response');
-    }
-    
-    const violations = data.result.records;
-    console.log(`Retrieved ${violations.length} violations from WPRDC API for the specified addresses`);
-    
-    // Now filter more precisely by checking each violation against our addresses
-    const filteredViolations = violations.filter(violation => {
-      if (!violation.address) return false;
-      
-      // Normalize the violation address
-      const normalizedViolationAddress = violation.address.toLowerCase().replace(/\s+/g, ' ').trim();
-      
-      // Check if any of our normalized addresses is included in this violation address
-      return normalizedAddresses.some(addr => {
-        // Get the base street part (e.g. "123 Main St" from "123 Main St, Pittsburgh, PA")
-        const streetPart = addr.split(',')[0].trim();
-        return normalizedViolationAddress.includes(streetPart);
-      });
-    });
-    
-    console.log(`Filtered to ${filteredViolations.length} relevant violations`);
+    // Get violations from the API
+    const violations = await fetchViolationsForAddresses(addresses);
     
     // Import the filtered violations to the database
-    const importedCount = await updateViolationsDatabase(filteredViolations);
+    const importedCount = await updateViolationsDatabase(violations);
     
     return { count: importedCount };
   } catch (error) {
-    console.error('Error fetching violations for addresses:', error);
-    throw error;
-  }
-}
-
-/**
- * Update the violations database with the latest data
- */
-export async function updateViolationsDatabase(violations: WPRDCViolation[]): Promise<number> {
-  try {
-    console.log(`Processing ${violations.length} violations for database update...`);
-    
-    if (violations.length === 0) {
-      console.log('No violations to update.');
-      return 0;
-    }
-    
-    // Transform the violations to match our database schema
-    const transformedViolations = violations.map(violation => ({
-      // Using casefile_number as the primary identifier
-      casefile_number: violation.violation_id || violation.casefile_number,
-      address: violation.address,
-      violation_type: violation.agency_name || 'Unknown Type',
-      date_issued: violation.inspection_date || violation.investigation_date || new Date().toISOString(),
-      status: violation.status || 'Unknown',
-      original_status: violation.status || null,
-      description: violation.violation_description || '',
-      property_owner: violation.owner_name || 'Unknown Owner',
-      fine_amount: null, // API doesn't provide this
-      due_date: null, // API doesn't provide this
-      investigation_outcome: violation.investigation_outcome || null,
-      investigation_findings: violation.investigation_findings || null,
-      updated_at: new Date().toISOString()
-    }));
-    
-    // First check if we can use upsert with onConflict
-    try {
-      const { data: checkData, error: checkError } = await supabase
-        .from('violations')
-        .select('id')
-        .eq('casefile_number', transformedViolations[0].casefile_number)
-        .limit(1);
-        
-      if (checkError) {
-        console.log('Error checking violation existence:', checkError);
-      }
-      
-      // Try with insert, then update strategy instead of upsert
-      for (const violation of transformedViolations) {
-        // First try to find if this violation already exists
-        const { data: existingViolation, error: findError } = await supabase
-          .from('violations')
-          .select('id')
-          .eq('casefile_number', violation.casefile_number)
-          .maybeSingle();
-          
-        if (findError && findError.code !== 'PGRST116') {
-          console.log(`Error finding violation ${violation.casefile_number}:`, findError);
-          continue;
-        }
-          
-        if (existingViolation) {
-          // Update the existing violation
-          const { error: updateError } = await supabase
-            .from('violations')
-            .update(violation)
-            .eq('id', existingViolation.id);
-            
-          if (updateError) {
-            console.log(`Error updating violation ${violation.casefile_number}:`, updateError);
-          }
-        } else {
-          // Insert as new violation
-          const { error: insertError } = await supabase
-            .from('violations')
-            .insert(violation);
-            
-          if (insertError) {
-            console.log(`Error inserting violation ${violation.casefile_number}:`, insertError);
-          }
-        }
-      }
-      
-      return transformedViolations.length;
-    } catch (error) {
-      console.error('Error during individual violation processing:', error);
-      throw error;
-    }
-  } catch (error) {
-    console.error('Error updating violations database:', error);
+    console.error('Error in fetchWPRDCViolationsForAddresses:', error);
     throw error;
   }
 }
@@ -226,3 +43,6 @@ export async function syncViolationsDatabase(): Promise<{ added: number }> {
     throw error;
   }
 }
+
+// Re-export functions from the imported modules for backward compatibility
+export { fetchLatestViolationsData } from '@/utils/wprdc/api';
