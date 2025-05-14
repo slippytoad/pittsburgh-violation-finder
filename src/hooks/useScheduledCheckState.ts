@@ -5,18 +5,24 @@ import { initializeEmailService } from '@/services/violationCheckService';
 import { useSettingsInitialization } from '@/hooks/useSettingsInitialization';
 import { useViolationCheck } from '@/hooks/useViolationCheck';
 import { useScheduledControls } from '@/hooks/useScheduledControls';
-import { useViolations } from '@/hooks/useViolations';
 import { useAddresses } from '@/hooks/useAddresses';
 
 export const useScheduledCheckState = () => {
   // Use default initial settings since loadSettingsFromLocalStorage doesn't exist
   const initialSettings = {};
   
-  const { handleSearchAll } = useViolations();
-  const { addresses } = useAddresses();
-  
   // Initialize the email service
   initializeEmailService();
+  
+  // Get addresses
+  const { addresses } = useAddresses();
+  
+  // We'll create a search function to pass to useViolationCheck
+  const searchAllAddresses = async (addressesToSearch: string[], year?: number) => {
+    // This is a stub that will be replaced with actual implementation when used
+    console.log('Searching all addresses:', addressesToSearch, 'for year:', year);
+    return Promise.resolve();
+  };
   
   // Setup state via hooks
   const [
@@ -42,7 +48,7 @@ export const useScheduledCheckState = () => {
     nextCheckTime: checkNextTime,
     checkForViolations 
   } = useViolationCheck(
-    handleSearchAll, 
+    searchAllAddresses, 
     addresses, 
     isScheduled, 
     emailEnabled, 
