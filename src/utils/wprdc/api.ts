@@ -53,11 +53,11 @@ export async function fetchViolationsForAddresses(addresses: string[]): Promise<
     console.log(`Fetching violations for ${addresses.length} addresses from WPRDC using SQL API...`);
     
     // Prepare the address conditions for the SQL WHERE clause
-    // We'll create a condition like: address LIKE '%123 Main%' OR address LIKE '%456 Elm%'
+    // We'll create a condition like: address ILIKE '%123 Main%' OR address ILIKE '%456 Elm%'
     const addressConditions = addresses.map(address => {
       // Extract just the street part and clean it
       const streetPart = address.split(',')[0].trim().replace(/'/g, "''"); // Escape single quotes for SQL
-      return `address LIKE '%${streetPart}%'`;
+      return `address ILIKE '%${streetPart}%'`;
     }).join(' OR ');
     
     // Build the SQL query using the correct table ID
