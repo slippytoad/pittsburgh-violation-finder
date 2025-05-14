@@ -49,29 +49,9 @@ export async function fetchViolationsForAddresses(addresses: string[]): Promise<
     
     console.log(`Fetching violations for ${addresses.length} addresses from WPRDC...`);
     
-    // Prepare list of normalized addresses for more flexible matching
-    const normalizedAddresses = addresses.map(address => 
-      address.toLowerCase().replace(/\s+/g, ' ').trim()
-    );
-    
-    // Create a filter string using the format expected by the WPRDC API
-    // The API expects filters in {"field_name": "value"} format
-    const filters = {
-      "address": {
-        // Use $ilike for case-insensitive partial matches
-        "$ilike": normalizedAddresses.map(addr => `%${addr}%`)
-      }
-    };
-    
-    // Convert the filter object to a JSON string
-    const filterJson = JSON.stringify(filters);
-    
-    // Build the query URL with the JSON filter
-    const queryUrl = `${WPRDC_API_URL}?resource_id=${VIOLATION_RESOURCE_ID}&limit=1000&filters=${encodeURIComponent(filterJson)}`;
-    
-    console.log('WPRDC Query URL:', queryUrl);
-    
-    const response = await fetch(queryUrl);
+    // Instead of using complex filtering, we'll fetch a larger dataset
+    // and filter it on our side
+    const response = await fetch(`${WPRDC_API_URL}?resource_id=${VIOLATION_RESOURCE_ID}&limit=5000`);
     
     if (!response.ok) {
       throw new Error(`API Error: ${response.status} - ${response.statusText}`);
@@ -83,25 +63,29 @@ export async function fetchViolationsForAddresses(addresses: string[]): Promise<
       throw new Error('API returned unsuccessful response');
     }
     
-    const violations = data.result.records;
-    console.log(`Retrieved ${violations.length} violations from WPRDC API for the specified addresses`);
+    const allViolations = data.result.records;
+    console.log(`Retrieved ${allViolations.length} total violations from WPRDC API`);
     
-    // Now filter more precisely by checking each violation against our addresses
-    const filteredViolations = violations.filter(violation => {
+    // Normalize addresses for more flexible matching
+    const normalizedAddresses = addresses.map(address => 
+      address.toLowerCase().replace(/\s+/g, ' ').trim()
+    );
+    
+    // Filter violations that match any of our addresses
+    const filteredViolations = allViolations.filter(violation => {
       if (!violation.address) return false;
       
-      // Normalize the violation address
-      const normalizedViolationAddress = violation.address.toLowerCase().replace(/\s+/g, ' ').trim();
+      // Normalize the violation address for comparison
+      const violationAddress = violation.address.toLowerCase().replace(/\s+/g, ' ').trim();
       
       // Check if any of our normalized addresses is included in this violation address
       return normalizedAddresses.some(addr => {
-        // Get the base street part (e.g. "123 Main St" from "123 Main St, Pittsburgh, PA")
         const streetPart = addr.split(',')[0].trim();
-        return normalizedViolationAddress.includes(streetPart);
+        return violationAddress.includes(streetPart);
       });
     });
     
-    console.log(`Filtered to ${filteredViolations.length} relevant violations`);
+    console.log(`Filtered to ${filteredViolations.length} relevant violations for the provided addresses`);
     
     return filteredViolations;
   } catch (error) {
