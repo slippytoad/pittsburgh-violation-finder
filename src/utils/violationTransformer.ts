@@ -12,7 +12,7 @@ export function transformViolationData(data: any[]): ViolationType[] {
   // First, transform all data to our application format
   const transformedData = data.map(item => ({
     id: item.id,
-    caseNumber: item.casefile_number || item.violation_id || 'N/A',
+    caseNumber: item._id || item.casefile_number || 'N/A',
     address: item.address,
     parcelId: item.parcel_id || 'N/A',
     status: item.status,

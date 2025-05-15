@@ -2,7 +2,7 @@
 -- Create violations table
 CREATE TABLE IF NOT EXISTS public.violations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    violation_id TEXT,
+    _id TEXT,
     address TEXT NOT NULL,
     violation_type TEXT NOT NULL,
     investigation_date TIMESTAMP WITH TIME ZONE,
@@ -33,7 +33,7 @@ CREATE POLICY "Allow authenticated users full access" ON public.violations
 
 -- Sample data insertion
 INSERT INTO public.violations (
-    violation_id,
+    _id,
     address,
     violation_type,
     investigation_date,
