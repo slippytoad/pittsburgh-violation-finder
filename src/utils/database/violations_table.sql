@@ -31,6 +31,11 @@ CREATE POLICY "Allow anonymous read access" ON public.violations
 CREATE POLICY "Allow authenticated users full access" ON public.violations
     USING (auth.role() = 'authenticated');
 
+-- Create index for faster searches
+CREATE INDEX IF NOT EXISTS idx_violations_address ON public.violations (address);
+CREATE INDEX IF NOT EXISTS idx_violations_status ON public.violations (status);
+CREATE INDEX IF NOT EXISTS idx_violations_date_issued ON public.violations (investigation_date);
+
 -- Sample data insertion
 INSERT INTO public.violations (
     _id,
@@ -116,8 +121,3 @@ INSERT INTO public.violations (
     'Owner has purchased required equipment',
     'Awaiting follow-up inspection to verify installation'
 );
-
--- Create index for faster searches
-CREATE INDEX IF NOT EXISTS idx_violations_address ON public.violations (address);
-CREATE INDEX IF NOT EXISTS idx_violations_status ON public.violations (status);
-CREATE INDEX IF NOT EXISTS idx_violations_date_issued ON public.violations (investigation_date);

@@ -35,59 +35,50 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
       updated_at: new Date().toISOString()
     }));
     
-    // First check if we can use upsert with onConflict
-    try {
-      const { data: checkData, error: checkError } = await supabase
+    // Let's use a more reliable approach without relying on the _id column for querying
+    // We'll instead try to find violations by their API id stored in the _id text field
+    let addedCount = 0;
+    
+    for (const violation of transformedViolations) {
+      // Use text field _id to find if violation already exists
+      const { data: existingViolations, error: findError } = await supabase
         .from('violations')
         .select('id')
-        .eq('_id', transformedViolations[0]._id)
-        .limit(1);
+        .eq('_id', violation._id)
+        .maybeSingle();
         
-      if (checkError) {
-        console.log('Error checking violation existence:', checkError);
+      if (findError && findError.code !== 'PGRST116') {
+        console.log(`Error finding violation ${violation._id}:`, findError);
+        continue;
       }
-      
-      // Try with insert, then update strategy instead of upsert
-      for (const violation of transformedViolations) {
-        // First try to find if this violation already exists
-        const { data: existingViolation, error: findError } = await supabase
+          
+      if (existingViolations) {
+        // Update the existing violation
+        const { error: updateError } = await supabase
           .from('violations')
-          .select('id')
-          .eq('_id', violation._id)
-          .maybeSingle();
-          
-        if (findError && findError.code !== 'PGRST116') {
-          console.log(`Error finding violation ${violation._id}:`, findError);
-          continue;
-        }
-          
-        if (existingViolation) {
-          // Update the existing violation
-          const { error: updateError } = await supabase
-            .from('violations')
-            .update(violation)
-            .eq('id', existingViolation.id);
+          .update(violation)
+          .eq('id', existingViolations.id);
             
-          if (updateError) {
-            console.log(`Error updating violation ${violation._id}:`, updateError);
-          }
+        if (updateError) {
+          console.log(`Error updating violation ${violation._id}:`, updateError);
         } else {
-          // Insert as new violation
-          const { error: insertError } = await supabase
-            .from('violations')
-            .insert(violation);
+          addedCount++;
+        }
+      } else {
+        // Insert as new violation
+        const { error: insertError } = await supabase
+          .from('violations')
+          .insert(violation);
             
-          if (insertError) {
-            console.log(`Error inserting violation ${violation._id}:`, insertError);
-          }
+        if (insertError) {
+          console.log(`Error inserting violation ${violation._id}:`, insertError);
+        } else {
+          addedCount++;
         }
       }
-      
-      return transformedViolations.length;
-    } catch (error) {
-      console.error('Error during individual violation processing:', error);
-      throw error;
     }
+      
+    return addedCount;
   } catch (error) {
     console.error('Error updating violations database:', error);
     throw error;
