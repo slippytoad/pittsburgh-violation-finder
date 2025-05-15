@@ -1,3 +1,4 @@
+
 -- Create violations table
 CREATE TABLE IF NOT EXISTS public.violations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -7,7 +8,7 @@ CREATE TABLE IF NOT EXISTS public.violations (
     investigation_date TIMESTAMP WITH TIME ZONE,
     status TEXT NOT NULL,
     original_status TEXT,
-    description TEXT,
+    violation_description TEXT,
     property_owner TEXT,
     fine_amount DECIMAL(10, 2),
     due_date TIMESTAMP WITH TIME ZONE,
@@ -38,7 +39,7 @@ INSERT INTO public.violations (
     investigation_date,
     status,
     original_status,
-    description,
+    violation_description,
     property_owner,
     fine_amount,
     due_date,

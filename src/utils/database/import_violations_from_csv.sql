@@ -30,7 +30,7 @@ INSERT INTO public.violations (
     investigation_date,
     status,
     original_status,
-    description,
+    violation_description,
     property_owner,
     investigation_outcome,
     investigation_findings

@@ -26,7 +26,7 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
       investigation_date: violation.investigation_date || violation.inspection_date || new Date().toISOString(),
       status: violation.status || 'Unknown',
       original_status: violation.status || null,
-      description: violation.violation_description || '',
+      violation_description: violation.violation_description || '',
       property_owner: violation.owner_name || 'Unknown Owner',
       fine_amount: null, // API doesn't provide this
       due_date: null, // API doesn't provide this
