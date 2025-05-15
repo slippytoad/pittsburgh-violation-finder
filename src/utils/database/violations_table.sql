@@ -35,6 +35,7 @@ CREATE POLICY "Allow authenticated users full access" ON public.violations
 CREATE INDEX IF NOT EXISTS idx_violations_address ON public.violations (address);
 CREATE INDEX IF NOT EXISTS idx_violations_status ON public.violations (status);
 CREATE INDEX IF NOT EXISTS idx_violations_date_issued ON public.violations (investigation_date);
+CREATE INDEX IF NOT EXISTS idx_violations__id ON public.violations (_id);
 
 -- Sample data insertion
 INSERT INTO public.violations (
@@ -121,3 +122,24 @@ INSERT INTO public.violations (
     'Owner has purchased required equipment',
     'Awaiting follow-up inspection to verify installation'
 );
+
+-- Create or replace procedure to check and alter violations table
+CREATE OR REPLACE PROCEDURE check_and_fix_id_column()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Check if the _id column exists
+    IF NOT EXISTS (
+        SELECT FROM information_schema.columns 
+        WHERE table_schema = 'public' 
+        AND table_name = 'violations' 
+        AND column_name = '_id'
+    ) THEN
+        -- Add the _id column if it doesn't exist
+        ALTER TABLE public.violations ADD COLUMN _id TEXT;
+    END IF;
+END;
+$$;
+
+-- Execute the procedure
+CALL check_and_fix_id_column();
