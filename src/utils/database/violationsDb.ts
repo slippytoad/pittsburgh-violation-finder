@@ -20,7 +20,7 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
     // Transform the violations to match our database schema
     const transformedViolations = violations.map(violation => ({
       // Using casefile_number as the primary identifier
-      casefile_number: violation.violation_id || violation.casefile_number,
+      violation_id: violation.violation_id || violation.casefile_number,
       address: violation.address,
       violation_type: violation.agency_name || 'Unknown Type',
       investigation_date: violation.investigation_date || violation.inspection_date || new Date().toISOString(),
@@ -40,7 +40,7 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
       const { data: checkData, error: checkError } = await supabase
         .from('violations')
         .select('id')
-        .eq('casefile_number', transformedViolations[0].casefile_number)
+        .eq('violation_id', transformedViolations[0].violation_id)
         .limit(1);
         
       if (checkError) {
@@ -53,11 +53,11 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
         const { data: existingViolation, error: findError } = await supabase
           .from('violations')
           .select('id')
-          .eq('casefile_number', violation.casefile_number)
+          .eq('violation_id', violation.violation_id)
           .maybeSingle();
           
         if (findError && findError.code !== 'PGRST116') {
-          console.log(`Error finding violation ${violation.casefile_number}:`, findError);
+          console.log(`Error finding violation ${violation.violation_id}:`, findError);
           continue;
         }
           
@@ -69,7 +69,7 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
             .eq('id', existingViolation.id);
             
           if (updateError) {
-            console.log(`Error updating violation ${violation.casefile_number}:`, updateError);
+            console.log(`Error updating violation ${violation.violation_id}:`, updateError);
           }
         } else {
           // Insert as new violation
@@ -78,7 +78,7 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
             .insert(violation);
             
           if (insertError) {
-            console.log(`Error inserting violation ${violation.casefile_number}:`, insertError);
+            console.log(`Error inserting violation ${violation.violation_id}:`, insertError);
           }
         }
       }
