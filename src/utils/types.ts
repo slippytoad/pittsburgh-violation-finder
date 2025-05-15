@@ -71,8 +71,8 @@ export interface WPRDCResponse {
 }
 
 export interface WPRDCViolation {
-  _id: number;
-  violation_id: string;
+  _id: string | number;
+  violation_id?: string;
   owner_name: string;
   inspection_date: string;
   investigation_date: string;

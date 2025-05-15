@@ -19,8 +19,8 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
     
     // Transform the violations to match our database schema
     const transformedViolations = violations.map(violation => ({
-      // Using _id as the primary identifier
-      _id: violation._id || violation.casefile_number,
+      // Make sure to use _id from the API as _id in our database
+      _id: violation._id?.toString() || violation.casefile_number,
       address: violation.address,
       violation_type: violation.agency_name || 'Unknown Type',
       investigation_date: violation.investigation_date || violation.inspection_date || new Date().toISOString(),
