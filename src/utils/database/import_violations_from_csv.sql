@@ -20,17 +20,14 @@ CREATE TEMPORARY TABLE temp_violations (
     investigation_findings TEXT
 );
 
--- Import the CSV file
--- Replace '/path/to/your/file.csv' with the actual path to your CSV file
--- You'll need appropriate permissions for the database to read this file
-COPY temp_violations FROM '/path/to/your/file.csv' WITH CSV HEADER;
+-- ... keep existing code (importing CSV file)
 
 -- Insert data from the temporary table into the violations table
 INSERT INTO public.violations (
     violation_id,
     address,
     violation_type,
-    date_issued,
+    investigation_date,
     status,
     original_status,
     description,
@@ -63,14 +60,4 @@ SELECT
     investigation_findings
 FROM temp_violations;
 
--- Add logging to track the import
-SELECT COUNT(*) AS imported_records FROM temp_violations;
-
--- Drop the temporary table
-DROP TABLE temp_violations;
-
--- Refresh the indices
-REINDEX TABLE public.violations;
-
--- Optional: Output a sample of the imported data
-SELECT * FROM public.violations ORDER BY created_at DESC LIMIT 5;
+-- ... keep existing code (logging, dropping temp table and refreshing indices)

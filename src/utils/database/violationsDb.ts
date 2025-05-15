@@ -23,7 +23,7 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
       casefile_number: violation.violation_id || violation.casefile_number,
       address: violation.address,
       violation_type: violation.agency_name || 'Unknown Type',
-      date_issued: violation.inspection_date || violation.investigation_date || new Date().toISOString(),
+      investigation_date: violation.investigation_date || violation.inspection_date || new Date().toISOString(),
       status: violation.status || 'Unknown',
       original_status: violation.status || null,
       description: violation.violation_description || '',

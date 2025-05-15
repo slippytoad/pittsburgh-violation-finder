@@ -1,11 +1,10 @@
-
 -- Create violations table
 CREATE TABLE IF NOT EXISTS public.violations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     violation_id TEXT,
     address TEXT NOT NULL,
     violation_type TEXT NOT NULL,
-    date_issued TIMESTAMP WITH TIME ZONE,
+    investigation_date TIMESTAMP WITH TIME ZONE,
     status TEXT NOT NULL,
     original_status TEXT,
     description TEXT,
@@ -36,7 +35,7 @@ INSERT INTO public.violations (
     violation_id,
     address,
     violation_type,
-    date_issued,
+    investigation_date,
     status,
     original_status,
     description,
@@ -120,4 +119,4 @@ INSERT INTO public.violations (
 -- Create index for faster searches
 CREATE INDEX IF NOT EXISTS idx_violations_address ON public.violations (address);
 CREATE INDEX IF NOT EXISTS idx_violations_status ON public.violations (status);
-CREATE INDEX IF NOT EXISTS idx_violations_date_issued ON public.violations (date_issued);
+CREATE INDEX IF NOT EXISTS idx_violations_date_issued ON public.violations (investigation_date);

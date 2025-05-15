@@ -16,7 +16,7 @@ export function transformViolationData(data: any[]): ViolationType[] {
     address: item.address,
     parcelId: item.parcel_id || 'N/A',
     status: item.status,
-    dateIssued: item.date_issued || item.investigation_date || item.inspection_date,
+    dateIssued: item.investigation_date || item.inspection_date,
     description: item.description || item.violation_description || '',
     codeSection: item.violation_code_section || 'N/A',
     instructions: item.instructions || 'N/A',
