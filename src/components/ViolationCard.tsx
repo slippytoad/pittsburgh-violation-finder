@@ -122,9 +122,6 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
               {violation.fineAmount && (
                 <p><span className="font-medium">Fine Amount:</span> ${violation.fineAmount.toFixed(2)}</p>
               )}
-              {violation.dueDate && (
-                <p><span className="font-medium">Due Date:</span> {formatDate(violation.dueDate)}</p>
-              )}
             </div>
           </CardContent>
           
@@ -253,16 +250,11 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                   </div>
                 </div>
                 
-                {(violation.fineAmount || violation.dueDate) && (
+                {violation.fineAmount && (
                   <div>
                     <h3 className="text-sm font-medium mb-1">Payment Information</h3>
                     <div className="space-y-2 text-sm">
-                      {violation.fineAmount && (
-                        <div><strong>Fine Amount:</strong> ${violation.fineAmount.toFixed(2)}</div>
-                      )}
-                      {violation.dueDate && (
-                        <div><strong>Due Date:</strong> {formatDate(violation.dueDate)}</div>
-                      )}
+                      <div><strong>Fine Amount:</strong> ${violation.fineAmount.toFixed(2)}</div>
                     </div>
                   </div>
                 )}
@@ -359,9 +351,6 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                         
                         {relatedViolation.fineAmount && (
                           <div className="text-xs"><strong>Fine Amount:</strong> ${relatedViolation.fineAmount.toFixed(2)}</div>
-                        )}
-                        {relatedViolation.dueDate && (
-                          <div className="text-xs"><strong>Due Date:</strong> {formatDate(relatedViolation.dueDate)}</div>
                         )}
                       </CardContent>
                     </Card>

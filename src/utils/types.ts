@@ -31,7 +31,6 @@ export interface ViolationBase {
 // Payment information
 export interface PaymentDetails {
   fineAmount: number | null;
-  dueDate: string | null;
 }
 
 // Complete violation type with all properties

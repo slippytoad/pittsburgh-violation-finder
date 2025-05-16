@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS public.violations (
     violation_description TEXT,
     property_owner TEXT,
     fine_amount DECIMAL(10, 2),
-    due_date TIMESTAMP WITH TIME ZONE,
     investigation_outcome TEXT,
     investigation_findings TEXT,
     related_violations_count INTEGER,
@@ -48,7 +47,6 @@ INSERT INTO public.violations (
     violation_description,
     property_owner,
     fine_amount,
-    due_date,
     investigation_outcome,
     investigation_findings
 ) VALUES
@@ -62,7 +60,6 @@ INSERT INTO public.violations (
     'Unsafe structural conditions identified during routine inspection',
     'John Smith',
     500.00,
-    '2025-03-15T23:59:59Z',
     NULL,
     NULL
 ),
@@ -76,7 +73,6 @@ INSERT INTO public.violations (
     'Accumulated trash and debris in yard creating health hazard',
     'Sarah Johnson',
     250.00,
-    '2025-03-20T23:59:59Z',
     'Owner has begun cleanup process',
     'Initial inspection showed significant progress'
 ),
@@ -90,7 +86,6 @@ INSERT INTO public.violations (
     'Unauthorized commercial activity in residential zone',
     'Robert Wilson',
     750.00,
-    '2025-02-25T23:59:59Z',
     'Commercial activity ceased',
     'Follow-up inspection confirmed compliance with zoning regulations'
 ),
@@ -104,7 +99,6 @@ INSERT INTO public.violations (
     'Operating without valid occupancy permit',
     'Michael Brown',
     1000.00,
-    '2025-04-01T23:59:59Z',
     NULL,
     NULL
 ),
@@ -118,7 +112,6 @@ INSERT INTO public.violations (
     'Missing fire extinguishers and blocked emergency exits',
     'Jennifer Davis',
     800.00,
-    '2025-04-05T23:59:59Z',
     'Owner has purchased required equipment',
     'Awaiting follow-up inspection to verify installation'
 );

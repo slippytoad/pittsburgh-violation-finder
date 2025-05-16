@@ -88,16 +88,11 @@ const ViolationDetailsDialog = ({
                 </div>
               </div>
               
-              {(violation.fineAmount || violation.dueDate) && (
+              {violation.fineAmount && (
                 <div>
                   <h3 className="text-sm font-medium mb-1">Payment Information</h3>
                   <div className="space-y-2 text-sm">
-                    {violation.fineAmount && (
-                      <div><strong>Fine Amount:</strong> ${violation.fineAmount.toFixed(2)}</div>
-                    )}
-                    {violation.dueDate && (
-                      <div><strong>Due Date:</strong> {formatDateLong(violation.dueDate)}</div>
-                    )}
+                    <div><strong>Fine Amount:</strong> ${violation.fineAmount.toFixed(2)}</div>
                   </div>
                 </div>
               )}

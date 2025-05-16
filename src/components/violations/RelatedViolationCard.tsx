@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Calendar, Info, Hash } from 'lucide-react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
@@ -63,9 +64,6 @@ const RelatedViolationCard = ({ violation, formatDate, variant = 'compact' }: Re
         
         {violation.fineAmount && (
           <div className="text-xs"><strong>Fine Amount:</strong> ${violation.fineAmount.toFixed(2)}</div>
-        )}
-        {violation.dueDate && (
-          <div className="text-xs"><strong>Due Date:</strong> {formatDateLong(violation.dueDate)}</div>
         )}
       </CardContent>
     </Card>

@@ -29,7 +29,6 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
       violation_description: violation.violation_description || '',
       property_owner: violation.owner_name || 'Unknown Owner',
       fine_amount: null, // API doesn't provide this
-      due_date: null, // API doesn't provide this
       investigation_outcome: violation.investigation_outcome || null,
       investigation_findings: violation.investigation_findings || null,
       updated_at: new Date().toISOString()

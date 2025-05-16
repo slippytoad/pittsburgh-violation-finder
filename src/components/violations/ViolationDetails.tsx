@@ -82,13 +82,6 @@ const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation }) => {
         </div>
       )}
       
-      {violation.dueDate && (
-        <div className="text-sm">
-          <span className="font-medium">Due Date: </span>
-          <span>{formatDate(violation.dueDate)}</span>
-        </div>
-      )}
-      
       {violation.status && (
         <div className="text-sm">
           <span className="font-medium">Status: </span>

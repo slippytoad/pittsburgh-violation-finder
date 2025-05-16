@@ -27,9 +27,6 @@ const ViolationCardContent: React.FC<ViolationCardContentProps> = ({
         {violation.fineAmount !== null && violation.fineAmount !== undefined && (
           <p><span className="font-medium">Fine Amount:</span> ${violation.fineAmount.toFixed(2)}</p>
         )}
-        {violation.dueDate && (
-          <p><span className="font-medium">Due Date:</span> {formatDate(violation.dueDate)}</p>
-        )}
       </div>
     </CardContent>
   );
