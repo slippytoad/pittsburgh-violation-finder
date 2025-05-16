@@ -43,7 +43,7 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
         // First try to find if a record with this _id already exists
         const { data: existingRecord, error: findError } = await supabase
           .from('violations')
-          .select('id, _id')
+          .select('_id')
           .eq('_id', violation._id)
           .maybeSingle();
           
@@ -57,7 +57,7 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
           const { error: updateError } = await supabase
             .from('violations')
             .update(violation)
-            .eq('id', existingRecord.id);
+            .eq('_id', existingRecord._id);
             
           if (!updateError) {
             addedCount++;
@@ -78,7 +78,7 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
             // Fallback: try searching by address as a last resort
             const { data: addressResults, error: addressError } = await supabase
               .from('violations')
-              .select('id')
+              .select('_id')
               .ilike('address', `%${violation.address.substring(0, 20)}%`)
               .limit(1);
               
@@ -87,7 +87,7 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
               const { error: finalUpdateError } = await supabase
                 .from('violations')
                 .update(violation)
-                .eq('id', addressResults[0].id);
+                .eq('_id', addressResults[0]._id);
                 
               if (!finalUpdateError) {
                 addedCount++;
