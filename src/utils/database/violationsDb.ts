@@ -17,12 +17,8 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
       return 0;
     }
     
-    // First, verify if the _id column exists
-    const { error: columnCheckError } = await supabase.rpc('check_and_fix_id_column');
-    if (columnCheckError) {
-      console.error('Error checking/fixing _id column:', columnCheckError);
-      // Continue anyway, we'll try to use other methods
-    }
+    // First, ensure helper functions exist
+    await ensureDatabaseHelperFunctions();
     
     // Transform the violations to match our database schema
     const transformedViolations = violations.map(violation => ({
@@ -44,7 +40,7 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
     
     let addedCount = 0;
     
-    // Try different approaches to update or insert records
+    // Process each violation with careful error handling
     for (const violation of transformedViolations) {
       // Create a custom ID search key - for cases when _id column isn't working
       const searchKey = violation._id;
@@ -63,46 +59,48 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
         
         // If insertion failed due to duplicate, try updating
         if (insertError && insertError.code === '23505') { // Duplicate key value violates unique constraint
-          // Fallback: Try to find existing records by searching the violation description and address combo
-          const { data: searchResults, error: searchError } = await supabase
+          // Find by address search using direct SQL query
+          const { data: addressResults, error: addressError } = await supabase
             .from('violations')
             .select('id')
-            .like('address', `%${violation.address.substring(0, 20)}%`)
+            .ilike('address', `%${violation.address.substring(0, 20)}%`)
             .limit(1);
             
-          if (!searchError && searchResults && searchResults.length > 0) {
+          if (!addressError && addressResults && addressResults.length > 0) {
             // Update the existing record
             const { error: updateError } = await supabase
               .from('violations')
               .update({
-                ...violation,
-                _id: searchKey // Ensure _id column gets updated
+                ...violation
               })
-              .eq('id', searchResults[0].id);
+              .eq('id', addressResults[0].id);
               
             if (!updateError) {
               addedCount++;
               continue;
             }
           }
-        }
-        
-        // Try one more approach - run a raw SQL query to check if record exists
-        const { data: rawResults, error: rawError } = await supabase
-          .rpc('find_violation_by_address', { 
-            address_fragment: violation.address.substring(0, 20),
-            violation_type: violation.violation_type
-          });
-        
-        if (!rawError && rawResults && rawResults.id) {
-          // Update with raw ID
-          const { error: finalUpdateError } = await supabase
-            .from('violations')
-            .update(violation)
-            .eq('id', rawResults.id);
+          
+          // Try using our custom function if available
+          try {
+            const { data: fnResults, error: fnError } = await supabase
+              .rpc('find_violation_by_address', { 
+                address_fragment: violation.address.substring(0, 20),
+                violation_type: violation.violation_type
+              });
             
-          if (!finalUpdateError) {
-            addedCount++;
+            if (!fnError && fnResults) {
+              const { error: finalUpdateError } = await supabase
+                .from('violations')
+                .update(violation)
+                .eq('id', fnResults);
+                
+              if (!finalUpdateError) {
+                addedCount++;
+              }
+            }
+          } catch (fnCallError) {
+            console.error('Error calling find_violation_by_address function:', fnCallError);
           }
         }
       } catch (innerError) {
@@ -117,17 +115,149 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
   }
 }
 
+/**
+ * Ensures all required database helper functions exist
+ */
+async function ensureDatabaseHelperFunctions(): Promise<boolean> {
+  try {
+    // Create helper functions
+    await createHelperFunctions();
+    
+    // Ensure _id column exists
+    await ensureIdColumnExists();
+    
+    return true;
+  } catch (error) {
+    console.error('Error ensuring database helper functions:', error);
+    return false;
+  }
+}
+
+/**
+ * Ensures the _id column exists in the violations table
+ */
+async function ensureIdColumnExists(): Promise<boolean> {
+  try {
+    // Try to call the stored procedure
+    const { error } = await supabase.rpc('check_and_fix_id_column');
+    
+    if (error) {
+      console.warn('Failed to call check_and_fix_id_column procedure:', error);
+      
+      // Direct SQL fallback approach if the function doesn't exist
+      try {
+        // Use raw SQL to check if column exists
+        const { data: columnCheckData } = await supabase
+          .from('violations')
+          .select('_id')
+          .limit(1);
+          
+        // If we reach here, the column exists
+        console.log('_id column check via direct query succeeded');
+        return true;
+      } catch (directCheckError) {
+        // If this fails, try to add the column directly
+        try {
+          // This requires admin privileges which client-side might not have
+          const { error: alterError } = await supabase.rpc(
+            'run_sql',
+            { sql: 'ALTER TABLE public.violations ADD COLUMN IF NOT EXISTS _id TEXT;' }
+          );
+          
+          if (alterError) {
+            console.error('Failed to add _id column directly:', alterError);
+            return false;
+          }
+          
+          console.log('Added _id column via direct SQL');
+          return true;
+        } catch (alterTableError) {
+          console.error('Failed to alter table:', alterTableError);
+          return false;
+        }
+      }
+    }
+    
+    console.log('_id column check successful');
+    return true;
+  } catch (e) {
+    console.error('Error checking/fixing _id column:', e);
+    return false;
+  }
+}
+
 // Helper RPC function to find violations by address fragment
-// Add this as a Supabase function
 export async function createHelperFunctions() {
   try {
     // Create a helper function to find violations by address
     const { error } = await supabase.rpc('create_find_violation_function');
-    if (error) console.error('Error creating helper function:', error);
-    return !error;
+    if (error) {
+      console.warn('Error creating find_violation helper function:', error);
+      
+      // Try direct function creation
+      try {
+        const findViolationFnSql = `
+        CREATE OR REPLACE FUNCTION find_violation_by_address(address_fragment TEXT, violation_type TEXT)
+        RETURNS TABLE (id UUID) AS $$
+        BEGIN
+            RETURN QUERY
+            SELECT v.id 
+            FROM violations v
+            WHERE v.address LIKE '%' || address_fragment || '%'
+            AND (v.violation_type = violation_type OR violation_type IS NULL)
+            ORDER BY v.created_at DESC
+            LIMIT 1;
+        END;
+        $$ LANGUAGE plpgsql;
+        `;
+        
+        const { error: directError } = await supabase.rpc('run_sql', { sql: findViolationFnSql });
+        if (directError) {
+          console.error('Failed to create find_violation function directly:', directError);
+          return false;
+        }
+      } catch (directCreateError) {
+        console.error('Error in direct function creation:', directCreateError);
+        return false;
+      }
+    }
+    
+    // Create the check_and_fix_id_column function
+    try {
+      const checkIdColumnFnSql = `
+      CREATE OR REPLACE FUNCTION check_and_fix_id_column() 
+      RETURNS boolean AS $$
+      DECLARE
+          column_exists boolean;
+      BEGIN
+          SELECT EXISTS (
+              SELECT FROM information_schema.columns 
+              WHERE table_schema = 'public' 
+              AND table_name = 'violations' 
+              AND column_name = '_id'
+          ) INTO column_exists;
+          
+          IF NOT column_exists THEN
+              -- Add the _id column if it doesn't exist
+              EXECUTE 'ALTER TABLE public.violations ADD COLUMN _id TEXT';
+          END IF;
+          
+          RETURN TRUE;
+      END;
+      $$ LANGUAGE plpgsql;
+      `;
+      
+      const { error: idColumnFnError } = await supabase.rpc('run_sql', { sql: checkIdColumnFnSql });
+      if (idColumnFnError) {
+        console.error('Failed to create check_and_fix_id_column function:', idColumnFnError);
+      }
+    } catch (idColumnFnCreateError) {
+      console.error('Error creating check_and_fix_id_column function:', idColumnFnCreateError);
+    }
+    
+    return true;
   } catch (e) {
     console.error('Error creating helper functions:', e);
     return false;
   }
 }
-

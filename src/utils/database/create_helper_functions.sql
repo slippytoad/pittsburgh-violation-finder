@@ -34,3 +34,27 @@ BEGIN
     RETURN TRUE;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Function to fix _id column issue
+CREATE OR REPLACE FUNCTION check_and_fix_id_column() 
+RETURNS boolean AS $$
+DECLARE
+    column_exists boolean;
+BEGIN
+    -- Check if the _id column exists
+    SELECT EXISTS (
+        SELECT FROM information_schema.columns 
+        WHERE table_schema = 'public' 
+        AND table_name = 'violations' 
+        AND column_name = '_id'
+    ) INTO column_exists;
+    
+    IF NOT column_exists THEN
+        -- Add the _id column if it doesn't exist
+        EXECUTE 'ALTER TABLE public.violations ADD COLUMN _id TEXT';
+    END IF;
+    
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
+

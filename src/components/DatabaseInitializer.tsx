@@ -1,7 +1,9 @@
+
 import React, { useEffect, useState } from 'react';
 import { initSupabaseTables } from '@/utils/supabase';
 import { useToast } from '@/components/ui/use-toast';
 import { Spinner } from '@/components/ui/spinner';
+import { createHelperFunctions } from '@/utils/database/violationsDb';
 
 const DatabaseInitializer: React.FC = () => {
   const [isInitializing, setIsInitializing] = useState(true);
@@ -12,7 +14,15 @@ const DatabaseInitializer: React.FC = () => {
       try {
         setIsInitializing(true);
         const success = await initSupabaseTables();
-        if (!success) {
+        
+        if (success) {
+          // Make sure helper functions are created
+          try {
+            await createHelperFunctions();
+          } catch (helperError) {
+            console.error('Failed to create helper functions:', helperError);
+          }
+        } else {
           toast({
             title: "Database Initialization Failed",
             description: "Please check the console for details and try refreshing the page.",
