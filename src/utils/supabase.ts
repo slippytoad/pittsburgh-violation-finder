@@ -1,7 +1,6 @@
 
 import { createClient } from '@supabase/supabase-js';
-import type { AppSettings, Address } from './types';
-import { createHelperFunctions } from '@/utils/database/violationsDb';
+import type { AppSettings } from './types';
 
 // Use environment variables from Vite
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://qdjfzjqhnhrlkpqdtssp.supabase.co';
@@ -119,22 +118,20 @@ export const initSupabaseTables = async () => {
       }
     }
     
-    // If the table exists, make sure the _id column exists
-    if (!violationsError) {
-      try {
-        // Call our procedure to ensure _id column exists
-        const { error: columnError } = await supabase.rpc('check_and_fix_id_column');
-        if (columnError) {
-          console.error('Error checking/fixing _id column:', columnError);
-        } else {
-          console.log('Successfully checked/fixed _id column');
-        }
+    // Check if _id column exists by directly querying it
+    try {
+      const { data: idColumnCheck, error: idColumnError } = await supabase
+        .from('violations')
+        .select('_id')
+        .limit(1);
         
-        // Create helper functions
-        await createHelperFunctions();
-      } catch (err) {
-        console.error('Error setting up violations table:', err);
+      if (idColumnError) {
+        console.warn('Unable to check _id column, may not exist:', idColumnError);
+      } else {
+        console.log('_id column exists and is accessible');
       }
+    } catch (idCheckError) {
+      console.error('Error checking _id column:', idCheckError);
     }
     
     console.log('Database initialization complete');
@@ -194,4 +191,3 @@ initSupabaseTables()
 
 // Log to confirm client creation
 console.log('Supabase client initialized');
-
