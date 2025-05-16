@@ -72,7 +72,6 @@ export async function searchViolations(address: string, signal?: AbortSignal): P
 
 /**
  * Search all violations without filtering by address
- * This is used when the search field is left empty
  */
 export async function searchAllViolations(signal?: AbortSignal): Promise<ViolationType[]> {
   try {
@@ -89,7 +88,7 @@ export async function searchAllViolations(signal?: AbortSignal): Promise<Violati
     const { data, error } = await supabase
       .from('violations')
       .select('*')
-      .order('date_issued', { ascending: false })
+      .order('investigation_date', { ascending: false })
       .limit(100) // Limit to prevent too much data
       .abortSignal(signal);
     
@@ -150,8 +149,8 @@ export async function fetchRecentViolations(signal?: AbortSignal): Promise<Viola
     const { data, error } = await supabase
       .from('violations')
       .select('*')
-      .gte('date_issued', thirtyDaysAgoStr)
-      .order('date_issued', { ascending: false })
+      .gte('investigation_date', thirtyDaysAgoStr)
+      .order('investigation_date', { ascending: false })
       .limit(50) // Limit to recent violations
       .abortSignal(signal);
     
@@ -172,7 +171,7 @@ export async function fetchRecentViolations(signal?: AbortSignal): Promise<Viola
     // Transform and group the data into our application's format
     const transformedResults = transformViolationData(data || []);
     
-    // Store the results in the cache with a shorter expiration
+    // Store the results in the cache
     setCachedResults(cacheKey, transformedResults);
     
     return transformedResults;

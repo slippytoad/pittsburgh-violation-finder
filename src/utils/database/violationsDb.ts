@@ -43,7 +43,7 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
         // First try to find if a record with this _id already exists
         const { data: existingRecord, error: findError } = await supabase
           .from('violations')
-          .select('id')
+          .select('id, _id')
           .eq('_id', violation._id)
           .maybeSingle();
           
@@ -115,4 +115,3 @@ export async function createHelperFunctions() {
   console.log('Helper functions no longer required as we use _id column directly');
   return true;
 }
-

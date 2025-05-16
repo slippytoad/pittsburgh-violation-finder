@@ -84,7 +84,7 @@ export const initSupabaseTables = async () => {
     // Check if violations table exists
     const { data: violationsData, error: violationsError } = await supabase
       .from('violations')
-      .select('id')
+      .select('_id')
       .limit(1);
       
     console.log('Violations table check:', { violationsData, violationsError });
