@@ -24,7 +24,6 @@ export function transformViolationData(data: any[]): ViolationType[] {
     findings: item.investigation_findings || '',
     violationType: item.violation_type || 'Unknown',
     propertyOwner: item.property_owner || item.owner_name || 'Unknown Owner',
-    fineAmount: item.fine_amount || null,
     investigationOutcome: item.investigation_outcome || null,
     investigationFindings: item.investigation_findings || null,
     relatedViolations: [],

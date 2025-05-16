@@ -22,12 +22,6 @@ const ViolationCardContent: React.FC<ViolationCardContentProps> = ({
         investigationOutcome={violation.investigationOutcome} 
         investigationFindings={violation.investigationFindings} 
       />
-      
-      <div className="text-xs text-muted-foreground space-y-1">
-        {violation.fineAmount !== null && violation.fineAmount !== undefined && (
-          <p><span className="font-medium">Fine Amount:</span> ${violation.fineAmount.toFixed(2)}</p>
-        )}
-      </div>
     </CardContent>
   );
 };

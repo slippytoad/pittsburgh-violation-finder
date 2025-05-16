@@ -75,13 +75,6 @@ const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation }) => {
         </div>
       )}
       
-      {violation.fineAmount && (
-        <div className="text-sm">
-          <span className="font-medium">Fine Amount: </span>
-          <span>${violation.fineAmount.toFixed(2)}</span>
-        </div>
-      )}
-      
       {violation.status && (
         <div className="text-sm">
           <span className="font-medium">Status: </span>

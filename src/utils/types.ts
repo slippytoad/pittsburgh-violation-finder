@@ -28,13 +28,8 @@ export interface ViolationBase {
   instructions?: string;
 }
 
-// Payment information
-export interface PaymentDetails {
-  fineAmount: number | null;
-}
-
 // Complete violation type with all properties
-export interface ViolationType extends ViolationBase, PaymentDetails, InvestigationDetails {
+export interface ViolationType extends ViolationBase, InvestigationDetails {
   relatedViolationsCount?: number | null;
   relatedViolations?: ViolationType[];
   previousStatesCount?: number | null;

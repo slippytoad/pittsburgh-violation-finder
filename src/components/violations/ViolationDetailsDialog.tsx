@@ -88,15 +88,6 @@ const ViolationDetailsDialog = ({
                 </div>
               </div>
               
-              {violation.fineAmount && (
-                <div>
-                  <h3 className="text-sm font-medium mb-1">Payment Information</h3>
-                  <div className="space-y-2 text-sm">
-                    <div><strong>Fine Amount:</strong> ${violation.fineAmount.toFixed(2)}</div>
-                  </div>
-                </div>
-              )}
-              
               {(violation.investigationOutcome || violation.investigationFindings) && (
                 <InvestigationInfo 
                   investigationOutcome={violation.investigationOutcome} 

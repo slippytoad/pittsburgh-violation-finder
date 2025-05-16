@@ -61,10 +61,6 @@ const RelatedViolationCard = ({ violation, formatDate, variant = 'compact' }: Re
         <div className="mt-2 text-xs">
           <strong>Status:</strong> <span>{violation.originalStatus || violation.status}</span>
         </div>
-        
-        {violation.fineAmount && (
-          <div className="text-xs"><strong>Fine Amount:</strong> ${violation.fineAmount.toFixed(2)}</div>
-        )}
       </CardContent>
     </Card>
   );
