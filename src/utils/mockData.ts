@@ -11,7 +11,6 @@ export const mockViolations: ViolationType[] = [
     status: "Open",
     description: "Exterior wall deterioration requiring repair",
     fineAmount: 350,
-    dueDate: "2025-03-15",
     propertyOwner: "Oakland Properties LLC",
     investigationOutcome: "Failed Inspection",
     investigationFindings: "Significant structural issues found"
@@ -25,7 +24,6 @@ export const mockViolations: ViolationType[] = [
     status: "Closed",
     description: "Improper garbage disposal",
     fineAmount: 150,
-    dueDate: null,
     propertyOwner: "Squirrel Hill Holdings",
     investigationOutcome: "Passed Re-inspection",
     investigationFindings: "Issues resolved"
@@ -39,7 +37,6 @@ export const mockViolations: ViolationType[] = [
     status: "In Progress",
     description: "Unauthorized business operation in residential zone",
     fineAmount: 500,
-    dueDate: "2025-04-05",
     propertyOwner: "Lawrenceville Development",
     investigationOutcome: "Pending Review",
     investigationFindings: "Documentation requested from owner"
@@ -53,7 +50,6 @@ export const mockViolations: ViolationType[] = [
     status: "Open",
     description: "Missing smoke detectors on premises",
     fineAmount: 250,
-    dueDate: "2025-04-10",
     propertyOwner: "Oakland Properties LLC",
     investigationOutcome: "Failed Inspection",
     investigationFindings: "Multiple code violations found"
@@ -67,7 +63,6 @@ export const mockViolations: ViolationType[] = [
     status: "Open",
     description: "Overgrown vegetation exceeding 10 inches",
     fineAmount: 100,
-    dueDate: "2025-03-12",
     propertyOwner: "Downtown Realty Group",
     investigationOutcome: "Initial Inspection",
     investigationFindings: "Violation confirmed"
