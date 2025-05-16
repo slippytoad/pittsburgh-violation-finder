@@ -143,3 +143,4 @@ $$;
 
 -- Execute the procedure
 CALL check_and_fix_id_column();
+

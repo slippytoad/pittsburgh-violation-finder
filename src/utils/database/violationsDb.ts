@@ -17,6 +17,13 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
       return 0;
     }
     
+    // First, verify if the _id column exists
+    const { error: columnCheckError } = await supabase.rpc('check_and_fix_id_column');
+    if (columnCheckError) {
+      console.error('Error checking/fixing _id column:', columnCheckError);
+      // Continue anyway, we'll try to use other methods
+    }
+    
     // Transform the violations to match our database schema
     const transformedViolations = violations.map(violation => ({
       // Make sure to use _id from the API as _id in our database
@@ -35,46 +42,71 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
       updated_at: new Date().toISOString()
     }));
     
-    // Let's use a more reliable approach without relying on the _id column for querying
-    // We'll instead try to find violations by their API id stored in the _id text field
     let addedCount = 0;
     
+    // Try different approaches to update or insert records
     for (const violation of transformedViolations) {
-      // Use text field _id to find if violation already exists
-      const { data: existingViolations, error: findError } = await supabase
-        .from('violations')
-        .select('id')
-        .eq('_id', violation._id)
-        .maybeSingle();
-        
-      if (findError && findError.code !== 'PGRST116') {
-        console.log(`Error finding violation ${violation._id}:`, findError);
-        continue;
-      }
+      // Create a custom ID search key - for cases when _id column isn't working
+      const searchKey = violation._id;
+      
+      try {
+        // First approach: direct insertion (handles new records)
+        const { data: insertResult, error: insertError } = await supabase
+          .from('violations')
+          .insert({ ...violation })
+          .select('id');
           
-      if (existingViolations) {
-        // Update the existing violation
-        const { error: updateError } = await supabase
-          .from('violations')
-          .update(violation)
-          .eq('id', existingViolations.id);
-            
-        if (updateError) {
-          console.log(`Error updating violation ${violation._id}:`, updateError);
-        } else {
+        if (!insertError) {
           addedCount++;
+          continue; // Record added successfully
         }
-      } else {
-        // Insert as new violation
-        const { error: insertError } = await supabase
-          .from('violations')
-          .insert(violation);
+        
+        // If insertion failed due to duplicate, try updating
+        if (insertError && insertError.code === '23505') { // Duplicate key value violates unique constraint
+          // Fallback: Try to find existing records by searching the violation description and address combo
+          const { data: searchResults, error: searchError } = await supabase
+            .from('violations')
+            .select('id')
+            .like('address', `%${violation.address.substring(0, 20)}%`)
+            .limit(1);
             
-        if (insertError) {
-          console.log(`Error inserting violation ${violation._id}:`, insertError);
-        } else {
-          addedCount++;
+          if (!searchError && searchResults && searchResults.length > 0) {
+            // Update the existing record
+            const { error: updateError } = await supabase
+              .from('violations')
+              .update({
+                ...violation,
+                _id: searchKey // Ensure _id column gets updated
+              })
+              .eq('id', searchResults[0].id);
+              
+            if (!updateError) {
+              addedCount++;
+              continue;
+            }
+          }
         }
+        
+        // Try one more approach - run a raw SQL query to check if record exists
+        const { data: rawResults, error: rawError } = await supabase
+          .rpc('find_violation_by_address', { 
+            address_fragment: violation.address.substring(0, 20),
+            violation_type: violation.violation_type
+          });
+        
+        if (!rawError && rawResults && rawResults.id) {
+          // Update with raw ID
+          const { error: finalUpdateError } = await supabase
+            .from('violations')
+            .update(violation)
+            .eq('id', rawResults.id);
+            
+          if (!finalUpdateError) {
+            addedCount++;
+          }
+        }
+      } catch (innerError) {
+        console.error(`Error processing violation ${violation._id}:`, innerError);
       }
     }
       
@@ -84,3 +116,18 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
     throw error;
   }
 }
+
+// Helper RPC function to find violations by address fragment
+// Add this as a Supabase function
+export async function createHelperFunctions() {
+  try {
+    // Create a helper function to find violations by address
+    const { error } = await supabase.rpc('create_find_violation_function');
+    if (error) console.error('Error creating helper function:', error);
+    return !error;
+  } catch (e) {
+    console.error('Error creating helper functions:', e);
+    return false;
+  }
+}
+
