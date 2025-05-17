@@ -51,27 +51,32 @@ export const importViolationsFromCsv = async (file: File, filterAddresses?: stri
             return;
           }
           
-          // Transform the data to match the violations table structure
+          // Transform the data to match the violations table structure with API schema
           const transformedData = filteredData.map((row: any) => {
-            const originalDate = row.investigation_date || row.date || row.created_at || new Date().toISOString();
+            const originalDate = row.investigation_date || row.inspection_date || row.date || row.created_at || new Date().toISOString();
             const parsedDate = parseDate(originalDate);
             const year = new Date(parsedDate).getFullYear();
             
             console.log(`Processed date for record: ${row.casefile_number || 'unknown'}, original: ${originalDate}, parsed: ${parsedDate}, year: ${year}`);
             
             return {
-              violation_id: row.casefile_number || `VIO-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+              _id: row.casefile_number || `VIO-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+              casefile_number: row.casefile_number || `VIO-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
               address: (row.address || 'Unknown Address').toUpperCase(),
-              violation_type: row.violation_code_section || 'Unspecified Violation Type',
+              agency_name: row.agency_name || row.violation_type || 'Unspecified Violation Type',
               status: mapStatus(row.status),
               original_status: row.status || 'Unknown',
               violation_description: row.violation_description || 'No description provided',
-              property_owner: row.parcel_id || 'Unknown Owner',
+              owner_name: row.owner_name || row.property_owner || 'Unknown Owner',
+              parcel_id: row.parcel_id || null,
+              violation_code: row.violation_code || null,
+              violation_code_section: row.violation_code_section || null,
+              inspection_result: row.inspection_result || null,
+              violation_date: row.violation_date || null,
               investigation_outcome: row.investigation_outcome || null,
               investigation_findings: row.investigation_findings || null,
+              inspection_date: parsedDate,
               investigation_date: parsedDate,
-              fine_amount: null,
-              due_date: null,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             };

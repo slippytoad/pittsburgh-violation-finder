@@ -15,12 +15,12 @@ const ViolationCardContent: React.FC<ViolationCardContentProps> = ({
 }) => {
   return (
     <CardContent className="p-4 pt-2">
-      <p className="text-sm mb-3 whitespace-pre-line">{violation.description}</p>
+      <p className="text-sm mb-3 whitespace-pre-line">{violation.violation_description}</p>
       
       {/* Investigation Info */}
       <InvestigationInfo 
-        investigationOutcome={violation.investigationOutcome} 
-        investigationFindings={violation.investigationFindings} 
+        investigationOutcome={violation.investigation_outcome} 
+        investigationFindings={violation.investigation_findings} 
       />
     </CardContent>
   );

@@ -1,15 +1,22 @@
 
--- Create violations table
+-- Create violations table - matching exactly with API schema
 CREATE TABLE IF NOT EXISTS public.violations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    _id TEXT, -- explicitly defined as nullable TEXT field
+    _id TEXT, -- API ID field
+    casefile_number TEXT,
     address TEXT NOT NULL,
-    violation_type TEXT NOT NULL,
+    agency_name TEXT,
+    violation_description TEXT,
+    inspection_date TIMESTAMP WITH TIME ZONE,
     investigation_date TIMESTAMP WITH TIME ZONE,
     status TEXT NOT NULL,
     original_status TEXT,
-    violation_description TEXT,
-    property_owner TEXT,
+    owner_name TEXT,
+    parcel_id TEXT,
+    violation_code TEXT,
+    violation_code_section TEXT,
+    inspection_result TEXT,
+    violation_date TEXT,
     investigation_outcome TEXT,
     investigation_findings TEXT,
     related_violations_count INTEGER,
@@ -38,20 +45,24 @@ CREATE INDEX IF NOT EXISTS idx_violations__id ON public.violations (_id);
 -- Sample data insertion
 INSERT INTO public.violations (
     _id,
+    casefile_number,
     address,
-    violation_type,
+    agency_name,
     investigation_date,
+    inspection_date,
     status,
     original_status,
     violation_description,
-    property_owner,
+    owner_name,
     investigation_outcome,
     investigation_findings
 ) VALUES
 (
     'PLI-2025-00001',
+    'PLI-2025-00001',
     '123 Main Street, Pittsburgh, PA 15213',
     'Building Code Violation',
+    '2025-01-15T10:30:00Z',
     '2025-01-15T10:30:00Z',
     'Open',
     'Active Violation',
@@ -62,8 +73,10 @@ INSERT INTO public.violations (
 ),
 (
     'PLI-2025-00002',
+    'PLI-2025-00002',
     '456 Oak Avenue, Pittsburgh, PA 15217',
     'Property Maintenance',
+    '2025-01-20T14:15:00Z',
     '2025-01-20T14:15:00Z',
     'In Progress',
     'Under Investigation',
@@ -74,8 +87,10 @@ INSERT INTO public.violations (
 ),
 (
     'PLI-2025-00003',
+    'PLI-2025-00003',
     '789 Pine Street, Pittsburgh, PA 15232',
     'Zoning Violation',
+    '2025-01-25T09:45:00Z',
     '2025-01-25T09:45:00Z',
     'Closed',
     'Resolved',
@@ -86,8 +101,10 @@ INSERT INTO public.violations (
 ),
 (
     'PLI-2025-00004',
+    'PLI-2025-00004',
     '321 Elm Street, Pittsburgh, PA 15206',
     'Occupancy Permit',
+    '2025-02-01T11:00:00Z',
     '2025-02-01T11:00:00Z',
     'Open',
     'Notice Issued',
@@ -98,8 +115,10 @@ INSERT INTO public.violations (
 ),
 (
     'PLI-2025-00005',
+    'PLI-2025-00005',
     '654 Maple Drive, Pittsburgh, PA 15219',
     'Fire Safety',
+    '2025-02-05T15:30:00Z',
     '2025-02-05T15:30:00Z',
     'In Progress',
     'Inspection Scheduled',

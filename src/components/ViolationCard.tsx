@@ -63,7 +63,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
         >
           <CardHeader className="p-4 pb-2 flex flex-row items-start justify-between space-y-0">
             <div className="flex flex-col space-y-1.5">
-              <h3 className="font-medium text-base">{violation.violationType}</h3>
+              <h3 className="font-medium text-base">{violation.agency_name}</h3>
               <div className="flex flex-col space-y-1">
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <MapPin className="h-3.5 w-3.5" />
@@ -71,11 +71,11 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                 </div>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Calendar className="h-3.5 w-3.5" />
-                  <span>Investigation Date: {formatDate(violation.dateIssued)}</span>
+                  <span>Investigation Date: {formatDate(violation.inspection_date)}</span>
                 </div>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Hash className="h-3.5 w-3.5" />
-                  <span>Case #: {violation.id}</span>
+                  <span>Case #: {violation.casefile_number}</span>
                 </div>
                 {violation.relatedViolationsCount && violation.relatedViolationsCount > 0 && (
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -94,33 +94,27 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
             </Badge>
           </CardHeader>
           <CardContent className="p-4 pt-2">
-            <p className="text-sm mb-3 whitespace-pre-line">{violation.description}</p>
+            <p className="text-sm mb-3 whitespace-pre-line">{violation.violation_description}</p>
             
             {/* Investigation Info - Made more prominent */}
             <div className="space-y-2 mb-3">
-              {violation.investigationOutcome && (
+              {violation.investigation_outcome && (
                 <div className="flex items-start gap-1 p-2 bg-green-50 dark:bg-green-900/10 rounded-md">
                   <CheckCircle className="h-4 w-4 mt-0.5 text-green-500" />
                   <div>
                     <span className="font-medium text-sm">Investigation Outcome:</span> 
-                    <p className="text-sm">{violation.investigationOutcome}</p>
+                    <p className="text-sm">{violation.investigation_outcome}</p>
                   </div>
                 </div>
               )}
-              {violation.investigationFindings && (
+              {violation.investigation_findings && (
                 <div className="flex items-start gap-1 p-2 bg-blue-50 dark:bg-blue-900/10 rounded-md">
                   <FileText className="h-4 w-4 mt-0.5 text-blue-500" />
                   <div>
                     <span className="font-medium text-sm">Investigation Findings:</span> 
-                    <p className="text-sm whitespace-pre-line">{violation.investigationFindings}</p>
+                    <p className="text-sm whitespace-pre-line">{violation.investigation_findings}</p>
                   </div>
                 </div>
-              )}
-            </div>
-            
-            <div className="text-xs text-muted-foreground space-y-1">
-              {violation.fineAmount && (
-                <p><span className="font-medium">Fine Amount:</span> ${violation.fineAmount.toFixed(2)}</p>
               )}
             </div>
           </CardContent>
@@ -161,7 +155,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
               >
                 <CardHeader className="p-3 pb-2 flex flex-row items-start justify-between space-y-0">
                   <div className="flex flex-col space-y-1">
-                    <h4 className="font-medium text-sm">{relatedViolation.violationType}</h4>
+                    <h4 className="font-medium text-sm">{relatedViolation.agency_name}</h4>
                     <div className="flex flex-col space-y-1">
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <MapPin className="h-3 w-3" />
@@ -169,7 +163,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                       </div>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Calendar className="h-3 w-3" />
-                        <span>Investigation Date: {formatDate(relatedViolation.dateIssued)}</span>
+                        <span>Investigation Date: {formatDate(relatedViolation.inspection_date)}</span>
                       </div>
                     </div>
                   </div>
@@ -182,23 +176,23 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                   </Badge>
                 </CardHeader>
                 <CardContent className="p-3 pt-1">
-                  <p className="text-xs mb-2 whitespace-pre-line">{relatedViolation.description}</p>
+                  <p className="text-xs mb-2 whitespace-pre-line">{relatedViolation.violation_description}</p>
                   
                   {/* Related Violation Investigation Info */}
                   <div className="space-y-1.5 mb-2">
-                    {relatedViolation.investigationOutcome && (
+                    {relatedViolation.investigation_outcome && (
                       <div className="flex items-start gap-1 p-1.5 bg-green-50 dark:bg-green-900/10 rounded text-xs">
                         <CheckCircle className="h-3 w-3 mt-0.5 text-green-500" />
                         <div>
-                          <span className="font-medium">Outcome:</span> {relatedViolation.investigationOutcome}
+                          <span className="font-medium">Outcome:</span> {relatedViolation.investigation_outcome}
                         </div>
                       </div>
                     )}
-                    {relatedViolation.investigationFindings && (
+                    {relatedViolation.investigation_findings && (
                       <div className="flex items-start gap-1 p-1.5 bg-blue-50 dark:bg-blue-900/10 rounded text-xs">
                         <FileText className="h-3 w-3 mt-0.5 text-blue-500" />
                         <div>
-                          <span className="font-medium">Findings:</span> <span className="whitespace-pre-line">{relatedViolation.investigationFindings}</span>
+                          <span className="font-medium">Findings:</span> <span className="whitespace-pre-line">{relatedViolation.investigation_findings}</span>
                         </div>
                       </div>
                     )}
@@ -213,7 +207,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
           <DialogHeader>
-            <DialogTitle>{violation.violationType}</DialogTitle>
+            <DialogTitle>{violation.agency_name}</DialogTitle>
             <DialogDescription>
               <Badge 
                 variant="outline" 
@@ -237,48 +231,39 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                     </div>
                     <div className="flex items-center gap-1">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span><strong>Investigation Date:</strong> {formatDate(violation.dateIssued)}</span>
+                      <span><strong>Investigation Date:</strong> {formatDate(violation.inspection_date)}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Hash className="h-4 w-4 text-muted-foreground" />
-                      <span><strong>Case #:</strong> {violation.id}</span>
+                      <span><strong>Case #:</strong> {violation.casefile_number}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Info className="h-4 w-4 text-muted-foreground" />
-                      <span><strong>Property Owner:</strong> {violation.propertyOwner}</span>
+                      <span><strong>Property Owner:</strong> {violation.owner_name}</span>
                     </div>
                   </div>
                 </div>
                 
-                {violation.fineAmount && (
-                  <div>
-                    <h3 className="text-sm font-medium mb-1">Payment Information</h3>
-                    <div className="space-y-2 text-sm">
-                      <div><strong>Fine Amount:</strong> ${violation.fineAmount.toFixed(2)}</div>
-                    </div>
-                  </div>
-                )}
-                
                 {/* Investigation Information Section in Dialog */}
-                {(violation.investigationOutcome || violation.investigationFindings) && (
+                {(violation.investigation_outcome || violation.investigation_findings) && (
                   <div className="border p-3 rounded-lg bg-gray-50 dark:bg-gray-900/30">
                     <h3 className="text-sm font-medium mb-2">Investigation Results</h3>
                     <div className="space-y-3 text-sm">
-                      {violation.investigationOutcome && (
+                      {violation.investigation_outcome && (
                         <div className="flex items-start gap-2 p-2 bg-green-50 dark:bg-green-900/10 rounded">
                           <CheckCircle className="h-4 w-4 mt-0.5 text-green-500" />
                           <div>
                             <strong>Investigation Outcome:</strong> 
-                            <p>{violation.investigationOutcome}</p>
+                            <p>{violation.investigation_outcome}</p>
                           </div>
                         </div>
                       )}
-                      {violation.investigationFindings && (
+                      {violation.investigation_findings && (
                         <div className="flex items-start gap-2 p-2 bg-blue-50 dark:bg-blue-900/10 rounded">
                           <FileText className="h-4 w-4 mt-0.5 text-blue-500" />
                           <div>
                             <strong>Investigation Findings:</strong> 
-                            <p className="whitespace-pre-line">{violation.investigationFindings}</p>
+                            <p className="whitespace-pre-line">{violation.investigation_findings}</p>
                           </div>
                         </div>
                       )}
@@ -289,7 +274,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
               
               <div>
                 <h3 className="text-sm font-medium mb-1">Violation Description</h3>
-                <p className="text-sm whitespace-pre-line">{violation.description}</p>
+                <p className="text-sm whitespace-pre-line">{violation.violation_description}</p>
               </div>
             </div>
             
@@ -301,7 +286,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                     <Card key={idx} className="border border-border">
                       <CardHeader className="p-3 pb-2">
                         <div className="flex flex-row items-start justify-between">
-                          <h4 className="font-medium text-sm">{relatedViolation.violationType}</h4>
+                          <h4 className="font-medium text-sm">{relatedViolation.agency_name}</h4>
                           <Badge 
                             variant="outline" 
                             className={cn("flex items-center gap-1 font-normal text-xs", getStatusColor(relatedViolation.status))}
@@ -317,41 +302,37 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                           </div>
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Calendar className="h-3 w-3" />
-                            <span>Investigation Date: {formatDate(relatedViolation.dateIssued)}</span>
+                            <span>Investigation Date: {formatDate(relatedViolation.inspection_date)}</span>
                           </div>
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Info className="h-3 w-3" />
-                            <span>Property Owner: {relatedViolation.propertyOwner}</span>
+                            <span>Property Owner: {relatedViolation.owner_name}</span>
                           </div>
                         </div>
                       </CardHeader>
                       <CardContent className="p-3 pt-1">
-                        <p className="text-xs mb-2 whitespace-pre-line">{relatedViolation.description}</p>
+                        <p className="text-xs mb-2 whitespace-pre-line">{relatedViolation.violation_description}</p>
                         
                         {/* Related Violation Investigation Detail */}
                         <div className="space-y-2 mb-2">
-                          {relatedViolation.investigationOutcome && (
+                          {relatedViolation.investigation_outcome && (
                             <div className="flex items-start gap-1 p-1.5 bg-green-50 dark:bg-green-900/10 rounded text-xs">
                               <CheckCircle className="h-3 w-3 mt-0.5 text-green-500" />
                               <div>
-                                <span className="font-medium">Investigation Outcome:</span> {relatedViolation.investigationOutcome}
+                                <span className="font-medium">Investigation Outcome:</span> {relatedViolation.investigation_outcome}
                               </div>
                             </div>
                           )}
-                          {relatedViolation.investigationFindings && (
+                          {relatedViolation.investigation_findings && (
                             <div className="flex items-start gap-1 p-1.5 bg-blue-50 dark:bg-blue-900/10 rounded text-xs">
                               <FileText className="h-3 w-3 mt-0.5 text-blue-500" />
                               <div>
                                 <span className="font-medium">Investigation Findings:</span>
-                                <p className="whitespace-pre-line">{relatedViolation.investigationFindings}</p> 
+                                <p className="whitespace-pre-line">{relatedViolation.investigation_findings}</p> 
                               </div>
                             </div>
                           )}
                         </div>
-                        
-                        {relatedViolation.fineAmount && (
-                          <div className="text-xs"><strong>Fine Amount:</strong> ${relatedViolation.fineAmount.toFixed(2)}</div>
-                        )}
                       </CardContent>
                     </Card>
                   ))}

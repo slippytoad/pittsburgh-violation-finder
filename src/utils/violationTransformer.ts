@@ -12,20 +12,17 @@ export function transformViolationData(data: any[]): ViolationType[] {
   // First, transform all data to our application format
   const transformedData = data.map(item => ({
     id: item.id,
-    caseNumber: item._id || item.casefile_number || 'N/A',
+    casefile_number: item._id || item.casefile_number || 'N/A',
     address: item.address,
-    parcelId: item.parcel_id || 'N/A',
+    parcel_id: item.parcel_id || 'N/A',
     status: item.status,
-    dateIssued: item.investigation_date || item.inspection_date,
-    description: item.violation_description || '',
-    codeSection: item.violation_code_section || 'N/A',
-    instructions: item.instructions || 'N/A',
-    outcome: item.investigation_outcome || 'N/A',
-    findings: item.investigation_findings || '',
-    violationType: item.violation_type || 'Unknown',
-    propertyOwner: item.property_owner || item.owner_name || 'Unknown Owner',
-    investigationOutcome: item.investigation_outcome || null,
-    investigationFindings: item.investigation_findings || null,
+    inspection_date: item.inspection_date || item.investigation_date,
+    violation_description: item.violation_description || '',
+    violation_code_section: item.violation_code_section || 'N/A',
+    agency_name: item.agency_name || item.violation_type || 'Unknown',
+    owner_name: item.owner_name || item.property_owner || 'Unknown Owner',
+    investigation_outcome: item.investigation_outcome || null,
+    investigation_findings: item.investigation_findings || null,
     relatedViolations: [],
     relatedViolationsCount: 0
   }));
@@ -34,7 +31,7 @@ export function transformViolationData(data: any[]): ViolationType[] {
   const groupedByCasefile: Record<string, ViolationType[]> = {};
   
   transformedData.forEach(violation => {
-    const caseKey = violation.caseNumber;
+    const caseKey = violation.casefile_number;
     if (!groupedByCasefile[caseKey]) {
       groupedByCasefile[caseKey] = [];
     }
@@ -51,8 +48,8 @@ export function transformViolationData(data: any[]): ViolationType[] {
     } else {
       // Sort related violations by date, newest first
       violations.sort((a, b) => {
-        const dateA = a.dateIssued ? new Date(a.dateIssued).getTime() : 0;
-        const dateB = b.dateIssued ? new Date(b.dateIssued).getTime() : 0;
+        const dateA = a.inspection_date ? new Date(a.inspection_date).getTime() : 0;
+        const dateB = b.inspection_date ? new Date(b.inspection_date).getTime() : 0;
         return dateB - dateA;
       });
       
@@ -67,8 +64,8 @@ export function transformViolationData(data: any[]): ViolationType[] {
 
   // Sort the final result by date, newest first
   return result.sort((a, b) => {
-    const dateA = a.dateIssued ? new Date(a.dateIssued).getTime() : 0;
-    const dateB = b.dateIssued ? new Date(b.dateIssued).getTime() : 0;
+    const dateA = a.inspection_date ? new Date(a.inspection_date).getTime() : 0;
+    const dateB = b.inspection_date ? new Date(b.inspection_date).getTime() : 0;
     return dateB - dateA;
   });
 }

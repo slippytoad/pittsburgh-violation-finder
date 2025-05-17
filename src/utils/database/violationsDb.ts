@@ -21,13 +21,20 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
     const transformedViolations = violations.map(violation => ({
       // Use _id directly from the API
       _id: violation._id?.toString() || violation.casefile_number,
+      casefile_number: violation.casefile_number,
       address: violation.address,
-      violation_type: violation.agency_name || 'Unknown Type',
+      agency_name: violation.agency_name || 'Unknown Type',
+      inspection_date: violation.inspection_date || null,
       investigation_date: violation.investigation_date || violation.inspection_date || new Date().toISOString(),
       status: violation.status || 'Unknown',
       original_status: violation.status || null,
       violation_description: violation.violation_description || '',
-      property_owner: violation.owner_name || 'Unknown Owner',
+      owner_name: violation.owner_name || 'Unknown Owner',
+      parcel_id: violation.parcel_id || null,
+      violation_code: violation.violation_code || null,
+      violation_code_section: violation.violation_code_section || null,
+      inspection_result: violation.inspection_result || null,
+      violation_date: violation.violation_date || null,
       investigation_outcome: violation.investigation_outcome || null,
       investigation_findings: violation.investigation_findings || null,
       updated_at: new Date().toISOString()

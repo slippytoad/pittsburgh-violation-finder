@@ -8,34 +8,31 @@ export type ViolationStatus = 'Open' | 'Closed' | 'In Progress';
 
 // Investigation types
 export interface InvestigationDetails {
-  investigationOutcome?: string;
-  investigationFindings?: string;
+  investigation_outcome?: string;
+  investigation_findings?: string;
 }
 
 // Base violation types
 export interface ViolationBase {
   id: string;
-  caseNumber: string;  // Changed from id to caseNumber for clarity
+  casefile_number: string;
   address: string;
-  violationType: string;
-  dateIssued: string;
+  agency_name: string;
+  inspection_date: string;
   status: ViolationStatus;
-  originalStatus?: string;
-  description: string;
-  propertyOwner: string;
-  parcelId?: string;
-  codeSection?: string;
-  instructions?: string;
+  original_status?: string;
+  violation_description: string;
+  owner_name: string;
+  parcel_id?: string;
+  violation_code_section?: string;
 }
 
-// Complete violation type with all properties
+// Complete violation type with all properties from API
 export interface ViolationType extends ViolationBase, InvestigationDetails {
   relatedViolationsCount?: number | null;
   relatedViolations?: ViolationType[];
   previousStatesCount?: number | null;
   previousStates?: ViolationType[];
-  outcome?: string;
-  findings?: string;
 }
 
 export interface Address {
