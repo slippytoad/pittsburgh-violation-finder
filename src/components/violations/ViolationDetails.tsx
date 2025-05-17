@@ -22,13 +22,13 @@ const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation }) => {
       {/* Always show case number and investigation date first */}
       <div className="flex items-center gap-2 text-sm font-medium">
         <Hash className="h-4 w-4 text-muted-foreground" />
-        <span>Case Number: {violation.caseNumber}</span>
+        <span>Case Number: {violation.casefile_number}</span>
       </div>
       
-      {violation.dateIssued && (
+      {violation.inspection_date && (
         <div className="flex items-center gap-2 text-sm font-medium">
           <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span>Investigation Date: {formatDate(violation.dateIssued)}</span>
+          <span>Investigation Date: {formatDate(violation.inspection_date)}</span>
         </div>
       )}
       
@@ -37,62 +37,62 @@ const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation }) => {
         <span>Address: {violation.address}</span>
       </div>
       
-      {violation.parcelId && violation.parcelId !== 'N/A' && (
+      {violation.parcel_id && violation.parcel_id !== 'N/A' && (
         <div className="flex items-center gap-2 text-sm">
           <Hash className="h-4 w-4 text-muted-foreground" />
-          <span>Parcel ID: {violation.parcelId}</span>
+          <span>Parcel ID: {violation.parcel_id}</span>
         </div>
       )}
       
-      {violation.propertyOwner && (
+      {violation.owner_name && (
         <div className="flex items-center gap-2 text-sm">
           <User className="h-4 w-4 text-muted-foreground" />
-          <span>Owner: {violation.propertyOwner}</span>
+          <span>Owner: {violation.owner_name}</span>
         </div>
       )}
       
-      {violation.description && (
+      {violation.violation_description && (
         <div className="flex items-start gap-2 text-sm">
           <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5" />
           <div>
             <div className="font-medium mb-1">Description:</div>
-            <div className="whitespace-pre-line">{violation.description}</div>
+            <div className="whitespace-pre-line">{violation.violation_description}</div>
           </div>
         </div>
       )}
       
-      {violation.investigationOutcome && (
+      {violation.investigation_outcome && (
         <div className="text-sm">
           <div className="font-medium mb-1">Outcome:</div>
-          <div>{violation.investigationOutcome}</div>
+          <div>{violation.investigation_outcome}</div>
         </div>
       )}
       
-      {violation.investigationFindings && (
+      {violation.investigation_findings && (
         <div className="text-sm">
           <div className="font-medium mb-1">Findings:</div>
-          <div className="whitespace-pre-line">{violation.investigationFindings}</div>
+          <div className="whitespace-pre-line">{violation.investigation_findings}</div>
         </div>
       )}
       
       {violation.status && (
         <div className="text-sm">
           <span className="font-medium">Status: </span>
-          <span>{violation.originalStatus || violation.status}</span>
+          <span>{violation.original_status || violation.status}</span>
         </div>
       )}
       
-      {violation.violationType && (
+      {violation.agency_name && (
         <div className="text-sm">
           <span className="font-medium">Violation Type: </span>
-          <span>{violation.violationType}</span>
+          <span>{violation.agency_name}</span>
         </div>
       )}
       
-      {violation.codeSection && violation.codeSection !== 'N/A' && (
+      {violation.violation_code_section && violation.violation_code_section !== 'N/A' && (
         <div className="text-sm">
           <span className="font-medium">Code Section: </span>
-          <span>{violation.codeSection}</span>
+          <span>{violation.violation_code_section}</span>
         </div>
       )}
     </div>

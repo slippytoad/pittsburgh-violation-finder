@@ -18,8 +18,8 @@ export const processViolationResults = (allViolations: ViolationType[]): Violati
   
   // Sort violations by date
   uniqueViolations.sort((a, b) => {
-    const dateA = a.dateIssued ? new Date(a.dateIssued).getTime() : 0;
-    const dateB = b.dateIssued ? new Date(b.dateIssued).getTime() : 0;
+    const dateA = a.inspection_date ? new Date(a.inspection_date).getTime() : 0;
+    const dateB = b.inspection_date ? new Date(b.inspection_date).getTime() : 0;
     return dateB - dateA;
   });
   

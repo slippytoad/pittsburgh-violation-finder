@@ -4,63 +4,73 @@ import { ViolationType } from './types';
 export const mockViolations: ViolationType[] = [
   {
     id: "v1",
-    caseNumber: "CASE-2025-001", // Added caseNumber property
+    casefile_number: "CASE-2025-001",
     address: "123 Forbes Ave, Pittsburgh, PA 15213",
-    violationType: "Building Code",
-    dateIssued: "2025-01-15",
+    agency_name: "Building Code",
+    inspection_date: "2025-01-15",
     status: "Open",
-    description: "Exterior wall deterioration requiring repair",
-    propertyOwner: "Oakland Properties LLC",
-    investigationOutcome: "Failed Inspection",
-    investigationFindings: "Significant structural issues found"
+    violation_description: "Exterior wall deterioration requiring repair",
+    owner_name: "Oakland Properties LLC",
+    investigation_outcome: "Failed Inspection",
+    investigation_findings: "Significant structural issues found",
+    parcel_id: "0001",
+    violation_code_section: "BC-123"
   },
   {
     id: "v2",
-    caseNumber: "CASE-2025-002", // Added caseNumber property
+    casefile_number: "CASE-2025-002",
     address: "456 Murray Ave, Pittsburgh, PA 15217",
-    violationType: "Sanitation",
-    dateIssued: "2025-01-23",
+    agency_name: "Sanitation",
+    inspection_date: "2025-01-23",
     status: "Closed",
-    description: "Improper garbage disposal",
-    propertyOwner: "Squirrel Hill Holdings",
-    investigationOutcome: "Passed Re-inspection",
-    investigationFindings: "Issues resolved"
+    violation_description: "Improper garbage disposal",
+    owner_name: "Squirrel Hill Holdings",
+    investigation_outcome: "Passed Re-inspection",
+    investigation_findings: "Issues resolved",
+    parcel_id: "0002",
+    violation_code_section: "SC-456"
   },
   {
     id: "v3",
-    caseNumber: "CASE-2025-003", // Added caseNumber property
+    casefile_number: "CASE-2025-003",
     address: "789 Butler St, Pittsburgh, PA 15201",
-    violationType: "Zoning",
-    dateIssued: "2025-02-05",
+    agency_name: "Zoning",
+    inspection_date: "2025-02-05",
     status: "In Progress",
-    description: "Unauthorized business operation in residential zone",
-    propertyOwner: "Lawrenceville Development",
-    investigationOutcome: "Pending Review",
-    investigationFindings: "Documentation requested from owner"
+    violation_description: "Unauthorized business operation in residential zone",
+    owner_name: "Lawrenceville Development",
+    investigation_outcome: "Pending Review",
+    investigation_findings: "Documentation requested from owner",
+    parcel_id: "0003",
+    violation_code_section: "ZC-789"
   },
   {
     id: "v4",
-    caseNumber: "CASE-2025-001", // Same caseNumber to demonstrate grouping
+    casefile_number: "CASE-2025-001", // Same caseNumber to demonstrate grouping
     address: "123 Forbes Ave, Pittsburgh, PA 15213",
-    violationType: "Fire Safety",
-    dateIssued: "2025-02-10",
+    agency_name: "Fire Safety",
+    inspection_date: "2025-02-10",
     status: "Open",
-    description: "Missing smoke detectors on premises",
-    propertyOwner: "Oakland Properties LLC",
-    investigationOutcome: "Failed Inspection",
-    investigationFindings: "Multiple code violations found"
+    violation_description: "Missing smoke detectors on premises",
+    owner_name: "Oakland Properties LLC",
+    investigation_outcome: "Failed Inspection",
+    investigation_findings: "Multiple code violations found",
+    parcel_id: "0001",
+    violation_code_section: "FS-101"
   },
   {
     id: "v5",
-    caseNumber: "CASE-2025-004", // Added caseNumber property
+    casefile_number: "CASE-2025-004",
     address: "101 Wood St, Pittsburgh, PA 15222",
-    violationType: "Property Maintenance",
-    dateIssued: "2025-02-12",
+    agency_name: "Property Maintenance",
+    inspection_date: "2025-02-12",
     status: "Open",
-    description: "Overgrown vegetation exceeding 10 inches",
-    propertyOwner: "Downtown Realty Group",
-    investigationOutcome: "Initial Inspection",
-    investigationFindings: "Violation confirmed"
+    violation_description: "Overgrown vegetation exceeding 10 inches",
+    owner_name: "Downtown Realty Group",
+    investigation_outcome: "Initial Inspection",
+    investigation_findings: "Violation confirmed",
+    parcel_id: "0004",
+    violation_code_section: "PMC-101"
   }
 ];
 

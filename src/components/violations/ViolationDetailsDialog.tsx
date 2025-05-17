@@ -61,7 +61,7 @@ const ViolationDetailsDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
         <DialogHeader>
-          <DialogTitle>Case #: {violation.caseNumber}</DialogTitle>
+          <DialogTitle>Case #: {violation.casefile_number}</DialogTitle>
           <div className="mt-2">
             <StatusBadge status={violation.status} />
           </div>
@@ -79,26 +79,26 @@ const ViolationDetailsDialog = ({
                   </div>
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span><strong>Investigation Date:</strong> {formatDateLong(violation.dateIssued)}</span>
+                    <span><strong>Investigation Date:</strong> {formatDateLong(violation.inspection_date)}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Hash className="h-4 w-4 text-muted-foreground" />
-                    <span><strong>Violation Section:</strong> {violation.violationType}</span>
+                    <span><strong>Violation Section:</strong> {violation.agency_name}</span>
                   </div>
                 </div>
               </div>
               
-              {(violation.investigationOutcome || violation.investigationFindings) && (
+              {(violation.investigation_outcome || violation.investigation_findings) && (
                 <InvestigationInfo 
-                  investigationOutcome={violation.investigationOutcome} 
-                  investigationFindings={violation.investigationFindings} 
+                  investigationOutcome={violation.investigation_outcome} 
+                  investigationFindings={violation.investigation_findings} 
                 />
               )}
             </div>
             
             <div>
               <h3 className="text-sm font-medium mb-1">Violation Description</h3>
-              <p className="text-sm whitespace-pre-line">{violation.description}</p>
+              <p className="text-sm whitespace-pre-line">{violation.violation_description}</p>
             </div>
           </div>
           
