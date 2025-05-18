@@ -66,7 +66,7 @@ export interface WPRDCViolation {
   casefile_number: string;
   address: string;
   status: string;
-  violation_date: string;
+  investigation_date: string;
   violation_code: string;
   violation_code_section: string;
   investigation_outcome?: string;

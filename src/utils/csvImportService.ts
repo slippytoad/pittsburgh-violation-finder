@@ -66,16 +66,13 @@ export const importViolationsFromCsv = async (file: File, filterAddresses?: stri
               status: mapStatus(row.status),
               original_status: row.status || 'Unknown',
               violation_description: row.violation_description || 'No description provided',
-              owner_name: row.owner_name || row.property_owner || 'Unknown Owner',
               parcel_id: row.parcel_id || null,
               violation_code: row.violation_code || null,
               violation_code_section: row.violation_code_section || null,
               inspection_result: row.inspection_result || null,
-              violation_date: row.violation_date || null,
+              investigation_date: parsedDate,
               investigation_outcome: row.investigation_outcome || null,
               investigation_findings: row.investigation_findings || null,
-              inspection_date: parsedDate,
-              investigation_date: parsedDate,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             };

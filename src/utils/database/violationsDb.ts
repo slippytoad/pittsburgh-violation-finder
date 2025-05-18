@@ -30,7 +30,7 @@ export async function updateViolationsDatabase(violations: WPRDCViolation[]): Pr
       violation_code: violation.violation_code || null,
       violation_code_section: violation.violation_code_section || null,
       inspection_result: violation.inspection_result || null,
-      violation_date: violation.violation_date || null,
+      investigation_date: violation.investigation_date || null,
       investigation_outcome: violation.investigation_outcome || null,
       investigation_findings: violation.investigation_findings || null,
       updated_at: new Date().toISOString()

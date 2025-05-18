@@ -1,3 +1,4 @@
+
 -- This SQL script is designed to import violation data from a CSV file
 -- The CSV file should have these headings: 
 -- _id,casefile_number,address,parcel_id,status,investigation_date,
