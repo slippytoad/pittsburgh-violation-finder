@@ -16,11 +16,10 @@ export const processViolationResults = (allViolations: ViolationType[]): Violati
     }
   });
   
-  // Sort violations by date
+  // Sort violations by id instead of inspection_date
   uniqueViolations.sort((a, b) => {
-    const dateA = a.inspection_date ? new Date(a.inspection_date).getTime() : 0;
-    const dateB = b.inspection_date ? new Date(b.inspection_date).getTime() : 0;
-    return dateB - dateA;
+    // Sort by ID as a fallback since inspection_date is not available
+    return b.id.localeCompare(a.id); // Sort newest first assuming higher IDs are newer
   });
   
   return uniqueViolations;

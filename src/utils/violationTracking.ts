@@ -75,8 +75,8 @@ export const sendViolationEmailReport = async (
       emailBody += `${newViolations.length} new violations found:\n\n`;
       newViolations.forEach(violation => {
         emailBody += `- Address: ${violation.address}\n`;
-        emailBody += `  Violation: ${violation.agency_name}\n`;
-        emailBody += `  Date Issued: ${violation.inspection_date}\n\n`;
+        emailBody += `  Violation: ${violation.violation_description}\n`;
+        emailBody += `  Status: ${violation.status}\n\n`;
       });
     } else {
       emailBody += "Good news! No new violations were found today.";
