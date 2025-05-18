@@ -82,13 +82,6 @@ const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation }) => {
         </div>
       )}
       
-      {violation.agency_name && (
-        <div className="text-sm">
-          <span className="font-medium">Violation Type: </span>
-          <span>{violation.agency_name}</span>
-        </div>
-      )}
-      
       {violation.violation_code_section && violation.violation_code_section !== 'N/A' && (
         <div className="text-sm">
           <span className="font-medium">Code Section: </span>

@@ -63,7 +63,6 @@ export const importViolationsFromCsv = async (file: File, filterAddresses?: stri
               _id: row.casefile_number || `VIO-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
               casefile_number: row.casefile_number || `VIO-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
               address: (row.address || 'Unknown Address').toUpperCase(),
-              agency_name: row.agency_name || row.violation_type || 'Unspecified Violation Type',
               status: mapStatus(row.status),
               original_status: row.status || 'Unknown',
               violation_description: row.violation_description || 'No description provided',

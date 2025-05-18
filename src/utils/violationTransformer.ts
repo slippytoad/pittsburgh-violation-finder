@@ -19,7 +19,6 @@ export function transformViolationData(data: any[]): ViolationType[] {
     inspection_date: item.inspection_date || item.investigation_date,
     violation_description: item.violation_description || '',
     violation_code_section: item.violation_code_section || 'N/A',
-    agency_name: item.agency_name || item.violation_type || 'Unknown',
     owner_name: item.owner_name || item.property_owner || 'Unknown Owner',
     investigation_outcome: item.investigation_outcome || null,
     investigation_findings: item.investigation_findings || null,

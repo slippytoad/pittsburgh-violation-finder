@@ -37,7 +37,7 @@ const ViolationCardHeader: React.FC<ViolationCardHeaderProps> = ({
           </div>
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <Hash className="h-3.5 w-3.5" />
-            <span>Violation Type: {violation.agency_name}</span>
+            <span>Code Section: {violation.violation_code_section || "N/A"}</span>
           </div>
           {hasRelatedViolations && (
             <div 

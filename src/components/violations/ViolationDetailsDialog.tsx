@@ -83,7 +83,7 @@ const ViolationDetailsDialog = ({
                   </div>
                   <div className="flex items-center gap-1">
                     <Hash className="h-4 w-4 text-muted-foreground" />
-                    <span><strong>Violation Section:</strong> {violation.agency_name}</span>
+                    <span><strong>Violation Section:</strong> {violation.violation_code_section || "N/A"}</span>
                   </div>
                 </div>
               </div>
