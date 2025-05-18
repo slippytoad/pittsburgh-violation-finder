@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { MapPin, Calendar, Hash, Info, ChevronRight, Layers, History } from 'lucide-react';
+import { MapPin, Hash, Info, ChevronRight, Layers, History } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ViolationType } from '@/utils/types';
@@ -47,16 +47,6 @@ const ViolationDetailsDialog = ({
     violation.previousStates &&
     violation.previousStates.length > 0;
 
-  // Override the formatDate function to ensure consistent formatting
-  const formatDateLong = (dateString: string) => {
-    if (!dateString) return 'No date';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
@@ -76,10 +66,6 @@ const ViolationDetailsDialog = ({
                   <div className="flex items-center gap-1">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
                     <span><strong>Address:</strong> {violation.address}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span><strong>Investigation Date:</strong> {formatDateLong(violation.inspection_date)}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Hash className="h-4 w-4 text-muted-foreground" />
@@ -126,7 +112,7 @@ const ViolationDetailsDialog = ({
                     <RelatedViolationCard
                       key={`${relatedViolation.id}-${idx}`}
                       violation={relatedViolation}
-                      formatDate={formatDateLong}
+                      formatDate={formatDate}
                       variant="detailed"
                     />
                   ))}

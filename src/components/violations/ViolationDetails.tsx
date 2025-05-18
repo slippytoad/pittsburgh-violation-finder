@@ -1,36 +1,20 @@
 
 import React from 'react';
 import { ViolationType } from '@/utils/types';
-import { Calendar, Info, MapPin, Hash, User, AlertCircle } from 'lucide-react';
+import { Info, MapPin, Hash, AlertCircle } from 'lucide-react';
 
 interface ViolationDetailsProps {
   violation: ViolationType;
 }
 
 const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation }) => {
-  const formatDate = (dateString: string) => {
-    if (!dateString) return 'No date';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
   return (
     <div className="space-y-3">
-      {/* Always show case number and investigation date first */}
+      {/* Always show case number first */}
       <div className="flex items-center gap-2 text-sm font-medium">
         <Hash className="h-4 w-4 text-muted-foreground" />
         <span>Case Number: {violation.casefile_number}</span>
       </div>
-      
-      {violation.inspection_date && (
-        <div className="flex items-center gap-2 text-sm font-medium">
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span>Investigation Date: {formatDate(violation.inspection_date)}</span>
-        </div>
-      )}
       
       <div className="flex items-center gap-2 text-sm">
         <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -41,13 +25,6 @@ const ViolationDetails: React.FC<ViolationDetailsProps> = ({ violation }) => {
         <div className="flex items-center gap-2 text-sm">
           <Hash className="h-4 w-4 text-muted-foreground" />
           <span>Parcel ID: {violation.parcel_id}</span>
-        </div>
-      )}
-      
-      {violation.owner_name && (
-        <div className="flex items-center gap-2 text-sm">
-          <User className="h-4 w-4 text-muted-foreground" />
-          <span>Owner: {violation.owner_name}</span>
         </div>
       )}
       

@@ -17,11 +17,9 @@ export interface ViolationBase {
   id: string;
   casefile_number: string;
   address: string;
-  inspection_date: string;
   status: ViolationStatus;
   original_status?: string;
   violation_description: string;
-  owner_name: string;
   parcel_id?: string;
   violation_code_section?: string;
 }
@@ -62,10 +60,6 @@ export interface WPRDCResponse {
 
 export interface WPRDCViolation {
   _id: string | number;
-  violation_id?: string;
-  owner_name: string;
-  inspection_date: string;
-  investigation_date: string;
   parcel_id: string;
   inspection_result: string;
   violation_description: string;

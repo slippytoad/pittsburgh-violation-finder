@@ -6,11 +6,8 @@ CREATE TABLE IF NOT EXISTS public.violations (
     casefile_number TEXT,
     address TEXT NOT NULL,
     violation_description TEXT,
-    inspection_date TIMESTAMP WITH TIME ZONE,
-    investigation_date TIMESTAMP WITH TIME ZONE,
     status TEXT NOT NULL,
     original_status TEXT,
-    owner_name TEXT,
     parcel_id TEXT,
     violation_code TEXT,
     violation_code_section TEXT,
@@ -38,7 +35,6 @@ CREATE POLICY "Allow authenticated users full access" ON public.violations
 -- Create index for faster searches
 CREATE INDEX IF NOT EXISTS idx_violations_address ON public.violations (address);
 CREATE INDEX IF NOT EXISTS idx_violations_status ON public.violations (status);
-CREATE INDEX IF NOT EXISTS idx_violations_date_issued ON public.violations (investigation_date);
 CREATE INDEX IF NOT EXISTS idx_violations__id ON public.violations (_id);
 
 -- Sample data insertion
@@ -46,12 +42,9 @@ INSERT INTO public.violations (
     _id,
     casefile_number,
     address,
-    investigation_date,
-    inspection_date,
     status,
     original_status,
     violation_description,
-    owner_name,
     investigation_outcome,
     investigation_findings
 ) VALUES
@@ -59,12 +52,9 @@ INSERT INTO public.violations (
     'PLI-2025-00001',
     'PLI-2025-00001',
     '123 Main Street, Pittsburgh, PA 15213',
-    '2025-01-15T10:30:00Z',
-    '2025-01-15T10:30:00Z',
     'Open',
     'Active Violation',
     'Unsafe structural conditions identified during routine inspection',
-    'John Smith',
     NULL,
     NULL
 ),
@@ -72,12 +62,9 @@ INSERT INTO public.violations (
     'PLI-2025-00002',
     'PLI-2025-00002',
     '456 Oak Avenue, Pittsburgh, PA 15217',
-    '2025-01-20T14:15:00Z',
-    '2025-01-20T14:15:00Z',
     'In Progress',
     'Under Investigation',
     'Accumulated trash and debris in yard creating health hazard',
-    'Sarah Johnson',
     'Owner has begun cleanup process',
     'Initial inspection showed significant progress'
 ),
@@ -85,12 +72,9 @@ INSERT INTO public.violations (
     'PLI-2025-00003',
     'PLI-2025-00003',
     '789 Pine Street, Pittsburgh, PA 15232',
-    '2025-01-25T09:45:00Z',
-    '2025-01-25T09:45:00Z',
     'Closed',
     'Resolved',
     'Unauthorized commercial activity in residential zone',
-    'Robert Wilson',
     'Commercial activity ceased',
     'Follow-up inspection confirmed compliance with zoning regulations'
 ),
@@ -98,12 +82,9 @@ INSERT INTO public.violations (
     'PLI-2025-00004',
     'PLI-2025-00004',
     '321 Elm Street, Pittsburgh, PA 15206',
-    '2025-02-01T11:00:00Z',
-    '2025-02-01T11:00:00Z',
     'Open',
     'Notice Issued',
     'Operating without valid occupancy permit',
-    'Michael Brown',
     NULL,
     NULL
 ),
@@ -111,12 +92,9 @@ INSERT INTO public.violations (
     'PLI-2025-00005',
     'PLI-2025-00005',
     '654 Maple Drive, Pittsburgh, PA 15219',
-    '2025-02-05T15:30:00Z',
-    '2025-02-05T15:30:00Z',
     'In Progress',
     'Inspection Scheduled',
     'Missing fire extinguishers and blocked emergency exits',
-    'Jennifer Davis',
     'Owner has purchased required equipment',
     'Awaiting follow-up inspection to verify installation'
 );

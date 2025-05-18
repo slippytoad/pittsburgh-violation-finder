@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { AlertTriangle, CheckCircle, Clock, Calendar, Hash, Layers, MapPin, ChevronDown, ChevronUp, Info, FileText } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Clock, Hash, Layers, MapPin, ChevronDown, ChevronUp, Info, FileText } from 'lucide-react';
 import { ViolationType } from '@/utils/types';
 import AnimatedContainer from './AnimatedContainer';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -63,15 +63,15 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
         >
           <CardHeader className="p-4 pb-2 flex flex-row items-start justify-between space-y-0">
             <div className="flex flex-col space-y-1.5">
-              <h3 className="font-medium text-base">{violation.agency_name}</h3>
+              <h3 className="font-medium text-base">Case #: {violation.casefile_number}</h3>
               <div className="flex flex-col space-y-1">
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <MapPin className="h-3.5 w-3.5" />
                   <span>{violation.address}</span>
                 </div>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <Calendar className="h-3.5 w-3.5" />
-                  <span>Investigation Date: {formatDate(violation.inspection_date)}</span>
+                  <Hash className="h-3.5 w-3.5" />
+                  <span>Code Section: {violation.violation_code_section || "N/A"}</span>
                 </div>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Hash className="h-3.5 w-3.5" />
@@ -155,15 +155,11 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
               >
                 <CardHeader className="p-3 pb-2 flex flex-row items-start justify-between space-y-0">
                   <div className="flex flex-col space-y-1">
-                    <h4 className="font-medium text-sm">{relatedViolation.agency_name}</h4>
+                    <h4 className="font-medium text-sm">Case #: {relatedViolation.casefile_number}</h4>
                     <div className="flex flex-col space-y-1">
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <MapPin className="h-3 w-3" />
                         <span>{relatedViolation.address}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Calendar className="h-3 w-3" />
-                        <span>Investigation Date: {formatDate(relatedViolation.inspection_date)}</span>
                       </div>
                     </div>
                   </div>
@@ -207,7 +203,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
           <DialogHeader>
-            <DialogTitle>{violation.agency_name}</DialogTitle>
+            <DialogTitle>Case #: {violation.casefile_number}</DialogTitle>
             <DialogDescription>
               <Badge 
                 variant="outline" 
@@ -230,16 +226,12 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                       <span><strong>Address:</strong> {violation.address}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span><strong>Investigation Date:</strong> {formatDate(violation.inspection_date)}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
                       <Hash className="h-4 w-4 text-muted-foreground" />
                       <span><strong>Case #:</strong> {violation.casefile_number}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Info className="h-4 w-4 text-muted-foreground" />
-                      <span><strong>Property Owner:</strong> {violation.owner_name}</span>
+                      <span><strong>Code Section:</strong> {violation.violation_code_section || "N/A"}</span>
                     </div>
                   </div>
                 </div>
@@ -286,7 +278,7 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                     <Card key={idx} className="border border-border">
                       <CardHeader className="p-3 pb-2">
                         <div className="flex flex-row items-start justify-between">
-                          <h4 className="font-medium text-sm">{relatedViolation.agency_name}</h4>
+                          <h4 className="font-medium text-sm">Case #: {relatedViolation.casefile_number}</h4>
                           <Badge 
                             variant="outline" 
                             className={cn("flex items-center gap-1 font-normal text-xs", getStatusColor(relatedViolation.status))}
@@ -301,12 +293,8 @@ const ViolationCard = ({ violation, index }: ViolationCardProps) => {
                             <span>{relatedViolation.address}</span>
                           </div>
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Calendar className="h-3 w-3" />
-                            <span>Investigation Date: {formatDate(relatedViolation.inspection_date)}</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Info className="h-3 w-3" />
-                            <span>Property Owner: {relatedViolation.owner_name}</span>
+                            <span>Code Section: {relatedViolation.violation_code_section || "N/A"}</span>
                           </div>
                         </div>
                       </CardHeader>

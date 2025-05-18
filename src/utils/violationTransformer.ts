@@ -16,10 +16,8 @@ export function transformViolationData(data: any[]): ViolationType[] {
     address: item.address,
     parcel_id: item.parcel_id || 'N/A',
     status: item.status,
-    inspection_date: item.inspection_date || item.investigation_date,
     violation_description: item.violation_description || '',
     violation_code_section: item.violation_code_section || 'N/A',
-    owner_name: item.owner_name || item.property_owner || 'Unknown Owner',
     investigation_outcome: item.investigation_outcome || null,
     investigation_findings: item.investigation_findings || null,
     relatedViolations: [],
@@ -45,14 +43,12 @@ export function transformViolationData(data: any[]): ViolationType[] {
       // No related violations
       result.push(violations[0]);
     } else {
-      // Sort related violations by date, newest first
+      // Sort related violations
       violations.sort((a, b) => {
-        const dateA = a.inspection_date ? new Date(a.inspection_date).getTime() : 0;
-        const dateB = b.inspection_date ? new Date(b.inspection_date).getTime() : 0;
-        return dateB - dateA;
+        return a.id.localeCompare(b.id); // Sort by ID since we don't have inspection_date
       });
       
-      // Use the most recent violation as the primary and add the rest as related
+      // Use the first violation as the primary and add the rest as related
       const primaryViolation = { ...violations[0] };
       primaryViolation.relatedViolations = violations.slice(1);
       primaryViolation.relatedViolationsCount = violations.length - 1;
@@ -61,10 +57,8 @@ export function transformViolationData(data: any[]): ViolationType[] {
     }
   });
 
-  // Sort the final result by date, newest first
+  // Sort the final result by ID
   return result.sort((a, b) => {
-    const dateA = a.inspection_date ? new Date(a.inspection_date).getTime() : 0;
-    const dateB = b.inspection_date ? new Date(b.inspection_date).getTime() : 0;
-    return dateB - dateA;
+    return b.id.localeCompare(a.id); // Sort by ID, newest (assuming higher IDs are newer) first
   });
 }

@@ -31,10 +31,6 @@ const ViolationCardHeader: React.FC<ViolationCardHeaderProps> = ({
             <MapPin className="h-3.5 w-3.5" />
             <span>{violation.address}</span>
           </div>
-          <div className="flex items-center gap-1 text-sm text-muted-foreground font-medium">
-            <Calendar className="h-3.5 w-3.5" />
-            <span>Investigation Date: {formatDate(violation.inspection_date)}</span>
-          </div>
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <Hash className="h-3.5 w-3.5" />
             <span>Code Section: {violation.violation_code_section || "N/A"}</span>

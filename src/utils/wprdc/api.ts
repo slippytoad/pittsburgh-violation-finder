@@ -66,11 +66,11 @@ export async function fetchViolationsForAddresses(addresses: string[]): Promise<
       return `address ILIKE '${cleanAddress}%'`;
     }).join(' OR ');
     
-    // Add date filter for 2024 and later
-    const dateCondition = `investigation_date >= '2024-01-01'`;
+    // Use created_at or another date field instead of inspection_date
+    const dateCondition = `violation_date >= '2024-01-01'`;
     
     // Build the SQL query using the correct table ID and format
-    const sqlQuery = `SELECT * FROM "${PLI_VIOLATIONS_TABLE_ID}" WHERE (${addressConditions}) AND ${dateCondition} ORDER BY investigation_date DESC`;
+    const sqlQuery = `SELECT * FROM "${PLI_VIOLATIONS_TABLE_ID}" WHERE (${addressConditions}) AND ${dateCondition} ORDER BY violation_date DESC`;
     
     console.log('SQL Query:', sqlQuery);
     
